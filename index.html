@@ -907,30 +907,46 @@
             }
         }
 
-        // 自动翻译
-        function autoTranslate() {
-            const spanish = document.getElementById('dishSpanish').value.trim().toLowerCase();
-            const catalan = simpleTranslate(spanish);
-            document.getElementById('dishCatalan').value = catalan;
+        // 在线翻译功能
+async function translateText(text) {
+    if (!text.trim()) return text;
+    
+    try {
+        updateSyncStatus('syncing', '🔄 翻译中...');
+        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
+        const data = await response.json();
+        
+        if (data.responseStatus === 200) {
+            updateSyncStatus('synced', '☁️ 已同步');
+            return data.responseData.translatedText;
+        } else {
+            // 翻译失败时使用本地词典
+            return simpleTranslate(text);
         }
+    } catch (error) {
+        console.error('在线翻译失败:', error);
+        updateSyncStatus('synced', '☁️ 已同步');
+        // 失败时使用本地词典作为后备
+        return simpleTranslate(text);
+    }
+}
 
-        function translateManual() {
-            const spanish = document.getElementById('manualSpanish').value.trim().toLowerCase();
-            const catalan = simpleTranslate(spanish);
-            document.getElementById('manualCatalan').value = catalan;
-        }
+// 自动翻译（异步版本）
+async function autoTranslate() {
+    const spanish = document.getElementById('dishSpanish').value.trim();
+    if (!spanish) return;
+    
+    const catalan = await translateText(spanish);
+    document.getElementById('dishCatalan').value = catalan;
+}
 
-        function simpleTranslate(text) {
-            let translated = text;
-            
-            Object.keys(translations).forEach(spanish => {
-                const catalan = translations[spanish];
-                const regex = new RegExp('\\b' + spanish + '\\b', 'gi');
-                translated = translated.replace(regex, catalan);
-            });
-            
-            return translated.charAt(0).toUpperCase() + translated.slice(1);
-        }
+async function translateManual() {
+    const spanish = document.getElementById('manualSpanish').value.trim();
+    if (!spanish) return;
+    
+    const catalan = await translateText(spanish);
+    document.getElementById('manualCatalan').value = catalan;
+}
 
         // 添加菜品
         async function addDish() {
