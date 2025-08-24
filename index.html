@@ -254,13 +254,14 @@
         }
 
         .dessert-checkbox {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            transition: background 0.3s ease;
-            cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+    cursor: pointer;
+    position: relative; /* 添加这一行 */
         }
 
         .dessert-checkbox:hover {
@@ -1071,23 +1072,28 @@ async function translateManual() {
                 `;
                 
                 if (category === 'postre') {
-                    html += '<div class="dessert-checkboxes">';
-                    categoryDishes.forEach(dish => {
-                        const isSelected = selectedDishes[category].some(d => d.id === dish.id);
-                        html += `
-                            <div class="dessert-checkbox">
-                                <input type="checkbox" ${isSelected ? 'checked' : ''} 
-                                       data-dish-id="${dish.id}"
-                                       onchange="toggleDessertCheckbox(${dish.id})">
-                                <label onclick="toggleDessertCheckbox(${dish.id})">
-                                    <strong>${dish.spanish}</strong><br>
-                                    <em>${dish.catalan}</em>
-                                    ${dish.extra ? `<br><span style="color: #888;">${dish.extra}</span>` : ''}
-                                </label>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
+    html += '<div class="dessert-checkboxes">';
+    categoryDishes.forEach(dish => {
+        const isSelected = selectedDishes[category].some(d => d.id === dish.id);
+        html += `
+            <div class="dessert-checkbox" style="position: relative;">
+                <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                       data-dish-id="${dish.id}"
+                       onchange="toggleDessertCheckbox(${dish.id})">
+                <label onclick="toggleDessertCheckbox(${dish.id})">
+                    <strong>${dish.spanish}</strong><br>
+                    <em>${dish.catalan}</em>
+                    ${dish.extra ? `<br><span style="color: #888;">${dish.extra}</span>` : ''}
+                </label>
+                <button class="btn btn-danger" 
+                        style="position: absolute; top: 5px; right: 5px; padding: 2px 6px; font-size: 10px; min-width: auto;" 
+                        onclick="deleteDish(${dish.id})" 
+                        title="删除甜点">×</button>
+            </div>
+        `;
+    });
+    html += '</div>';
+}
                 } else {
                     categoryDishes.forEach(dish => {
                         const isSelected = selectedDishes[category].some(d => d.id === dish.id);
