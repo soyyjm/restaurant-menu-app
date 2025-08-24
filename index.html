@@ -1,1517 +1,1331 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>餐厅每日菜单管理工具 - 云端版</title>
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-
-body {
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-min-height: 100vh;
-padding: 20px;
-}
-
-.sync-status {
-position: fixed;
-top: 20px;
-right: 20px;
-background: rgba(255, 255, 255, 0.9);
-padding: 8px 16px;
-border-radius: 20px;
-font-size: 12px;
-font-weight: 500;
-z-index: 1000;
-backdrop-filter: blur(10px);
-box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.sync-status.synced {
-color: #28a745;
-border-left: 3px solid #28a745;
-}
-
-.sync-status.syncing {
-color: #ffc107;
-border-left: 3px solid #ffc107;
-}
-
-.sync-status.error {
-color: #dc3545;
-border-left: 3px solid #dc3545;
-}
-
-.container {
-max-width: 1400px;
-margin: 0 auto;
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 30px;
-height: calc(100vh - 40px);
-}
-
-.panel {
-background: rgba(255, 255, 255, 0.95);
-border-radius: 20px;
-padding: 25px;
-box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-backdrop-filter: blur(10px);
-overflow-y: auto;
-}
-
-.panel h2 {
-color: #333;
-margin-bottom: 20px;
-font-size: 1.8em;
-font-weight: 600;
-}
-
-.form-group {
-margin-bottom: 15px;
-}
-
-.form-row {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 15px;
-}
-
-.translate-row {
-display: grid;
-grid-template-columns: 1fr auto 1fr;
-gap: 10px;
-align-items: end;
-}
-
-label {
-display: block;
-margin-bottom: 5px;
-font-weight: 500;
-color: #555;
-}
-
-input, select, textarea {
-width: 100%;
-padding: 12px 15px;
-border: 2px solid #e1e5e9;
-border-radius: 10px;
-font-size: 14px;
-transition: all 0.3s ease;
-}
-
-input:focus, select:focus, textarea:focus {
-outline: none;
-border-color: #667eea;
-box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.input-warning {
-border-color: #ff9800 !important;
-box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1) !important;
-}
-
-.correction-hint {
-font-size: 12px;
-color: #ff9800;
-margin-top: 5px;
-padding: 5px 10px;
-background: rgba(255, 152, 0, 0.1);
-border-radius: 5px;
-display: none;
-}
-
-.btn {
-background: linear-gradient(45deg, #667eea, #764ba2);
-color: white;
-border: none;
-padding: 12px 25px;
-border-radius: 10px;
-cursor: pointer;
-font-size: 14px;
-font-weight: 500;
-transition: all 0.3s ease;
-margin-right: 10px;
-margin-bottom: 10px;
-}
-
-.btn:hover {
-transform: translateY(-2px);
-box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-}
-
-.btn-small {
-padding: 8px 12px;
-font-size: 12px;
-margin: 0;
-}
-
-.btn-secondary {
-background: linear-gradient(45deg, #f093fb, #f5576c);
-}
-
-.btn-danger {
-background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-}
-
-.btn-translate {
-background: linear-gradient(45deg, #4ecdc4, #44a08d);
-padding: 12px 15px;
-min-width: 80px;
-}
-
-/* 折叠菜单样式 */
-.collapsible-section {
-border: 2px solid #e1e5e9;
-border-radius: 10px;
-margin-bottom: 15px;
-}
-
-.section-header {
-background: #f8f9fa;
-padding: 15px;
-cursor: pointer;
-display: flex;
-justify-content: space-between;
-align-items: center;
-border-radius: 8px;
-transition: background 0.3s ease;
-}
-
-.section-header:hover {
-background: #e9ecef;
-}
-
-.section-header h3 {
-color: #667eea;
-font-size: 1.1em;
-font-weight: 600;
-}
-
-.section-content {
-overflow: hidden;
-transition: all 0.3s ease;
-}
-
-.section-content:not(.expanded) {
-max-height: 0;
-padding: 0;
-}
-
-.section-content.expanded {
-max-height: none;
-padding: 15px;
-}
-
-.dish-item {
-background: #f8f9fa;
-padding: 15px;
-margin-bottom: 10px;
-border-radius: 10px;
-border-left: 4px solid #667eea;
-position: relative;
-}
-
-.dish-item.selected {
-background: #e8f4fd;
-border-left-color: #f5576c;
-}
-
-.dish-item h4 {
-color: #333;
-margin-bottom: 5px;
-}
-
-.dish-item p {
-color: #666;
-font-size: 13px;
-margin-bottom: 3px;
-}
-
-.dish-actions {
-position: absolute;
-top: 10px;
-right: 10px;
-}
-
-.dish-actions button {
-padding: 5px 10px;
-font-size: 12px;
-margin-left: 5px;
-}
-
-/* 甜点勾选样式 */
-.dessert-checkboxes {
-padding: 15px;
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 10px;
-}
-
-.dessert-checkbox {
-display: flex;
-align-items: center;
-padding: 8px;
-background: #f8f9fa;
-border-radius: 6px;
-transition: background 0.3s ease;
-cursor: pointer;
-}
-
-.dessert-checkbox:hover {
-background: #e9ecef;
-}
-
-.dessert-checkbox input[type="checkbox"] {
-width: auto;
-margin-right: 8px;
-padding: 0;
-}
-
-.dessert-checkbox label {
-margin: 0;
-cursor: pointer;
-font-size: 12px;
-line-height: 1.2;
-}
-
-/* 智能定价 */
-.price-info {
-font-size: 12px;
-color: #666;
-margin-top: 5px;
-}
-
-/* 手动添加菜品 */
-.manual-add {
-background: #f8f9fa;
-padding: 15px;
-border-radius: 10px;
-margin-bottom: 15px;
-}
-
-.manual-add h4 {
-color: #667eea;
-margin-bottom: 10px;
-}
-
-/* 菜单预览区域 */
-.menu-preview {
-background: white;
-padding: 25px;
-margin-top: 20px;
-border-radius: 10px;
-font-family: Arial, sans-serif;
-box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-font-size: 13px;
-line-height: 1.4;
-}
-
-.menu-header {
-text-align: center;
-border-bottom: 2px solid #333;
-padding-bottom: 15px;
-margin-bottom: 20px;
-}
-
-.menu-title {
-font-size: 2em;
-font-style: italic;
-margin-bottom: 8px;
-color: #333;
-}
-
-.menu-date-price {
-display: flex;
-justify-content: space-between;
-font-size: 1em;
-font-weight: bold;
-}
-
-.menu-section {
-margin-bottom: 20px;
-}
-
-.section-title {
-font-size: 1.1em;
-font-weight: bold;
-margin-bottom: 10px;
-color: #333;
-text-transform: uppercase;
-}
-
-.menu-item {
-margin-bottom: 12px;
-padding-bottom: 8px;
-}
-
-.menu-item-spanish {
-font-weight: 500;
-color: #333;
-margin-bottom: 2px;
-font-size: 13px;
-}
-
-.menu-item-catalan {
-font-style: italic;
-color: #666;
-font-size: 11px;
-}
-
-.menu-item-extra {
-color: #888;
-font-size: 11px;
-}
-
-.menu-hours {
-text-align: center;
-margin-top: 20px;
-padding-top: 15px;
-border-top: 1px solid #ddd;
-font-size: 1em;
-font-weight: bold;
-}
-
-.selected-dishes {
-background: #e8f4fd;
-padding: 15px;
-border-radius: 10px;
-margin-bottom: 20px;
-}
-
-.selected-dishes h3 {
-margin-bottom: 10px;
-color: #333;
-}
-
-.selected-dish {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 12px 8px;
-margin-bottom: 8px;
-background: white;
-border-radius: 8px;
-border-left: 4px solid #667eea;
-cursor: grab;
-transition: all 0.3s ease;
-position: relative;
-}
-
-.selected-dish:hover {
-box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-transform: translateY(-1px);
-}
-
-.selected-dish.dragging {
-opacity: 0.5;
-transform: rotate(5deg);
-cursor: grabbing;
-}
-
-.selected-dish .dish-content {
-flex: 1;
-margin-right: 10px;
-}
-
-.selected-dish .dish-actions {
-display: flex;
-gap: 5px;
-}
-
-.selected-dish .drag-handle {
-position: absolute;
-left: 8px;
-top: 50%;
-transform: translateY(-50%);
-color: #ccc;
-font-size: 14px;
-cursor: grab;
-}
-
-.selected-dish .drag-handle:hover {
-color: #667eea;
-}
-
-/* 编辑模式样式 */
-.edit-mode {
-background: #fff3cd !important;
-border-left-color: #ffc107 !important;
-}
-
-.edit-inputs {
-display: flex;
-flex-direction: column;
-gap: 8px;
-flex: 1;
-margin-right: 10px;
-}
-
-.edit-inputs input {
-padding: 6px 8px;
-border: 1px solid #ddd;
-border-radius: 4px;
-font-size: 12px;
-}
-
-.edit-inputs input:focus {
-outline: none;
-border-color: #667eea;
-}
-
-.category-section {
-margin-bottom: 20px;
-border-radius: 8px;
-overflow: hidden;
-}
-
-.category-header {
-background: linear-gradient(45deg, #667eea, #764ba2);
-color: white;
-padding: 8px 12px;
-font-weight: bold;
-font-size: 14px;
-}
-
-.category-dishes {
-min-height: 50px;
-padding: 10px;
-}
-
-.drop-zone {
-border: 2px dashed #667eea;
-background: rgba(102, 126, 234, 0.05);
-border-radius: 8px;
-padding: 20px;
-text-align: center;
-color: #667eea;
-}
-
-.rotate-icon {
-transition: transform 0.3s ease;
-}
-
-.rotate-icon.rotated {
-transform: rotate(90deg);
-}
-
-.menu-controls {
-margin-bottom: 20px;
-padding-bottom: 15px;
-border-bottom: 2px solid #e1e5e9;
-}
-
-.loading {
-opacity: 0.5;
-pointer-events: none;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>餐厅每日菜单管理工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            height: calc(100vh - 40px);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .translate-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 10px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-warning {
+            border-color: #ff9800 !important;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1) !important;
+        }
+
+        .correction-hint {
+            font-size: 12px;
+            color: #ff9800;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 5px;
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .btn-translate {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            padding: 12px 15px;
+            min-width: 80px;
+        }
+
+        /* 折叠菜单样式 */
+        .collapsible-section {
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .section-header:hover {
+            background: #e9ecef;
+        }
+
+        .section-header h3 {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .section-content {
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section-content:not(.expanded) {
+            max-height: 0;
+            padding: 0;
+        }
+
+        .section-content.expanded {
+            max-height: none;
+            padding: 15px;
+        }
+
+        .dish-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .dish-item.selected {
+            background: #e8f4fd;
+            border-left-color: #f5576c;
+        }
+
+        .dish-item h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .dish-item p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .dish-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .dish-actions button {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        /* 甜点勾选样式 */
+        .dessert-checkboxes {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .dessert-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dessert-checkbox:hover {
+            background: #e9ecef;
+        }
+
+        .dessert-checkbox input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            padding: 0;
+        }
+
+        .dessert-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1.2;
+        }
+
+        /* 智能定价 */
+        .price-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 手动添加菜品 */
+        .manual-add {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .manual-add h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        /* 菜单预览区域 */
+        .menu-preview {
+            background: white;
+            padding: 25px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .menu-header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .menu-title {
+            font-size: 2em;
+            font-style: italic;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .menu-date-price {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .menu-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .menu-item {
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+        }
+
+        .menu-item-spanish {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+            font-size: 13px;
+        }
+
+        .menu-item-catalan {
+            font-style: italic;
+            color: #666;
+            font-size: 11px;
+        }
+
+        .menu-item-extra {
+            color: #888;
+            font-size: 11px;
+        }
+
+        .menu-hours {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .selected-dishes {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .selected-dishes h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .selected-dish {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .selected-dish:last-child {
+            border-bottom: none;
+        }
+
+        .rotate-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .rotate-icon.rotated {
+            transform: rotate(90deg);
+        }
+
+        /* 打印样式 - 严格控制打印内容 */
+        @media print {
+            @page {
+                margin: 15mm;
+                size: A4;
+            }
+            
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .container {
+                display: none !important;
+            }
+            
+            .menu-preview {
+                display: block !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                background: white !important;
+                font-size: 12px !important;
+            }
+            
+            .menu-header {
+                margin-bottom: 15px !important;
+                padding-bottom: 10px !important;
+            }
+            
+            .menu-title {
+                font-size: 1.8em !important;
+                margin-bottom: 5px !important;
+            }
+            
+            .menu-section {
+                margin-bottom: 15px !important;
+            }
+            
+            .section-title {
+                font-size: 1em !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .menu-item {
+                margin-bottom: 8px !important;
+                padding-bottom: 5px !important;
+            }
+            
+            .menu-item-spanish {
+                font-size: 11px !important;
+            }
+            
+            .menu-item-catalan {
+                font-size: 10px !important;
+            }
+            
+            .menu-hours {
+                margin-top: 15px !important;
+                padding-top: 10px !important;
+                font-size: 0.9em !important;
+            }
+        }
+
+        .menu-controls {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+    </style>
 </head>
 <body>
-<!-- 同步状态指示器 -->
-<div id="syncStatus" class="sync-status synced">☁️ 已同步</div>
-
-<div class="container">
-<!-- 左侧：菜品管理 -->
-<div class="panel">
-<h2>🍽️ 菜品数据库管理</h2>
-
-<!-- 添加菜品表单 -->
-<div class="form-group">
-<div class="translate-row">
-<div>
-<label>西班牙语菜名</label>
-<input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)">
-<div class="correction-hint" id="spanishHint"></div>
-</div>
-<div style="align-self: end;">
-<button class="btn btn-translate" onclick="autoTranslate()">🔄 翻译</button>
-</div>
-<div>
-<label>加泰罗尼亚语翻译</label>
-<input type="text" id="dishCatalan" placeholder="例: Paella del senyoret">
-</div>
-</div>
-</div>
-
-<div class="form-group">
-<div class="form-row">
-<div>
-<label>分类</label>
-<select id="dishCategory">
-<option value="primer">PRIMER PLATO</option>
-<option value="segundo">SEGUNDO PLATO</option>
-<option value="postre">POSTRES</option>
-</select>
-</div>
-<div>
-<label>额外费用</label>
-<input type="text" id="dishExtra" placeholder="例: +3.00€">
-</div>
-</div>
-</div>
-
-<button class="btn" onclick="addDish()">➕ 添加菜品</button>
-<button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
-<button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
-<input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-
-<!-- 折叠式菜品列表 -->
-<div id="dishesContainer"></div>
-</div>
-
-<!-- 右侧：菜单生成 -->
-<div class="panel">
-<div class="menu-controls">
-<h2>📋 每日菜单生成</h2>
-
-<!-- 菜单设置 -->
-<div class="form-group">
-<div class="form-row">
-<div>
-<label>菜单价格</label>
-<input type="text" id="menuPrice" value="13.50 €">
-<div class="price-info" id="priceInfo">今天是工作日，建议价格：13.50 €</div>
-</div>
-<div>
-<label>日期</label>
-<input type="date" id="menuDate">
-</div>
-</div>
-</div>
-
-<!-- 手动添加菜品 -->
-<div class="manual-add">
-<h4>🖊️ 手动添加菜品</h4>
-<div class="translate-row">
-<div>
-<input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)">
-<div class="correction-hint" id="manualSpanishHint"></div>
-</div>
-<div style="align-self: center;">
-<button class="btn btn-translate btn-small" onclick="translateManual()">🔄</button>
-</div>
-<div>
-<input type="text" id="manualCatalan" placeholder="加泰罗尼亚语翻译">
-</div>
-</div>
-<div class="form-row" style="margin-top: 10px;">
-<select id="manualCategory">
-<option value="primer">PRIMER PLATO</option>
-<option value="segundo">SEGUNDO PLATO</option>
-<option value="postre">POSTRES</option>
-</select>
-<button class="btn btn-small" onclick="addManualDish()">添加到菜单</button>
-</div>
-</div>
-
-<!-- 已选菜品 -->
-<div class="selected-dishes">
-<h3>今日菜单</h3>
-<div id="selectedDishes">
-<p style="color: #888; text-align: center; padding: 20px;">请从左侧菜品库中选择菜品或手动添加</p>
-</div>
-</div>
-
-<button class="btn" onclick="generateMenu()">🍴 生成菜单</button>
-<button class="btn btn-secondary" onclick="printMenu()">🖨️ 打印菜单</button>
-<button class="btn btn-danger" onclick="clearSelectedDishes()">🗑️ 清空选择</button>
-</div>
-
-<!-- 菜单预览 -->
-<div class="menu-preview" id="menuPreview" style="display: none;">
-<!-- 菜单内容将在这里生成 -->
-</div>
-</div>
-</div>
-
-<!-- Supabase 客户端库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.38.4/umd/supabase.min.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<script>
-// Supabase 配置（演示用，实际部署时需要替换为真实配置）
-const SUPABASE_URL = 'https://nkteqmgslcrqiglzcsyv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
-
-// 初始化 Supabase 客户端
-let supabase;
-let isCloudMode = false;
-
-try {
-supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-isCloudMode = true;
-updateSyncStatus('synced', '☁️ 云端模式');
-} catch (error) {
-console.log('云端模式不可用，使用本地模式');
-updateSyncStatus('error', '💾 本地模式');
-}
-
-// 本地数据（作为后备）
-let dishes = [];
-let selectedDishes = {primer: [], segundo: [], postre: []};
-
-// 西班牙假日列表
-const spanishHolidays = [
-'2025-01-01', '2025-01-06', '2025-04-18', '2025-04-21',
-'2025-05-01', '2025-08-15', '2025-10-12', '2025-11-01',
-'2025-12-06', '2025-12-08', '2025-12-25'
-];
-
-// 翻译词典
-const translations = {
-'pollo': 'pollastre', 'jamón': 'pernil', 'queso': 'formatge',
-'patatas': 'patates', 'huevo': 'ou', 'carne': 'carn',
-'pescado': 'peix', 'verduras': 'verdures', 'arroz': 'arròs',
-'pasta': 'pasta', 'ensalada': 'amanida', 'sopa': 'sopa',
-'crema': 'crema', 'flan': 'flan', 'helado': 'gelat',
-'fruta': 'fruita', 'chocolate': 'xocolata', 'con': 'amb',
-'del': 'del', 'de': 'de', 'al': 'al', 'horno': 'forn',
-'plancha': 'planxa', 'frito': 'fregit', 'asado': 'rostit'
-};
-
-// 增强的拼写检查词典
-const spellCheck = {
-'polla': 'pollo', 'jamon': 'jamón', 'patata': 'patatas',
-'huevos': 'huevo', 'verdura': 'verduras', 'pescao': 'pescado',
-'tomate': 'tomates', 'cebolla': 'cebollas', 'ajo': 'ajos',
-'pimiento': 'pimientos', 'calabacin': 'calabacín', 
-'berenjena': 'berenjenas', 'champiñon': 'champiñones',
-'limon': 'limón', 'melon': 'melón', 'oregano': 'orégano',
-'senor': 'señor', 'nina': 'niña', 'nino': 'niño', 'anos': 'años',
-'manana': 'mañana', 'espanol': 'español', 'corazon': 'corazón'
-};
-
-// 同步状态更新
-function updateSyncStatus(status, message) {
-const syncStatus = document.getElementById('syncStatus');
-syncStatus.className = `sync-status ${status}`;
-syncStatus.textContent = message;
-}
-
-// 云端数据操作
-async function loadCloudData() {
-if (!isCloudMode) return loadLocalData();
-
-try {
-updateSyncStatus('syncing', '🔄 同步中...');
-
-// 加载菜品数据
-const { data: dishesData, error: dishesError } = await supabase
-.from('dishes')
-.select('*')
-.order('created_at', { ascending: true });
-
-if (dishesError) throw dishesError;
-
-// 加载已选菜品数据
-const { data: menuData, error: menuError } = await supabase
-.from('selected_menu')
-.select('*')
-.single();
-
-if (!menuError && menuData) {
-selectedDishes = menuData.dishes;
-}
-
-dishes = dishesData || [];
-updateSyncStatus('synced', '☁️ 已同步');
-
-} catch (error) {
-console.error('加载云端数据失败:', error);
-updateSyncStatus('error', '⚠️ 同步失败');
-loadLocalData();
-}
-}
-
-async function saveCloudData() {
-if (!isCloudMode) return saveLocalData();
-
-try {
-updateSyncStatus('syncing', '🔄 保存中...');
-
-// 保存菜品数据
-const { error: dishesError } = await supabase
-.from('dishes')
-.upsert(dishes.map(dish => ({
-id: dish.id,
-spanish: dish.spanish,
-catalan: dish.catalan,
-category: dish.category,
-extra: dish.extra || '',
-created_at: new Date().toISOString(),
-updated_at: new Date().toISOString()
-})));
-
-if (dishesError) throw dishesError;
-
-// 保存已选菜品数据
-const { error: menuError } = await supabase
-.from('selected_menu')
-.upsert({
-id: 1,
-dishes: selectedDishes,
-updated_at: new Date().toISOString()
-});
-
-if (menuError) throw menuError;
-
-updateSyncStatus('synced', '☁️ 已同步');
-
-} catch (error) {
-console.error('保存云端数据失败:', error);
-updateSyncStatus('error', '⚠️ 保存失败');
-saveLocalData();
-}
-}
-
-// 本地数据操作（后备方案）
-function loadLocalData() {
-dishes = JSON.parse(localStorage.getItem('restaurantDishes') || '[]');
-selectedDishes = JSON.parse(localStorage.getItem('selectedDishes') || '{"primer": [], "segundo": [], "postre": []}');
-}
-
-function saveLocalData() {
-localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
-localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
-}
-
-// 初始化
-document.addEventListener('DOMContentLoaded', async function() {
-const today = new Date();
-document.getElementById('menuDate').value = today.toISOString().split('T')[0];
-
-await loadInitialDishes();
-await loadCloudData();
-updatePricing();
-renderDishesContainer();
-renderSelectedDishes();
-
-document.getElementById('menuDate').addEventListener('change', updatePricing);
-});
-
-// 预设菜品
-async function loadInitialDishes() {
-const initialDishes = [
-{
-id: Date.now() + 1,
-spanish: "Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",
-catalan: "Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",
-category: "primer",
-extra: ""
-},
-{
-id: Date.now() + 2,
-spanish: "Salmorejo cordobés con huevo rallado y virutas de jamón",
-catalan: "Salmorejo cordovès amb ou ratllat i encenalls de pernil",
-category: "primer",
-extra: ""
-},
-{
-id: Date.now() + 3,
-spanish: "Paella del señorito",
-catalan: "Paella del senyoret",
-category: "segundo",
-extra: ""
-},
-{
-id: Date.now() + 4,
-spanish: "Dorada al horno con patatas panadera",
-catalan: "Daurada al forn amb patates fornera",
-category: "segundo",
-extra: ""
-},
-{
-id: Date.now() + 5,
-spanish: "Tarta de queso",
-catalan: "Pastis de formatge",
-category: "postre",
-extra: ""
-},
-{
-id: Date.now() + 6,
-spanish: "Flan",
-catalan: "Flan",
-category: "postre",
-extra: ""
-},
-{
-id: Date.now() + 7,
-spanish: "Coulant de chocolate",
-catalan: "Coulant de xocolata",
-category: "postre",
-extra: "+ 2.00€"
-}
-];
-
-if (dishes.length === 0) {
-dishes = initialDishes;
-await saveCloudData();
-}
-}
-
-// 拼写检查功能
-function checkSpelling(input) {
-const text = input.value.toLowerCase().trim();
-const hintId = input.id === 'dishSpanish' ? 'spanishHint' : 'manualSpanishHint';
-const hint = document.getElementById(hintId);
-
-if (!text) {
-hint.style.display = 'none';
-input.classList.remove('input-warning');
-return;
-}
-
-const words = text.split(/\s+/);
-const corrections = [];
-
-words.forEach(word => {
-if (spellCheck[word]) {
-corrections.push(`"${word}" → "${spellCheck[word]}"`);
-}
-});
-
-if (corrections.length > 0) {
-input.classList.add('input-warning');
-hint.innerHTML = `建议修正: ${corrections.join(', ')}`;
-hint.style.display = 'block';
-} else {
-input.classList.remove('input-warning');
-hint.style.display = 'none';
-}
-}
-
-// 智能定价
-function updatePricing() {
-const dateInput = document.getElementById('menuDate');
-const priceInput = document.getElementById('menuPrice');
-const priceInfo = document.getElementById('priceInfo');
-
-const selectedDate = new Date(dateInput.value);
-const dayOfWeek = selectedDate.getDay();
-const dateString = dateInput.value;
-
-const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-const isHoliday = spanishHolidays.includes(dateString);
-
-if (isWeekend || isHoliday) {
-priceInput.value = '18.50 €';
-priceInfo.textContent = isHoliday ? '今天是西班牙法定假日，建议价格：18.50 €' : '今天是周末，建议价格：18.50 €';
-} else {
-priceInput.value = '13.50 €';
-priceInfo.textContent = '今天是工作日，建议价格：13.50 €';
-}
-}
-
-// 自动翻译
-function autoTranslate() {
-const spanish = document.getElementById('dishSpanish').value.trim().toLowerCase();
-const catalan = simpleTranslate(spanish);
-document.getElementById('dishCatalan').value = catalan;
-}
-
-function translateManual() {
-const spanish = document.getElementById('manualSpanish').value.trim().toLowerCase();
-const catalan = simpleTranslate(spanish);
-document.getElementById('manualCatalan').value = catalan;
-}
-
-function simpleTranslate(text) {
-let translated = text;
-
-Object.keys(translations).forEach(spanish => {
-const catalan = translations[spanish];
-const regex = new RegExp('\\b' + spanish + '\\b', 'gi');
-translated = translated.replace(regex, catalan);
-});
-
-return translated.charAt(0).toUpperCase() + translated.slice(1);
-}
-
-// 添加菜品
-async function addDish() {
-const spanish = document.getElementById('dishSpanish').value.trim();
-const catalan = document.getElementById('dishCatalan').value.trim();
-const category = document.getElementById('dishCategory').value;
-const extra = document.getElementById('dishExtra').value.trim();
-
-if (!spanish || !catalan) {
-alert('请填写菜品的西班牙语和加泰罗尼亚语名称');
-return;
-}
-
-const dish = {
-id: Date.now(),
-spanish,
-catalan,
-category,
-extra
-};
-
-dishes.push(dish);
-await saveCloudData();
-renderDishesContainer();
-
-document.getElementById('dishSpanish').value = '';
-document.getElementById('dishCatalan').value = '';
-document.getElementById('dishExtra').value = '';
-document.getElementById('spanishHint').style.display = 'none';
-document.getElementById('dishSpanish').classList.remove('input-warning');
-}
-
-// 手动添加菜品到菜单
-async function addManualDish() {
-const spanish = document.getElementById('manualSpanish').value.trim();
-const catalan = document.getElementById('manualCatalan').value.trim();
-const category = document.getElementById('manualCategory').value;
-
-if (!spanish || !catalan) {
-alert('请填写菜品的西班牙语和加泰罗尼亚语名称');
-return;
-}
-
-const dish = {
-id: Date.now(),
-spanish,
-catalan,
-category,
-extra: '',
-temporary: true
-};
-
-selectedDishes[category].push(dish);
-await saveCloudData();
-renderSelectedDishes();
-
-document.getElementById('manualSpanish').value = '';
-document.getElementById('manualCatalan').value = '';
-document.getElementById('manualSpanishHint').style.display = 'none';
-document.getElementById('manualSpanish').classList.remove('input-warning');
-}
-
-// 折叠功能
-function toggleSection(category) {
-const content = document.getElementById(`content-${category}`);
-const icon = document.getElementById(`icon-${category}`);
-
-content.classList.toggle('expanded');
-icon.classList.toggle('rotated');
-}
-
-// 甜点勾选功能
-async function toggleDessertCheckbox(dishId) {
-const dish = dishes.find(d => d.id === dishId);
-if (!dish) return;
-
-const categoryDishes = selectedDishes.postre;
-const index = categoryDishes.findIndex(d => d.id === dishId);
-
-if (index >= 0) {
-categoryDishes.splice(index, 1);
-} else {
-categoryDishes.push(dish);
-}
-
-await saveCloudData();
-renderSelectedDishes();
-updateDessertCheckboxes();
-}
-
-// 更新甜点勾选框状态
-function updateDessertCheckboxes() {
-const checkboxes = document.querySelectorAll('.dessert-checkboxes input[type="checkbox"]');
-checkboxes.forEach(checkbox => {
-const dishId = parseInt(checkbox.dataset.dishId);
-const isSelected = selectedDishes.postre.some(d => d.id === dishId);
-checkbox.checked = isSelected;
-});
-}
-
-// 渲染折叠式菜品容器
-function renderDishesContainer() {
-const container = document.getElementById('dishesContainer');
-const categories = {
-primer: 'PRIMER PLATO',
-segundo: 'SEGUNDO PLATO',
-postre: 'POSTRES'
-};
-
-let html = '';
-
-Object.keys(categories).forEach(category => {
-const categoryDishes = dishes.filter(dish => dish.category === category);
-
-html += `
-                   <div class="collapsible-section">
-                       <div class="section-header" onclick="toggleSection('${category}')">
-                           <h3>${categories[category]} (${categoryDishes.length})</h3>
-                           <span class="rotate-icon" id="icon-${category}">▶</span>
-                       </div>
-                       <div class="section-content" id="content-${category}">
-               `;
-
-if (category === 'postre') {
-html += '<div class="dessert-checkboxes">';
-categoryDishes.forEach(dish => {
-const isSelected = selectedDishes[category].some(d => d.id === dish.id);
-html += `
-                           <div class="dessert-checkbox">
-                               <input type="checkbox" ${isSelected ? 'checked' : ''} 
-                                      data-dish-id="${dish.id}"
-                                      onchange="toggleDessertCheckbox(${dish.id})">
-                               <label onclick="toggleDessertCheckbox(${dish.id})">
-                                   <strong>${dish.spanish}</strong><br>
-                                   <em>${dish.catalan}</em>
-                                   ${dish.extra ? `<br><span style="color: #888;">${dish.extra}</span>` : ''}
-                               </label>
-                           </div>
-                       `;
-});
-html += '</div>';
-} else {
-categoryDishes.forEach(dish => {
-const isSelected = selectedDishes[category].some(d => d.id === dish.id);
-html += `
-                           <div class="dish-item ${isSelected ? 'selected' : ''}" data-dish-id="${dish.id}">
-                               <h4>${dish.spanish}</h4>
-                               <p><em>${dish.catalan}</em></p>
-                               ${dish.extra ? `<p class="menu-item-extra">${dish.extra}</p>` : ''}
-                               <div class="dish-actions">
-                                   <button class="btn ${isSelected ? 'btn-danger' : 'btn-secondary'}" onclick="toggleDish(${dish.id})">
-                                       ${isSelected ? '移除' : '选择'}
-                                   </button>
-                                   <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
-                               </div>
-                           </div>
-                       `;
-});
-}
-
-html += '</div></div>';
-});
-
-container.innerHTML = html;
-}
-
-// 删除菜品
-async function deleteDish(id) {
-if (confirm('确定要删除这个菜品吗？')) {
-dishes = dishes.filter(dish => dish.id !== id);
-await saveCloudData();
-renderDishesContainer();
-}
-}
-
-// 选择/取消选择菜品
-async function toggleDish(id) {
-const dish = dishes.find(d => d.id === id);
-if (!dish) return;
-
-const categoryDishes = selectedDishes[dish.category];
-const index = categoryDishes.findIndex(d => d.id === id);
-
-if (index >= 0) {
-categoryDishes.splice(index, 1);
-} else {
-categoryDishes.push(dish);
-}
-
-await saveCloudData();
-updateDishItemStatus(id);
-renderSelectedDishes();
-}
-
-// 更新单个菜品的选择状态
-function updateDishItemStatus(dishId) {
-const dish = dishes.find(d => d.id === dishId);
-if (!dish) return;
-
-const dishElement = document.querySelector(`[data-dish-id="${dishId}"]`);
-if (dishElement) {
-const isSelected = selectedDishes[dish.category].some(d => d.id === dishId);
-const dishItem = dishElement.closest('.dish-item');
-const buttons = dishElement.querySelectorAll('button');
-const selectButton = buttons[0];
-
-if (isSelected) {
-dishItem.classList.add('selected');
-selectButton.textContent = '移除';
-selectButton.className = 'btn btn-danger';
-} else {
-dishItem.classList.remove('selected');
-selectButton.textContent = '选择';
-selectButton.className = 'btn btn-secondary';
-}
-}
-}
-
-// 编辑菜品功能
-function editDish(dishId, category) {
-const dish = selectedDishes[category].find(d => d.id === dishId);
-if (!dish) return;
-
-const dishElement = document.querySelector(`[data-selected-dish-id="${dishId}"]`);
-if (!dishElement) return;
-
-dishElement.classList.add('edit-mode');
-const contentDiv = dishElement.querySelector('.dish-content');
-
-contentDiv.innerHTML = `
-               <div class="edit-inputs">
-                   <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜名">
-                   <input type="text" id="edit-catalan-${dishId}" value="${dish.catalan}" placeholder="加泰罗尼亚语翻译">
-                   <input type="text" id="edit-extra-${dishId}" value="${dish.extra || ''}" placeholder="额外费用">
-               </div>
-           `;
-
-const actionsDiv = dishElement.querySelector('.dish-actions');
-actionsDiv.innerHTML = `
-               <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="saveEdit(${dishId}, '${category}')">保存</button>
-               <button class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;" onclick="cancelEdit(${dishId}, '${category}')">取消</button>
-           `;
-}
-
-// 保存编辑
-async function saveEdit(dishId, category) {
-const spanish = document.getElementById(`edit-spanish-${dishId}`).value.trim();
-const catalan = document.getElementById(`edit-catalan-${dishId}`).value.trim();
-const extra = document.getElementById(`edit-extra-${dishId}`).value.trim();
-
-if (!spanish || !catalan) {
-alert('请填写菜品的西班牙语和加泰罗尼亚语名称');
-return;
-}
-
-const dish = selectedDishes[category].find(d => d.id === dishId);
-dish.spanish = spanish;
-dish.catalan = catalan;
-dish.extra = extra;
-
-await saveCloudData();
-renderSelectedDishes();
-}
-
-// 取消编辑
-function cancelEdit(dishId, category) {
-renderSelectedDishes();
-}
-
-// 拖拽排序功能
-let draggedElement = null;
-let draggedDishId = null;
-let draggedCategory = null;
-
-function startDrag(e, dishId, category) {
-draggedElement = e.target.closest('.selected-dish');
-draggedDishId = dishId;
-draggedCategory = category;
-draggedElement.classList.add('dragging');
-e.dataTransfer.effectAllowed = 'move';
-}
-
-function allowDrop(e) {
-e.preventDefault();
-e.dataTransfer.dropEffect = 'move';
-}
-
-async function drop(e, targetCategory) {
-e.preventDefault();
-
-if (!draggedDishId) return;
-
-const targetElement = e.target.closest('.selected-dish');
-
-if (targetElement && targetElement !== draggedElement) {
-const targetDishId = parseInt(targetElement.dataset.selectedDishId);
-
-const dish = selectedDishes[draggedCategory].find(d => d.id === draggedDishId);
-selectedDishes[draggedCategory] = selectedDishes[draggedCategory].filter(d => d.id !== draggedDishId);
-
-const targetIndex = selectedDishes[targetCategory].findIndex(d => d.id === targetDishId);
-selectedDishes[targetCategory].splice(targetIndex, 0, dish);
-
-} else if (targetCategory !== draggedCategory) {
-const dish = selectedDishes[draggedCategory].find(d => d.id === draggedDishId);
-selectedDishes[draggedCategory] = selectedDishes[draggedCategory].filter(d => d.id !== draggedDishId);
-selectedDishes[targetCategory].push(dish);
-}
-
-await saveCloudData();
-renderSelectedDishes();
-endDrag();
-}
-
-function endDrag() {
-if (draggedElement) {
-draggedElement.classList.remove('dragging');
-}
-draggedElement = null;
-draggedDishId = null;
-draggedCategory = null;
-}
-
-// 渲染已选菜品
-function renderSelectedDishes() {
-const container = document.getElementById('selectedDishes');
-const categories = {
-primer: 'PRIMER PLATO',
-segundo: 'SEGUNDO PLATO',
-postre: 'POSTRES'
-};
-
-let html = '';
-let hasSelected = false;
-
-Object.keys(categories).forEach(category => {
-if (selectedDishes[category].length > 0) {
-hasSelected = true;
-
-html += `
-                       <div class="category-section">
-                           <div class="category-header">${categories[category]}</div>
-                           <div class="category-dishes" 
-                                ondrop="drop(event, '${category}')" 
-                                ondragover="allowDrop(event)">
-                   `;
-
-selectedDishes[category].forEach(dish => {
-html += `
-                           <div class="selected-dish" 
-                                draggable="true"
-                                data-selected-dish-id="${dish.id}"
-                                ondragstart="startDrag(event, ${dish.id}, '${category}')"
-                                ondragend="endDrag()">
-                               <div class="drag-handle">⋮⋮</div>
-                               <div class="dish-content">
-                                   <strong>${dish.spanish}</strong>
-                                   <br><em style="font-size: 12px; color: #666;">${dish.catalan}</em>
-                                   ${dish.extra ? `<br><span style="font-size: 12px; color: #888;">${dish.extra}</span>` : ''}
-                                   ${dish.temporary ? '<br><span style="font-size: 11px; color: #f5576c;">✨ 手动添加</span>' : ''}
-                               </div>
-                               <div class="dish-actions">
-                                   <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="editDish(${dish.id}, '${category}')">编辑</button>
-                                   <button class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;" onclick="removeDishFromMenu(${dish.id}, '${category}')">移除</button>
-                               </div>
-                           </div>
-                       `;
-});
-
-html += '</div></div>';
-} else {
-html += `
-                       <div class="category-section">
-                           <div class="category-header">${categories[category]}</div>
-                           <div class="category-dishes" 
-                                ondrop="drop(event, '${category}')" 
-                                ondragover="allowDrop(event)">
-                               <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
-                           </div>
-                       </div>
-                   `;
-}
-});
-
-container.innerHTML = hasSelected ? html : `
-               <div class="category-section">
-                   <div class="category-header">PRIMER PLATO</div>
-                   <div class="category-dishes" ondrop="drop(event, 'primer')" ondragover="allowDrop(event)">
-                       <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
-                   </div>
-               </div>
-               <div class="category-section">
-                   <div class="category-header">SEGUNDO PLATO</div>
-                   <div class="category-dishes" ondrop="drop(event, 'segundo')" ondragover="allowDrop(event)">
-                       <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
-                   </div>
-               </div>
-               <div class="category-section">
-                   <div class="category-header">POSTRES</div>
-                   <div class="category-dishes" ondrop="drop(event, 'postre')" ondragover="allowDrop(event)">
-                       <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
-                   </div>
-               </div>
-           `;
-}
-
-// 从菜单中移除菜品
-async function removeDishFromMenu(id, category) {
-selectedDishes[category] = selectedDishes[category].filter(dish => dish.id !== id);
-await saveCloudData();
-renderDishesContainer();
-renderSelectedDishes();
-}
-
-// 生成菜单
-function generateMenu() {
-const price = document.getElementById('menuPrice').value;
-const date = new Date(document.getElementById('menuDate').value).toLocaleDateString('es-ES', {
-day: 'numeric',
-month: 'long'
-});
-
-const categories = {
-primer: 'PRIMER PLATO',
-segundo: 'SEGUNDO PLATO',
-postre: 'POSTRES'
-};
-
-let menuHtml = `
-               <div class="menu-header">
-                   <div class="menu-title">Menú del día</div>
-                   <div style="font-style: italic; color: #666; margin-bottom: 15px;">Restaurante sol</div>
-                   <div class="menu-date-price">
-                       <span>${price}</span>
-                       <span>${date}</span>
-                   </div>
-               </div>
-           `;
-
-Object.keys(categories).forEach(category => {
-if (selectedDishes[category].length > 0) {
-menuHtml += `
-                       <div class="menu-section">
-                           <div class="section-title">${categories[category]}</div>
-                   `;
-
-if (category === 'postre') {
-const dessertNames = {
-spanish: selectedDishes[category].map(dish => dish.spanish).join(', '),
-catalan: selectedDishes[category].map(dish => dish.catalan).join(', ')
-};
-const hasExtra = selectedDishes[category].some(dish => dish.extra);
-
-menuHtml += `
-                           <div class="menu-item">
-                               <div class="menu-item-spanish">${dessertNames.spanish}</div>
-                               <div class="menu-item-catalan">${dessertNames.catalan}</div>
-                               ${hasExtra ? '<div class="menu-item-extra">(algunos con suplemento)</div>' : ''}
-                           </div>
-                       `;
-} else {
-selectedDishes[category].forEach(dish => {
-menuHtml += `
-                               <div class="menu-item">
-                                   <div class="menu-item-spanish">${dish.spanish}</div>
-                                   <div class="menu-item-catalan">${dish.catalan}</div>
-                                   ${dish.extra ? `<div class="menu-item-extra">${dish.extra}</div>` : ''}
-                               </div>
-                           `;
-});
-}
-
-menuHtml += '</div>';
-}
-});
-
-menuHtml += '<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
-
-document.getElementById('menuPreview').innerHTML = menuHtml;
-document.getElementById('menuPreview').style.display = 'block';
-}
-
-// 打印菜单
-function printMenu() {
-if (document.getElementById('menuPreview').style.display === 'none') {
-generateMenu();
-}
-
-const printWindow = window.open('', '_blank');
-const menuContent = document.getElementById('menuPreview').innerHTML;
-
-printWindow.document.write(`
-               <!DOCTYPE html>
-               <html>
-               <head>
-                   <meta charset="UTF-8">
-                   <title>Menú del día</title>
-                   <style>
-                       @page { margin: 20mm 22mm; size: A4; }
-                       body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; line-height: 1.2; }
-                       .menu-header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 15px; margin-bottom: 18px; }
-                       .menu-title { font-size: 2.2em; font-style: italic; margin-bottom: 6px; color: #333; font-weight: bold; }
-                       .menu-date-price { display: flex; justify-content: space-between; font-size: 1.1em; font-weight: bold; margin-top: 8px; }
-                       .menu-section { margin-bottom: 18px; }
-                       .section-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; color: #333; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #666; padding-bottom: 3px; }
-                       .menu-item { margin-bottom: 8px; padding-bottom: 4px; padding-left: 8px; }
-                       .menu-item-spanish { font-weight: normal; color: #333; margin-bottom: 2px; font-size: 12px; line-height: 1.2; }
-                       .menu-item-catalan { font-style: italic; color: #666; font-size: 11px; line-height: 1.2; margin-bottom: 2px; }
-                       .menu-item-extra { color: #888; font-size: 11px; font-weight: 500; }
-                       .menu-section:last-of-type .menu-item-spanish { font-size: 10px; }
-                       .menu-section:last-of-type .menu-item-catalan { font-size: 10px; }
-                       .menu-section:last-of-type .menu-item-extra { font-size: 10px; }
-                       .menu-hours { text-align: center; margin-top: 20px; padding-top: 15px; border-top: 2px solid #333; font-size: 1.1em; font-weight: bold; letter-spacing: 1px; }
-                       .menu-header > div:nth-child(2) { font-size: 1em; color: #666; margin-bottom: 12px; font-style: italic; }
-                   </style>
-               </head>
-               <body>${menuContent}</body>
-               </html>
-           `);
-
-printWindow.document.close();
-printWindow.focus();
-printWindow.print();
-printWindow.close();
-}
-
-// 清空已选菜品
-async function clearSelectedDishes() {
-if (confirm('确定要清空所有已选菜品吗？')) {
-selectedDishes = {primer: [], segundo: [], postre: []};
-await saveCloudData();
-renderDishesContainer();
-renderSelectedDishes();
-document.getElementById('menuPreview').style.display = 'none';
-}
-}
-
-// 导出数据
-function exportData() {
-const data = {
-dishes: dishes,
-selectedDishes: selectedDishes,
-exportDate: new Date().toISOString()
-};
-
-const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `restaurant_menu_${new Date().toISOString().split('T')[0]}.json`;
-a.click();
-URL.revokeObjectURL(url);
-}
-
-// 导入数据
-async function importData(event) {
-const file = event.target.files[0];
-if (!file) return;
-
-const reader = new FileReader();
-reader.onload = async function(e) {
-try {
-const data = JSON.parse(e.target.result);
-if (data.dishes && Array.isArray(data.dishes)) {
-dishes = data.dishes;
-}
-if (data.selectedDishes) {
-selectedDishes = data.selectedDishes;
-}
-await saveCloudData();
-renderDishesContainer();
-renderSelectedDishes();
-alert('数据导入成功！');
-} catch (error) {
-alert('导入失败：文件格式不正确');
-}
-};
-reader.readAsText(file);
-event.target.value = '';
-}
-</script>
+    <div class="container">
+        <!-- 左侧：菜品管理 -->
+        <div class="panel">
+            <h2>🍽️ 菜品数据库管理</h2>
+            
+            <!-- 添加菜品表单 -->
+            <div class="form-group">
+                <div class="translate-row">
+                    <div>
+                        <label>西班牙语菜名</label>
+                        <input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)">
+                        <div class="correction-hint" id="spanishHint"></div>
+                    </div>
+                    <div style="align-self: end;">
+                        <button class="btn btn-translate" onclick="autoTranslate()">🔄 翻译</button>
+                    </div>
+                    <div>
+                        <label>加泰罗尼亚语翻译</label>
+                        <input type="text" id="dishCatalan" placeholder="例: Paella del senyoret">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-row">
+                    <div>
+                        <label>分类</label>
+                        <select id="dishCategory">
+                            <option value="primer">PRIMER PLATO</option>
+                            <option value="segundo">SEGUNDO PLATO</option>
+                            <option value="postre">POSTRES</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>额外费用</label>
+                        <input type="text" id="dishExtra" placeholder="例: +3.00€">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="addDish()">➕ 添加菜品</button>
+            <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
+            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+
+            <!-- 折叠式菜品列表 -->
+            <div id="dishesContainer"></div>
+        </div>
+
+        <!-- 右侧：菜单生成 -->
+        <div class="panel">
+            <div class="menu-controls">
+                <h2>📋 每日菜单生成</h2>
+                
+                <!-- 菜单设置 -->
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label>菜单价格</label>
+                            <input type="text" id="menuPrice" value="13.50 €">
+                            <div class="price-info" id="priceInfo">今天是工作日，建议价格：13.50 €</div>
+                        </div>
+                        <div>
+                            <label>日期</label>
+                            <input type="date" id="menuDate">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 手动添加菜品 -->
+                <div class="manual-add">
+                    <h4>🖊️ 手动添加菜品</h4>
+                    <div class="translate-row">
+                        <div>
+                            <input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)">
+                            <div class="correction-hint" id="manualSpanishHint"></div>
+                        </div>
+                        <div style="align-self: center;">
+                            <button class="btn btn-translate btn-small" onclick="translateManual()">🔄</button>
+                        </div>
+                        <div>
+                            <input type="text" id="manualCatalan" placeholder="加泰罗尼亚语翻译">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <select id="manualCategory">
+                            <option value="primer">PRIMER PLATO</option>
+                            <option value="segundo">SEGUNDO PLATO</option>
+                            <option value="postre">POSTRES</option>
+                        </select>
+                        <button class="btn btn-small" onclick="addManualDish()">添加到菜单</button>
+                    </div>
+                </div>
+
+                <!-- 已选菜品 -->
+                <div class="selected-dishes">
+                    <h3>今日菜单</h3>
+                    <div id="selectedDishes">
+                        <p style="color: #888; text-align: center; padding: 20px;">请从左侧菜品库中选择菜品或手动添加</p>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="generateMenu()">🍴 生成菜单</button>
+                <button class="btn btn-secondary" onclick="printMenu()">🖨️ 打印菜单</button>
+                <button class="btn btn-danger" onclick="clearSelectedDishes()">🗑️ 清空选择</button>
+            </div>
+
+            <!-- 菜单预览 -->
+            <div class="menu-preview" id="menuPreview" style="display: none;">
+                <!-- 菜单内容将在这里生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let dishes = JSON.parse(localStorage.getItem('restaurantDishes') || '[]');
+        let selectedDishes = JSON.parse(localStorage.getItem('selectedDishes') || '{"primer": [], "segundo": [], "postre": []}');
+
+        // 西班牙假日列表
+        const spanishHolidays = [
+            '2025-01-01', '2025-01-06', '2025-04-18', '2025-04-21',
+            '2025-05-01', '2025-08-15', '2025-10-12', '2025-11-01',
+            '2025-12-06', '2025-12-08', '2025-12-25'
+        ];
+
+        // 翻译词典
+        const translations = {
+            'pollo': 'pollastre', 'jamón': 'pernil', 'queso': 'formatge',
+            'patatas': 'patates', 'huevo': 'ou', 'carne': 'carn',
+            'pescado': 'peix', 'verduras': 'verdures', 'arroz': 'arròs',
+            'pasta': 'pasta', 'ensalada': 'amanida', 'sopa': 'sopa',
+            'crema': 'crema', 'flan': 'flan', 'helado': 'gelat',
+            'fruta': 'fruita', 'chocolate': 'xocolata', 'con': 'amb',
+            'del': 'del', 'de': 'de', 'al': 'al', 'horno': 'forn',
+            'plancha': 'planxa', 'frito': 'fregit', 'asado': 'rostit'
+        };
+
+        // 增强的拼写检查词典（包括重音符号纠正）
+        const spellCheck = {
+            // 基本拼写错误
+            'polla': 'pollo', 'jamon': 'jamón', 'patata': 'patatas',
+            'huevos': 'huevo', 'verdura': 'verduras', 'pescao': 'pescado',
+            'tomate': 'tomates', 'cebolla': 'cebollas', 'ajo': 'ajos',
+            'pimiento': 'pimientos', 'calabacin': 'calabacín', 
+            'berenjena': 'berenjenas', 'champiñon': 'champiñones',
+            'limon': 'limón', 'melon': 'melón', 'perejil': 'perejil',
+            'oregano': 'orégano', 'tomillo': 'tomillo',
+            
+            // 重音符号纠正
+            'jamon': 'jamón', 'limon': 'limón', 'melon': 'melón',
+            'oregano': 'orégano', 'calabacin': 'calabacín', 'champinon': 'champiñón',
+            'champinones': 'champiñones', 'señorito': 'señorito', 'cordobes': 'cordobés',
+            'bolonesa': 'boloñesa', 'andaluza': 'andaluza', 'parmesano': 'parmesano',
+            'senor': 'señor', 'nina': 'niña', 'nino': 'niño', 'anos': 'años',
+            'manana': 'mañana', 'espanol': 'español', 'companero': 'compañero',
+            'montanas': 'montañas', 'pequeno': 'pequeño', 'otono': 'otoño',
+            'senora': 'señora', 'sueno': 'sueño', 'ninos': 'niños',
+            'cataluna': 'cataluña', 'espana': 'españa', 'corazon': 'corazón',
+            'razon': 'razón', 'cancion': 'canción', 'accion': 'acción',
+            'tradicion': 'tradición', 'informacion': 'información',
+            'situacion': 'situación', 'nacion': 'nación', 'educacion': 'educación',
+            'comunicacion': 'comunicación', 'atencion': 'atención',
+            'solucion': 'solución', 'evolucion': 'evolución'
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            document.getElementById('menuDate').value = today.toISOString().split('T')[0];
+            
+            loadInitialDishes();
+            updatePricing();
+            renderDishesContainer();
+            renderSelectedDishes();
+
+            document.getElementById('menuDate').addEventListener('change', updatePricing);
+        });
+
+        // 拼写检查功能
+        function checkSpelling(input) {
+            const text = input.value.toLowerCase().trim();
+            const hintId = input.id === 'dishSpanish' ? 'spanishHint' : 'manualSpanishHint';
+            const hint = document.getElementById(hintId);
+            
+            if (!text) {
+                hint.style.display = 'none';
+                input.classList.remove('input-warning');
+                return;
+            }
+
+            const words = text.split(/\s+/);
+            const corrections = [];
+            
+            words.forEach(word => {
+                if (spellCheck[word]) {
+                    corrections.push(`"${word}" → "${spellCheck[word]}"`);
+                }
+            });
+
+            if (corrections.length > 0) {
+                input.classList.add('input-warning');
+                hint.innerHTML = `建议修正: ${corrections.join(', ')}`;
+                hint.style.display = 'block';
+            } else {
+                input.classList.remove('input-warning');
+                hint.style.display = 'none';
+            }
+        }
+
+        // 智能定价
+        function updatePricing() {
+            const dateInput = document.getElementById('menuDate');
+            const priceInput = document.getElementById('menuPrice');
+            const priceInfo = document.getElementById('priceInfo');
+            
+            const selectedDate = new Date(dateInput.value);
+            const dayOfWeek = selectedDate.getDay();
+            const dateString = dateInput.value;
+            
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            const isHoliday = spanishHolidays.includes(dateString);
+            
+            if (isWeekend || isHoliday) {
+                priceInput.value = '18.50 €';
+                priceInfo.textContent = isHoliday ? '今天是西班牙法定假日，建议价格：18.50 €' : '今天是周末，建议价格：18.50 €';
+            } else {
+                priceInput.value = '13.50 €';
+                priceInfo.textContent = '今天是工作日，建议价格：13.50 €';
+            }
+        }
+
+        // 自动翻译
+        function autoTranslate() {
+            const spanish = document.getElementById('dishSpanish').value.trim().toLowerCase();
+            const catalan = simpleTranslate(spanish);
+            document.getElementById('dishCatalan').value = catalan;
+        }
+
+        function translateManual() {
+            const spanish = document.getElementById('manualSpanish').value.trim().toLowerCase();
+            const catalan = simpleTranslate(spanish);
+            document.getElementById('manualCatalan').value = catalan;
+        }
+
+        function simpleTranslate(text) {
+            let translated = text;
+            
+            Object.keys(translations).forEach(spanish => {
+                const catalan = translations[spanish];
+                const regex = new RegExp('\\b' + spanish + '\\b', 'gi');
+                translated = translated.replace(regex, catalan);
+            });
+            
+            return translated.charAt(0).toUpperCase() + translated.slice(1);
+        }
+
+        // 预设菜品
+        function loadInitialDishes() {
+            if (dishes.length === 0) {
+                dishes = [
+                    {
+                        id: Date.now() + 1,
+                        spanish: "Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",
+                        catalan: "Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",
+                        category: "primer",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 2,
+                        spanish: "Salmorejo cordobés con huevo rallado y virutas de jamón",
+                        catalan: "Salmorejo cordovès amb ou ratllat i encenalls de pernil",
+                        category: "primer",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 3,
+                        spanish: "Paella del señorito",
+                        catalan: "Paella del senyoret",
+                        category: "segundo",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 4,
+                        spanish: "Dorada al horno con patatas panadera",
+                        catalan: "Daurada al forn amb patates fornera",
+                        category: "segundo",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 5,
+                        spanish: "Tarta de queso",
+                        catalan: "Pastis de formatge",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 6,
+                        spanish: "Flan",
+                        catalan: "Flan",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 7,
+                        spanish: "Torrija",
+                        catalan: "Torrija",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 8,
+                        spanish: "Crema catalana",
+                        catalan: "Crema catalana",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 9,
+                        spanish: "Helado",
+                        catalan: "Gelat",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 10,
+                        spanish: "Fruta",
+                        catalan: "Fruita",
+                        category: "postre",
+                        extra: ""
+                    },
+                    {
+                        id: Date.now() + 11,
+                        spanish: "Coulant de chocolate",
+                        catalan: "Coulant de xocolata",
+                        category: "postre",
+                        extra: "+ 2.00€"
+                    }
+                ];
+                saveDishes();
+            }
+        }
+
+        // 添加菜品
+        function addDish() {
+            const spanish = document.getElementById('dishSpanish').value.trim();
+            const catalan = document.getElementById('dishCatalan').value.trim();
+            const category = document.getElementById('dishCategory').value;
+            const extra = document.getElementById('dishExtra').value.trim();
+
+            if (!spanish || !catalan) {
+                alert('请填写菜品的西班牙语和加泰罗尼亚语名称');
+                return;
+            }
+
+            const dish = {
+                id: Date.now(),
+                spanish,
+                catalan,
+                category,
+                extra
+            };
+
+            dishes.push(dish);
+            saveDishes();
+            renderDishesContainer();
+
+            document.getElementById('dishSpanish').value = '';
+            document.getElementById('dishCatalan').value = '';
+            document.getElementById('dishExtra').value = '';
+            document.getElementById('spanishHint').style.display = 'none';
+            document.getElementById('dishSpanish').classList.remove('input-warning');
+        }
+
+        // 手动添加菜品到菜单
+        function addManualDish() {
+            const spanish = document.getElementById('manualSpanish').value.trim();
+            const catalan = document.getElementById('manualCatalan').value.trim();
+            const category = document.getElementById('manualCategory').value;
+
+            if (!spanish || !catalan) {
+                alert('请填写菜品的西班牙语和加泰罗尼亚语名称');
+                return;
+            }
+
+            const dish = {
+                id: Date.now(),
+                spanish,
+                catalan,
+                category,
+                extra: '',
+                temporary: true
+            };
+
+            selectedDishes[category].push(dish);
+            saveSelectedDishes();
+            renderSelectedDishes();
+
+            document.getElementById('manualSpanish').value = '';
+            document.getElementById('manualCatalan').value = '';
+            document.getElementById('manualSpanishHint').style.display = 'none';
+            document.getElementById('manualSpanish').classList.remove('input-warning');
+        }
+
+        // 折叠功能
+        function toggleSection(category) {
+            const content = document.getElementById(`content-${category}`);
+            const icon = document.getElementById(`icon-${category}`);
+            
+            content.classList.toggle('expanded');
+            icon.classList.toggle('rotated');
+        }
+
+        // 甜点勾选功能
+        function toggleDessertCheckbox(dishId) {
+            const dish = dishes.find(d => d.id === dishId);
+            if (!dish) return;
+
+            const categoryDishes = selectedDishes.postre;
+            const index = categoryDishes.findIndex(d => d.id === dishId);
+
+            if (index >= 0) {
+                categoryDishes.splice(index, 1);
+            } else {
+                categoryDishes.push(dish);
+            }
+
+            saveSelectedDishes();
+            renderSelectedDishes();
+            // 重新渲染甜点勾选框状态
+            updateDessertCheckboxes();
+        }
+
+        // 更新甜点勾选框状态
+        function updateDessertCheckboxes() {
+            const checkboxes = document.querySelectorAll('.dessert-checkboxes input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const dishId = parseInt(checkbox.dataset.dishId);
+                const isSelected = selectedDishes.postre.some(d => d.id === dishId);
+                checkbox.checked = isSelected;
+            });
+        }
+
+        // 渲染折叠式菜品容器
+        function renderDishesContainer() {
+            const container = document.getElementById('dishesContainer');
+            const categories = {
+                primer: 'PRIMER PLATO',
+                segundo: 'SEGUNDO PLATO',
+                postre: 'POSTRES'
+            };
+
+            let html = '';
+            
+            Object.keys(categories).forEach(category => {
+                const categoryDishes = dishes.filter(dish => dish.category === category);
+                
+                html += `
+                    <div class="collapsible-section">
+                        <div class="section-header" onclick="toggleSection('${category}')">
+                            <h3>${categories[category]} (${categoryDishes.length})</h3>
+                            <span class="rotate-icon" id="icon-${category}">▶</span>
+                        </div>
+                        <div class="section-content" id="content-${category}">
+                `;
+                
+                if (category === 'postre') {
+                    // 甜点使用勾选框样式
+                    html += '<div class="dessert-checkboxes">';
+                    categoryDishes.forEach(dish => {
+                        const isSelected = selectedDishes[category].some(d => d.id === dish.id);
+                        html += `
+                            <div class="dessert-checkbox">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                                       data-dish-id="${dish.id}"
+                                       onchange="toggleDessertCheckbox(${dish.id})">
+                                <label onclick="toggleDessertCheckbox(${dish.id})">
+                                    <strong>${dish.spanish}</strong><br>
+                                    <em>${dish.catalan}</em>
+                                    ${dish.extra ? `<br><span style="color: #888;">${dish.extra}</span>` : ''}
+                                </label>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    // 主菜和前菜使用列表样式
+                    categoryDishes.forEach(dish => {
+                        const isSelected = selectedDishes[category].some(d => d.id === dish.id);
+                        html += `
+                            <div class="dish-item ${isSelected ? 'selected' : ''}" data-dish-id="${dish.id}">
+                                <h4>${dish.spanish}</h4>
+                                <p><em>${dish.catalan}</em></p>
+                                ${dish.extra ? `<p class="menu-item-extra">${dish.extra}</p>` : ''}
+                                <div class="dish-actions">
+                                    <button class="btn ${isSelected ? 'btn-danger' : 'btn-secondary'}" onclick="toggleDish(${dish.id})">
+                                        ${isSelected ? '移除' : '选择'}
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 删除菜品
+        function deleteDish(id) {
+            if (confirm('确定要删除这个菜品吗？')) {
+                dishes = dishes.filter(dish => dish.id !== id);
+                saveDishes();
+                renderDishesContainer();
+            }
+        }
+
+        // 选择/取消选择菜品 (用于PRIMER和SEGUNDO PLATO) - 修复自动折叠问题
+        function toggleDish(id) {
+            const dish = dishes.find(d => d.id === id);
+            if (!dish) return;
+
+            const categoryDishes = selectedDishes[dish.category];
+            const index = categoryDishes.findIndex(d => d.id === id);
+
+            if (index >= 0) {
+                categoryDishes.splice(index, 1);
+            } else {
+                categoryDishes.push(dish);
+            }
+
+            saveSelectedDishes();
+            // 只更新菜品状态，不重新渲染整个容器（避免折叠状态重置）
+            updateDishItemStatus(id);
+            renderSelectedDishes();
+        }
+
+        // 更新单个菜品的选择状态
+        function updateDishItemStatus(dishId) {
+            const dish = dishes.find(d => d.id === dishId);
+            if (!dish) return;
+
+            const dishElement = document.querySelector(`[data-dish-id="${dishId}"]`);
+            if (dishElement) {
+                const isSelected = selectedDishes[dish.category].some(d => d.id === dishId);
+                const dishItem = dishElement.closest('.dish-item');
+                const button = dishElement.querySelector('button');
+                
+                if (isSelected) {
+                    dishItem.classList.add('selected');
+                    button.textContent = '移除';
+                    button.className = 'btn btn-danger';
+                } else {
+                    dishItem.classList.remove('selected');
+                    button.textContent = '选择';
+                    button.className = 'btn btn-secondary';
+                }
+            }
+        }
+
+        // 渲染已选菜品
+        function renderSelectedDishes() {
+            const container = document.getElementById('selectedDishes');
+            const categories = {
+                primer: 'PRIMER PLATO',
+                segundo: 'SEGUNDO PLATO',
+                postre: 'POSTRES'
+            };
+
+            let html = '';
+            let hasSelected = false;
+
+            Object.keys(categories).forEach(category => {
+                if (selectedDishes[category].length > 0) {
+                    hasSelected = true;
+                    html += `<h4 style="color: #667eea; margin: 10px 0 5px 0;">${categories[category]}</h4>`;
+                    
+                    selectedDishes[category].forEach(dish => {
+                        html += `
+                            <div class="selected-dish">
+                                <div>
+                                    <strong>${dish.spanish}</strong>
+                                    <br><em style="font-size: 12px; color: #666;">${dish.catalan}</em>
+                                    ${dish.extra ? `<br><span style="font-size: 12px; color: #888;">${dish.extra}</span>` : ''}
+                                    ${dish.temporary ? '<br><span style="font-size: 11px; color: #f5576c;">✨ 手动添加</span>' : ''}
+                                </div>
+                                <button class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;" onclick="removeDishFromMenu(${dish.id}, '${category}')">移除</button>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            container.innerHTML = hasSelected ? html : '<p style="color: #888; text-align: center; padding: 20px;">请从左侧菜品库中选择菜品或手动添加</p>';
+        }
+
+        // 从菜单中移除菜品
+        function removeDishFromMenu(id, category) {
+            selectedDishes[category] = selectedDishes[category].filter(dish => dish.id !== id);
+            saveSelectedDishes();
+            renderDishesContainer();
+            renderSelectedDishes();
+        }
+
+        // 生成菜单
+        function generateMenu() {
+            const price = document.getElementById('menuPrice').value;
+            const date = new Date(document.getElementById('menuDate').value).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long'
+            });
+
+            const categories = {
+                primer: 'PRIMER PLATO',
+                segundo: 'SEGUNDO PLATO',
+                postre: 'POSTRES'
+            };
+
+            let menuHtml = `
+                <div class="menu-header">
+                    <div class="menu-title">Menú del día</div>
+                    <div style="font-style: italic; color: #666; margin-bottom: 15px;">Restaurante sol</div>
+                    <div class="menu-date-price">
+                        <span>${price}</span>
+                        <span>${date}</span>
+                    </div>
+                </div>
+            `;
+
+            Object.keys(categories).forEach(category => {
+                if (selectedDishes[category].length > 0) {
+                    menuHtml += `
+                        <div class="menu-section">
+                            <div class="section-title">${categories[category]}</div>
+                    `;
+                    
+                    if (category === 'postre') {
+                        // 甜点组合显示
+                        const dessertNames = {
+                            spanish: selectedDishes[category].map(dish => dish.spanish).join(', '),
+                            catalan: selectedDishes[category].map(dish => dish.catalan).join(', ')
+                        };
+                        const hasExtra = selectedDishes[category].some(dish => dish.extra);
+                        
+                        menuHtml += `
+                            <div class="menu-item">
+                                <div class="menu-item-spanish">${dessertNames.spanish}</div>
+                                <div class="menu-item-catalan">${dessertNames.catalan}</div>
+                                ${hasExtra ? '<div class="menu-item-extra">(algunos con suplemento)</div>' : ''}
+                            </div>
+                        `;
+                    } else {
+                        // 主菜和前菜分别显示
+                        selectedDishes[category].forEach(dish => {
+                            menuHtml += `
+                                <div class="menu-item">
+                                    <div class="menu-item-spanish">${dish.spanish}</div>
+                                    <div class="menu-item-catalan">${dish.catalan}</div>
+                                    ${dish.extra ? `<div class="menu-item-extra">${dish.extra}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    menuHtml += '</div>';
+                }
+            });
+
+            menuHtml += '<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
+
+            document.getElementById('menuPreview').innerHTML = menuHtml;
+            document.getElementById('menuPreview').style.display = 'block';
+        }
+
+        // 打印菜单 - 严格控制A4纸张排版
+        function printMenu() {
+            if (document.getElementById('menuPreview').style.display === 'none') {
+                generateMenu();
+            }
+            
+            // 创建一个新窗口用于打印
+            const printWindow = window.open('', '_blank');
+            const menuContent = document.getElementById('menuPreview').innerHTML;
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Menú del día</title>
+                    <style>
+                        @page { 
+                            margin: 20mm 22mm; 
+                            size: A4; 
+                        }
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            margin: 0; 
+                            padding: 0; 
+                            color: #333;
+                            line-height: 1.2;
+                        }
+                        .menu-header { 
+                            text-align: center; 
+                            border-bottom: 3px solid #333; 
+                            padding-bottom: 15px; 
+                            margin-bottom: 18px; 
+                        }
+                        .menu-title { 
+                            font-size: 2.2em; 
+                            font-style: italic; 
+                            margin-bottom: 6px; 
+                            color: #333; 
+                            font-weight: bold;
+                        }
+                        .menu-date-price { 
+                            display: flex; 
+                            justify-content: space-between; 
+                            font-size: 1.1em; 
+                            font-weight: bold; 
+                            margin-top: 8px;
+                        }
+                        .menu-section { 
+                            margin-bottom: 18px; 
+                        }
+                        .section-title { 
+                            font-size: 1.2em; 
+                            font-weight: bold; 
+                            margin-bottom: 10px; 
+                            color: #333; 
+                            text-transform: uppercase; 
+                            letter-spacing: 1px;
+                            border-bottom: 1px solid #666;
+                            padding-bottom: 3px;
+                        }
+                        .menu-item { 
+                            margin-bottom: 8px; 
+                            padding-bottom: 4px; 
+                            padding-left: 8px;
+                        }
+                        .menu-item-spanish { 
+                            font-weight: normal; 
+                            color: #333; 
+                            margin-bottom: 2px; 
+                            font-size: 13px; 
+                            line-height: 1.2;
+                            font-family: Arial, sans-serif;
+                        }
+                        .menu-item-catalan { 
+                            font-style: italic; 
+                            color: #666; 
+                            font-size: 12px; 
+                            line-height: 1.2;
+                            margin-bottom: 2px;
+                            font-family: Arial, sans-serif;
+                        }
+                        .menu-item-extra { 
+                            color: #888; 
+                            font-size: 11px; 
+                            font-weight: 500;
+                            font-family: Arial, sans-serif;
+                        }
+                        /* POSTRES特殊样式 */
+                        .menu-section:last-of-type .menu-item-spanish {
+                            font-size: 10px;
+                        }
+                        .menu-section:last-of-type .menu-item-catalan {
+                            font-size: 10px;
+                        }
+                        .menu-section:last-of-type .menu-item-extra {
+                            font-size: 10px;
+                        }
+                        .menu-hours { 
+                            text-align: center; 
+                            margin-top: 20px; 
+                            padding-top: 15px; 
+                            border-top: 2px solid #333; 
+                            font-size: 1.1em; 
+                            font-weight: bold; 
+                            letter-spacing: 1px;
+                        }
+                        /* 餐厅名称样式 */
+                        .menu-header > div:nth-child(2) {
+                            font-size: 1em;
+                            color: #666;
+                            margin-bottom: 12px;
+                            font-style: italic;
+                        }
+                    </style>
+                </head>
+                <body>${menuContent}</body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        }
+
+        // 清空已选菜品
+        function clearSelectedDishes() {
+            if (confirm('确定要清空所有已选菜品吗？')) {
+                selectedDishes = {primer: [], segundo: [], postre: []};
+                saveSelectedDishes();
+                renderDishesContainer();
+                renderSelectedDishes();
+                document.getElementById('menuPreview').style.display = 'none';
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            const data = {
+                dishes: dishes,
+                selectedDishes: selectedDishes,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `restaurant_menu_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.dishes && Array.isArray(data.dishes)) {
+                        dishes = data.dishes;
+                        saveDishes();
+                    }
+                    if (data.selectedDishes) {
+                        selectedDishes = data.selectedDishes;
+                        saveSelectedDishes();
+                    }
+                    renderDishesContainer();
+                    renderSelectedDishes();
+                    alert('数据导入成功！');
+                } catch (error) {
+                    alert('导入失败：文件格式不正确');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // 保存数据到本地存储
+        function saveDishes() {
+            localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
+        }
+
+        function saveSelectedDishes() {
+            localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
+        }
+    </script>
 </body>
 </html>
