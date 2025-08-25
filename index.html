@@ -1,713 +1,648 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>餐厅每日菜单管理工具 - 云端版（修复版）</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh; padding: 20px;
-        }
-        .sync-status {
-            position: fixed; top: 20px; right: 20px;
-            background: rgba(255,255,255,0.9); padding: 8px 16px; border-radius: 20px;
-            font-size: 12px; font-weight: 500; z-index: 1000; backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .sync-status.synced { color: #28a745; border-left: 3px solid #28a745; }
-        .sync-status.syncing { color: #ffc107; border-left: 3px solid #ffc107; }
-        .sync-status.error { color: #dc3545; border-left: 3px solid #dc3545; }
-        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; height: calc(100vh - 40px); }
-        .panel { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); backdrop-filter: blur(10px); overflow-y: auto; }
-        .panel h2 { color: #333; margin-bottom: 20px; font-size: 1.8em; font-weight: 600; }
-        .form-group { margin-bottom: 15px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .translate-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
-        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e1e5e9; border-radius: 10px; font-size: 14px; transition: all 0.3s ease; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .input-warning { border-color: #ff9800 !important; box-shadow: 0 0 0 3px rgba(255,152,0,0.1) !important; }
-        .correction-hint { font-size: 12px; color: #ff9800; margin-top: 5px; padding: 5px 10px; background: rgba(255,152,0,0.1); border-radius: 5px; display: none; }
-        .btn { background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease; margin-right: 10px; margin-bottom: 10px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
-        .btn-small { padding: 6px 10px; font-size: 12px; margin: 0; }
-        .btn-secondary { background: linear-gradient(45deg, #f093fb, #f5576c); }
-        .btn-danger { background: linear-gradient(45deg, #ff6b6b, #ee5a24); }
-        .btn-translate { background: linear-gradient(45deg, #4ecdc4, #44a08d); padding: 12px 15px; min-width: 80px; }
-        .collapsible-section { border: 2px solid #e1e5e9; border-radius: 10px; margin-bottom: 15px; }
-        .section-header { background: #f8f9fa; padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; transition: background 0.3s ease; }
-        .section-header:hover { background: #e9ecef; }
-        .section-header h3 { color: #667eea; font-size: 1.1em; font-weight: 600; }
-        .section-content { overflow: hidden; transition: all 0.3s ease; }
-        .section-content:not(.expanded) { max-height: 0; padding: 0; }
-        .section-content.expanded { max-height: none; padding: 15px; }
-        .dish-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 10px; border-left: 4px solid #667eea; position: relative; }
-        .dish-item.selected { background: #e8f4fd; border-left-color: #f5576c; }
-        .dish-item h4 { color: #333; margin-bottom: 5px; }
-        .dish-item p { color: #666; font-size: 13px; margin-bottom: 3px; }
-        .dish-actions { position: absolute; top: 10px; right: 10px; }
-        .dish-actions button { padding: 5px 10px; font-size: 12px; margin-left: 5px; }
-        .dessert-checkboxes { padding: 15px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .dessert-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; background: #f8f9fa; padding: 8px; border-radius: 6px; }
-        .dessert-row label { font-size: 12px; line-height: 1.2; margin: 0; }
-        .price-info { font-size: 12px; color: #666; margin-top: 5px; }
-        .manual-add { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .manual-add h4 { color: #667eea; margin-bottom: 10px; }
-        .menu-preview { background: white; padding: 25px; margin-top: 20px; border-radius: 10px; font-family: Arial, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,0.1); font-size: 13px; line-height: 1.4; }
-        .menu-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
-        .menu-title { font-size: 2em; font-style: italic; margin-bottom: 8px; color: #333; }
-        .menu-date-price { display: flex; justify-content: space-between; font-size: 1em; font-weight: bold; }
-        .menu-section { margin-bottom: 20px; }
-        .section-title { font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: #333; text-transform: uppercase; }
-        .menu-item { margin-bottom: 12px; padding-bottom: 8px; }
-        .menu-item-spanish { font-weight: 500; color: #333; margin-bottom: 2px; font-size: 13px; }
-        .menu-item-catalan { font-style: italic; color: #666; font-size: 11px; }
-        .menu-item-extra { color: #888; font-size: 11px; }
-        .menu-hours { text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 1em; font-weight: bold; }
-        .selected-dishes { background: #e8f4fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .selected-dishes h3 { margin-bottom: 10px; color: #333; }
-        .selected-dish { display: flex; justify-content: space-between; align-items: center; padding: 12px 8px; margin-bottom: 8px; background: white; border-radius: 8px; border-left: 4px solid #667eea; cursor: grab; transition: all 0.3s ease; position: relative; }
-        .selected-dish:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
-        .selected-dish.dragging { opacity: 0.5; transform: rotate(5deg); cursor: grabbing; }
-        .selected-dish .dish-content { flex: 1; margin-right: 10px; }
-        .selected-dish .dish-actions { display: flex; gap: 5px; }
-        .selected-dish .drag-handle { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #ccc; font-size: 14px; cursor: grab; }
-        .selected-dish .drag-handle:hover { color: #667eea; }
-        .edit-mode { background: #fff3cd !important; border-left-color: #ffc107 !important; }
-        .edit-inputs { display: flex; flex-direction: column; gap: 8px; flex: 1; margin-right: 10px; }
-        .edit-inputs input { padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; }
-        .edit-inputs input:focus { outline: none; border-color: #667eea; }
-        .category-section { margin-bottom: 20px; border-radius: 8px; overflow: hidden; }
-        .category-header { background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 8px 12px; font-weight: bold; font-size: 14px; }
-        .category-dishes { min-height: 50px; padding: 10px; }
-        .drop-zone { border: 2px dashed #667eea; background: rgba(102,126,234,0.05); border-radius: 8px; padding: 20px; text-align: center; color: #667eea; }
-        .rotate-icon { transition: transform 0.3s ease; }
-        .rotate-icon.rotated { transform: rotate(90deg); }
-        .menu-controls { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #e1e5e9; }
-        .loading { opacity: 0.5; pointer-events: none; }
-        .help { font-size: 12px; color:#666; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>餐厅每日菜单管理工具 - 云端版（修复版 v3）</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
+    .sync-status{position:fixed;top:20px;right:20px;background:rgba(255,255,255,.9);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;z-index:1000;backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+    .sync-status.synced{color:#28a745;border-left:3px solid #28a745}
+    .sync-status.syncing{color:#ffc107;border-left:3px solid #ffc107}
+    .sync-status.error{color:#dc3545;border-left:3px solid #dc3545}
+    .container{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:30px;height:calc(100vh - 40px)}
+    .panel{background:rgba(255,255,255,.95);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.1);backdrop-filter:blur(10px);overflow-y:auto}
+    .panel h2{color:#333;margin-bottom:20px;font-size:1.8em;font-weight:600}
+    .form-group{margin-bottom:15px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .translate-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
+    label{display:block;margin-bottom:5px;font-weight:500;color:#555}
+    input,select,textarea{width:100%;padding:12px 15px;border:2px solid #e1e5e9;border-radius:10px;font-size:14px;transition:all .3s ease}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+    .input-warning{border-color:#ff9800!important;box-shadow:0 0 0 3px rgba(255,152,0,.1)!important}
+    .correction-hint{font-size:12px;color:#ff9800;margin-top:5px;padding:5px 10px;background:rgba(255,152,0,.1);border-radius:5px;display:none}
+    .btn{background:linear-gradient(45deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 25px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;transition:all .3s ease;margin-right:10px;margin-bottom:10px}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}
+    .btn-small{padding:6px 10px;font-size:12px;margin:0}
+    .btn-secondary{background:linear-gradient(45deg,#f093fb,#f5576c)}
+    .btn-danger{background:linear-gradient(45deg,#ff6b6b,#ee5a24)}
+    .btn-translate{background:linear-gradient(45deg,#4ecdc4,#44a08d);padding:12px 15px;min-width:80px}
+    .collapsible-section{border:2px solid #e1e5e9;border-radius:10px;margin-bottom:15px}
+    .section-header{background:#f8f9fa;padding:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:8px;transition:background .3s ease}
+    .section-header:hover{background:#e9ecef}
+    .section-header h3{color:#667eea;font-size:1.1em;font-weight:600}
+    .section-content{overflow:hidden;transition:all .3s ease}
+    .section-content:not(.expanded){max-height:0;padding:0}
+    .section-content.expanded{max-height:none;padding:15px}
+    .dish-item{background:#f8f9fa;padding:15px;margin-bottom:10px;border-radius:10px;border-left:4px solid #667eea;position:relative}
+    .dish-item.selected{background:#e8f4fd;border-left-color:#f5576c}
+    .dish-item h4{color:#333;margin-bottom:5px}
+    .dish-item p{color:#666;font-size:13px;margin-bottom:3px}
+    .dish-actions{position:absolute;top:10px;right:10px}
+    .dish-actions button{padding:5px 10px;font-size:12px;margin-left:5px}
+    /* POSTRES compact grid */
+    .dessert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+    .dessert-chip{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;background:#f8f9fa;padding:6px 8px;border-radius:10px;border:1px solid #e7ebf0;position:relative}
+    .dessert-chip label{font-size:12px;line-height:1.2;margin:0}
+    .chip-remove{background:transparent;border:none;font-size:16px;line-height:1;cursor:pointer;color:#e74c3c;padding:0 6px;opacity:0;transition:opacity .2s}
+    .dessert-chip:hover .chip-remove{opacity:1} /* 悬浮时显示 × */
+    .price-info{font-size:12px;color:#666;margin-top:5px}
+    .manual-add{background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px}
+    .manual-add h4{color:#667eea;margin-bottom:10px}
+    .menu-preview{background:#fff;padding:25px;margin-top:20px;border-radius:10px;font-family:Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.1);font-size:13px;line-height:1.4}
+    .menu-header{text-align:center;border-bottom:2px solid #333;padding-bottom:15px;margin-bottom:20px}
+    .menu-title{font-size:2em;font-style:italic;margin-bottom:8px;color:#333}
+    .menu-date-price{display:flex;justify-content:space-between;font-size:1em;font-weight:bold}
+    .menu-section{margin-bottom:20px}
+    .section-title{font-size:1.1em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase}
+    .menu-item{margin-bottom:12px;padding-bottom:8px}
+    .menu-item-spanish{font-weight:500;color:#333;margin-bottom:2px;font-size:13px}
+    .menu-item-catalan{font-style:italic;color:#666;font-size:11px}
+    .menu-item-extra{color:#888;font-size:11px}
+    .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:1px solid #ddd;font-size:1em;font-weight:bold}
+    .selected-dishes{background:#e8f4fd;padding:15px;border-radius:10px;margin-bottom:20px}
+    .selected-dishes h3{margin-bottom:10px;color:#333}
+    .selected-dish{display:flex;justify-content:space-between;align-items:center;padding:12px 8px;margin-bottom:8px;background:#fff;border-radius:8px;border-left:4px solid #667eea;cursor:grab;transition:all .2s ease;position:relative}
+    .selected-dish:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);transform:translateY(-1px)}
+    .selected-dish.dragging{opacity:.5;transform:rotate(5deg);cursor:grabbing}
+    .selected-dish .dish-content{flex:1;margin-right:10px}
+    .selected-dish .dish-actions{display:flex;gap:5px}
+    .selected-dish .drag-handle{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#ccc;font-size:14px;cursor:grab}
+    .selected-dish .drag-handle:hover{color:#667eea}
+    .edit-mode{background:#fff3cd!important;border-left-color:#ffc107!important}
+    .edit-inputs{display:flex;flex-direction:column;gap:8px;flex:1;margin-right:10px}
+    .edit-inputs input{padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px}
+    .edit-inputs input:focus{outline:none;border-color:#667eea}
+    .category-section{margin-bottom:20px;border-radius:8px;overflow:hidden}
+    .category-header{background:linear-gradient(45deg,#667eea,#764ba2);color:#fff;padding:8px 12px;font-weight:bold;font-size:14px}
+    .category-dishes{min-height:50px;padding:10px}
+    .drop-zone{border:2px dashed #667eea;background:rgba(102,126,234,.05);border-radius:8px;padding:20px;text-align:center;color:#667eea}
+    .rotate-icon{transition:transform .3s ease}
+    .rotate-icon.rotated{transform:rotate(90deg)}
+    .menu-controls{margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e1e5e9}
+    .loading{opacity:.5;pointer-events:none}
+    .help{font-size:12px;color:#666}
+    .left-draggable{user-select:none}
+  </style>
 </head>
 <body>
-    <div id="syncStatus" class="sync-status synced">☁️ 已同步</div>
-
-    <div class="container">
-        <div class="panel">
-            <h2>🍽️ 菜品数据库管理</h2>
-            <div class="form-group">
-                <div class="translate-row">
-                    <div>
-                        <label>西班牙语菜名</label>
-                        <input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)">
-                        <div class="correction-hint" id="spanishHint"></div>
-                    </div>
-                    <div style="align-self: end;">
-                        <button class="btn btn-translate" onclick="autoTranslate()">🔄 翻译</button>
-                    </div>
-                    <div>
-                        <label>加泰罗尼亚语翻译</label>
-                        <input type="text" id="dishCatalan" placeholder="例: Paella del senyoret">
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="form-row">
-                    <div>
-                        <label>分类</label>
-                        <select id="dishCategory">
-                            <option value="primer">PRIMER PLATO</option>
-                            <option value="segundo">SEGUNDO PLATO</option>
-                            <option value="postre">POSTRES</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>额外费用</label>
-                        <input type="text" id="dishExtra" placeholder="例: +3.00€">
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn" onclick="addDish()">➕ 添加菜品</button>
-            <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
-            <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
-            <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-            <div class="help">提示：现在 POSTRES 项也可删除；清理重复会按“同分类 + 相同西语名（忽略大小写与多空格）”合并。</div>
-
-            <div id="dishesContainer"></div>
+  <div id="syncStatus" class="sync-status synced">☁️ 已同步</div>
+  <div class="container">
+    <div class="panel">
+      <h2>🍽️ 菜品数据库管理</h2>
+      <div class="form-group">
+        <div class="translate-row">
+          <div>
+            <label>西班牙语菜名</label>
+            <input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)" onblur="autocorrectField(this)">
+            <div class="correction-hint" id="spanishHint"></div>
+          </div>
+          <div style="align-self:end"><button class="btn btn-translate" onclick="autoTranslate()">🔄 翻译</button></div>
+          <div>
+            <label>加泰罗尼亚语翻译</label>
+            <input type="text" id="dishCatalan" placeholder="例: Paella del senyoret">
+          </div>
         </div>
-
-        <div class="panel">
-            <div class="menu-controls">
-                <h2>📋 每日菜单生成</h2>
-                <div class="form-group">
-                    <div class="form-row">
-                        <div>
-                            <label>菜单价格</label>
-                            <input type="text" id="menuPrice" value="13.50 €">
-                            <div class="price-info" id="priceInfo">今天是工作日，建议价格：13.50 €</div>
-                        </div>
-                        <div>
-                            <label>日期</label>
-                            <input type="date" id="menuDate">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="manual-add">
-                    <h4>🖊️ 手动添加菜品</h4>
-                    <div class="translate-row">
-                        <div>
-                            <input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)">
-                            <div class="correction-hint" id="manualSpanishHint"></div>
-                        </div>
-                        <div style="align-self: center;">
-                            <button class="btn btn-translate btn-small" onclick="translateManual()">🔄</button>
-                        </div>
-                        <div>
-                            <input type="text" id="manualCatalan" placeholder="加泰罗尼亚语翻译">
-                        </div>
-                    </div>
-                    <div class="form-row" style="margin-top: 10px;">
-                        <select id="manualCategory">
-                            <option value="primer">PRIMER PLATO</option>
-                            <option value="segundo">SEGUNDO PLATO</option>
-                            <option value="postre">POSTRES</option>
-                        </select>
-                        <button class="btn btn-small" onclick="addManualDish()">添加到菜单</button>
-                    </div>
-                </div>
-
-                <div class="selected-dishes">
-                    <h3>今日菜单</h3>
-                    <div id="selectedDishes">
-                        <p style="color: #888; text-align: center; padding: 20px;">请从左侧菜品库中选择菜品或手动添加</p>
-                    </div>
-                </div>
-
-                <button class="btn" onclick="generateMenu()">🍴 生成菜单</button>
-                <button class="btn btn-secondary" onclick="printMenu()">🖨️ 打印菜单</button>
-                <button class="btn btn-danger" onclick="clearSelectedDishes()">🗑️ 清空选择</button>
-            </div>
-
-            <div class="menu-preview" id="menuPreview" style="display: none;"></div>
+      </div>
+      <div class="form-group">
+        <div class="form-row">
+          <div>
+            <label>分类</label>
+            <select id="dishCategory">
+              <option value="primer">PRIMER PLATO</option>
+              <option value="segundo">SEGUNDO PLATO</option>
+              <option value="postre">POSTRES</option>
+            </select>
+          </div>
+          <div>
+            <label>额外费用</label>
+            <input type="text" id="dishExtra" placeholder="例: +3.00€">
+          </div>
         </div>
+      </div>
+      <button class="btn" onclick="addDish()">➕ 添加菜品</button>
+      <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
+      <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+      <div class="help">提示：POSTRES 支持删除；左侧菜可直接拖拽到右侧分类；输入西语后会自动纠正常见重音。</div>
+      <div id="dishesContainer"></div>
     </div>
+    <div class="panel">
+      <div class="menu-controls">
+        <h2>📋 每日菜单生成</h2>
+        <div class="form-group">
+          <div class="form-row">
+            <div>
+              <label>菜单价格</label>
+              <input type="text" id="menuPrice" value="13.50 €">
+              <div class="price-info" id="priceInfo">今天是工作日，建议价格：13.50 €</div>
+            </div>
+            <div>
+              <label>日期</label>
+              <input type="date" id="menuDate">
+            </div>
+          </div>
+        </div>
+        <div class="manual-add">
+          <h4>🖊️ 手动添加菜品</h4>
+          <div class="translate-row">
+            <div>
+              <input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)" onblur="autocorrectField(this)">
+              <div class="correction-hint" id="manualSpanishHint"></div>
+            </div>
+            <div style="align-self:center"><button class="btn btn-translate btn-small" onclick="translateManual()">🔄</button></div>
+            <div><input type="text" id="manualCatalan" placeholder="加泰罗尼亚语翻译"></div>
+          </div>
+          <div class="form-row" style="margin-top:10px">
+            <select id="manualCategory">
+              <option value="primer">PRIMER PLATO</option>
+              <option value="segundo">SEGUNDO PLATO</option>
+              <option value="postre">POSTRES</option>
+            </select>
+            <button class="btn btn-small" onclick="addManualDish()">添加到菜单</button>
+          </div>
+        </div>
+        <div class="selected-dishes">
+          <h3>今日菜单</h3>
+          <div id="selectedDishes">
+            <p style="color:#888;text-align:center;padding:20px">请从左侧菜品库中选择或拖拽到对应分类</p>
+          </div>
+        </div>
+        <button class="btn" onclick="generateMenu()">🍴 生成菜单</button>
+        <button class="btn btn-secondary" onclick="printMenu()">🖨️ 打印菜单</button>
+        <button class="btn btn-danger" onclick="clearSelectedDishes()">🗑️ 清空选择</button>
+      </div>
+      <div class="menu-preview" id="menuPreview" style="display:none"></div>
+    </div>
+  </div>
 
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-        // ---- 云端配置（演示） ----
-        const SUPABASE_URL = 'https://nkteqmgslcrqiglzcsyv.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
-        let supabase, isCloudMode = false;
-        try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); isCloudMode = true; updateSyncStatus('synced','☁️ 云端模式'); }
-        catch(e){ console.log('云端模式不可用'); updateSyncStatus('error','💾 本地模式'); }
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL='https://nkteqmgslcrqiglzcsyv.supabase.co';
+    const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
+    let supabase, isCloudMode=false;
+    try{ supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); isCloudMode=true; updateSyncStatus('synced','☁️ 云端模式'); }
+    catch(e){ updateSyncStatus('error','💾 本地模式'); }
 
-        // ---- 状态 ----
-        let dishes = [];
-        let selectedDishes = { primer: [], segundo: [], postre: [] };
-        let collapseState = JSON.parse(localStorage.getItem('collapseState') || '{"primer":true,"segundo":true,"postre":true}');
+    let dishes=[];
+    let selectedDishes={primer:[],segundo:[],postre:[]};
+    let collapseState=JSON.parse(localStorage.getItem('collapseState')||'{"primer":true,"segundo":true,"postre":true}');
+    function saveCollapseState(){ localStorage.setItem('collapseState',JSON.stringify(collapseState)); }
+    function updateSyncStatus(status,msg){ const el=document.getElementById('syncStatus'); el.className=`sync-status ${status}`; el.textContent=msg; }
 
-        function saveCollapseState(){ localStorage.setItem('collapseState', JSON.stringify(collapseState)); }
+    const spanishHolidays=['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-08-15','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25'];
 
-        // ---- 节假日 & 拼写词典 ----
-        const spanishHolidays = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-08-15','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25'];
+    // Accent & spelling dictionaries
+    const accentMap={
+      'jamon':'jamón','limon':'limón','melon':'melón','corazon':'corazón','arbol':'árbol','te':'té','cafe':'café','menu':'menú','senor':'señor','senora':'señora','nino':'niño','nina':'niña','pina':'piña','exito':'éxito','manana':'mañana','espana':'españa','espanol':'español','oregano':'orégano','champinon':'champiñón','champones':'champiñones','salmon':'salmón','atun':'atún','calabacin':'calabacín','berengena':'berenjena','canonigos':'canónigos','couscous':'cuscús'
+    };
+    const spellCheck={
+      'polla':'pollo','jamon':'jamón','patata':'patatas','huevos':'huevo','verdura':'verduras',
+      'pescao':'pescado','tomate':'tomate','cebolla':'cebolla','limon':'limón','melon':'melón','oregano':'orégano',
+      'senor':'señor','nina':'niña','nino':'niño','anos':'años','manana':'mañana','espanol':'español','corazon':'corazón'
+    };
 
-        const translations = {
-            'pollo':'pollastre','jamón':'pernil','queso':'formatge','patatas':'patates','huevo':'ou','carne':'carn','pescado':'peix','verduras':'verdures','arroz':'arròs','pasta':'pasta','ensalada':'amanida','sopa':'sopa','crema':'crema','flan':'flan','helado':'gelat','fruta':'fruita','chocolate':'xocolata','con':'amb','del':'del','de':'de','al':'al','horno':'forn','plancha':'planxa','frito':'fregit','asado':'rostit','ternera':'vedella','cerdo':'porc','setas':'bolets','seta':'bolet','gambas':'gambes','calamar':'calamar','calamares':'calamars','lechuga':'enciam','tomate':'tomàquet','pimiento':'pebrot','cebolla':'ceba'
-        };
-        const phraseGlossary = [
-            [/a la plancha/gi, 'a la planxa'],
-            [/al horno/gi, 'al forn'],
-            [/frito(s)?/gi, 'fregit$1'],
-            [/rebozado/gi, 'arrebossat'],
-            [/del d[ií]a/gi, 'del dia'],
-            [/ensalada/gi, 'amanida'],
-            [/sopa del d[ií]a/gi, 'sopa del dia'],
-            [/crema del d[ií]a/gi, 'crema del dia'],
-            [/tarta de queso/gi, 'pastís de formatge'],
-            [/solomillo/gi, 'filet'],
-            [/salmorejo/gi, 'salmorejo'],
-            [/paella del se[nñ]orito/gi, 'paella del senyoret']
-        ];
+    const translations={
+      'pollo':'pollastre','jamón':'pernil','queso':'formatge','patatas':'patates','huevo':'ou','carne':'carn','pescado':'peix','verduras':'verdures','arroz':'arròs','pasta':'pasta','ensalada':'amanida','sopa':'sopa','crema':'crema','flan':'flan','helado':'gelat','fruta':'fruita','chocolate':'xocolata','con':'amb','del':'del','de':'de','al':'al','horno':'forn','plancha':'planxa','frito':'fregit','asado':'rostit','ternera':'vedella','cerdo':'porc','setas':'bolets','seta':'bolet','gambas':'gambes','calamar':'calamar','calamares':'calamars','lechuga':'enciam','tomate':'tomàquet','pimiento':'pebrot','cebolla':'ceba'
+    };
+    const phraseGlossary=[
+      [/a la plancha/gi,'a la planxa'],
+      [/al horno/gi,'al forn'],
+      [/frito(s)?/gi,'fregit$1'],
+      [/rebozado/gi,'arrebossat'],
+      [/del d[ií]a/gi,'del dia'],
+      [/ensalada/gi,'amanida'],
+      [/sopa del d[ií]a/gi,'sopa del dia'],
+      [/crema del d[ií]a/gi,'crema del dia'],
+      [/tarta de queso/gi,'pastís de formatge'],
+      [/solomillo/gi,'filet'],
+      [/salmorejo/gi,'salmorejo'],
+      [/paella del se[nñ]orito/gi,'paella del senyoret']
+    ];
 
-        const spellCheck = {'polla':'pollo','jamon':'jamón','patata':'patatas','huevos':'huevo','verdura':'verduras','pescao':'pescado','tomate':'tomates','cebolla':'cebollas','ajo':'ajos','pimiento':'pimientos','calabacin':'calabacín','berenjena':'berenjenas','champiñon':'champiñones','limon':'limón','melon':'melón','oregano':'orégano','senor':'señor','nina':'niña','nino':'niño','anos':'años','manana':'mañana','espanol':'español','corazon':'corazón'};
+    function loadLocalData(){ dishes=JSON.parse(localStorage.getItem('restaurantDishes')||'[]'); selectedDishes=JSON.parse(localStorage.getItem('selectedDishes')||'{"primer":[],"segundo":[],"postre":[]}'); }
+    function saveLocalData(){ localStorage.setItem('restaurantDishes',JSON.stringify(dishes)); localStorage.setItem('selectedDishes',JSON.stringify(selectedDishes)); }
+    async function loadCloudData(){
+      if(!isCloudMode){ return loadLocalData(); }
+      try{
+        updateSyncStatus('syncing','🔄 同步中...');
+        const {data:dishesData,error:dishesError}=await supabase.from('dishes').select('*').order('created_at',{ascending:true});
+        if(dishesError) throw dishesError;
+        const {data:menuData,error:menuError}=await supabase.from('selected_menu').select('*').single();
+        if(!menuError && menuData){ selectedDishes=menuData.dishes; }
+        dishes=dishesData||[]; updateSyncStatus('synced','☁️ 已同步');
+      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData(); }
+    }
+    async function saveCloudData(){
+      if(!isCloudMode){ return saveLocalData(); }
+      try{
+        updateSyncStatus('syncing','🔄 保存中...');
+        const {error:dishesError}=await supabase.from('dishes').upsert(dishes.map(d=>({...d,created_at:d.created_at||new Date().toISOString(),updated_at:new Date().toISOString()})));
+        if(dishesError) throw dishesError;
+        const {error:menuError}=await supabase.from('selected_menu').upsert({id:1,dishes:selectedDishes,updated_at:new Date().toISOString()});
+        if(menuError) throw menuError;
+        updateSyncStatus('synced','☁️ 已同步');
+      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 保存失败'); saveLocalData(); }
+    }
 
-        function updateSyncStatus(status, message){
-            const el = document.getElementById('syncStatus');
-            el.className = `sync-status ${status}`; el.textContent = message;
-        }
+    document.addEventListener('DOMContentLoaded',async()=>{
+      const today=new Date(); document.getElementById('menuDate').value=today.toISOString().split('T')[0];
+      await loadInitialDishes(); await loadCloudData(); updatePricing(); renderDishesContainer(); renderSelectedDishes();
+      document.getElementById('menuDate').addEventListener('change',updatePricing);
+    });
 
-        async function loadCloudData(){
-            if(!isCloudMode){ return loadLocalData(); }
-            try{
-                updateSyncStatus('syncing','🔄 同步中...');
-                const { data: dishesData, error: dishesError } = await supabase.from('dishes').select('*').order('created_at',{ascending:true});
-                if(dishesError) throw dishesError;
-                const { data: menuData, error: menuError } = await supabase.from('selected_menu').select('*').single();
-                if(!menuError && menuData){ selectedDishes = menuData.dishes; }
-                dishes = dishesData || [];
-                updateSyncStatus('synced','☁️ 已同步');
-            }catch(e){
-                console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData();
-            }
-        }
-        async function saveCloudData(){
-            if(!isCloudMode){ return saveLocalData(); }
-            try{
-                updateSyncStatus('syncing','🔄 保存中...');
-                const { error: dishesError } = await supabase.from('dishes').upsert(dishes.map(d=>({...d, created_at: d.created_at || new Date().toISOString(), updated_at: new Date().toISOString()})));
-                if(dishesError) throw dishesError;
-                const { error: menuError } = await supabase.from('selected_menu').upsert({ id:1, dishes:selectedDishes, updated_at:new Date().toISOString() });
-                if(menuError) throw menuError;
-                updateSyncStatus('synced','☁️ 已同步');
-            }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 保存失败'); saveLocalData(); }
-        }
-        function loadLocalData(){
-            dishes = JSON.parse(localStorage.getItem('restaurantDishes') || '[]');
-            selectedDishes = JSON.parse(localStorage.getItem('selectedDishes') || '{"primer":[],"segundo":[],"postre":[]}');
-        }
-        function saveLocalData(){
-            localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
-            localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
-        }
+    async function loadInitialDishes(){
+      const initial=[
+        {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
+        {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
+        {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
+        {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
+        {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
+        {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
+        {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
+      ];
+      if(dishes.length===0){ dishes=initial; await saveCloudData(); }
+    }
 
-        document.addEventListener('DOMContentLoaded', async function(){
-            const today = new Date();
-            document.getElementById('menuDate').value = today.toISOString().split('T')[0];
-            await loadInitialDishes();
-            await loadCloudData();
-            updatePricing();
-            renderDishesContainer();
-            renderSelectedDishes();
-            document.getElementById('menuDate').addEventListener('change', updatePricing);
+    function updatePricing(){
+      const dateInput=document.getElementById('menuDate'); const priceInput=document.getElementById('menuPrice'); const priceInfo=document.getElementById('priceInfo');
+      const selectedDate=new Date(dateInput.value); const day=selectedDate.getDay(); const dateStr=dateInput.value;
+      const isWeekend=(day===0||day===6); const isHoliday=spanishHolidays.includes(dateStr);
+      if(isWeekend||isHoliday){ priceInput.value='18.50 €'; priceInfo.textContent=isHoliday?'今天是西班牙法定假日，建议价格：18.50 €':'今天是周末，建议价格：18.50 €'; }
+      else { priceInput.value='13.50 €'; priceInfo.textContent='今天是工作日，建议价格：13.50 €'; }
+    }
+
+    // ---- Translation helpers ----
+    function postProcessCatalan(text){
+      if(!text) return text; let s=text;
+      phraseGlossary.forEach(([re,ca])=>{ s=s.replace(re,ca); });
+      s=s.split(/(\W)/).map(tok=>(translations[tok.toLowerCase()]||tok)).join('');
+      s=s.replace(/\s+/g,' ').replace(/\s, \s/g, ', ').replace(/\s\./g,'.').trim();
+      return s;
+    }
+    async function translateText(text){
+      if(!text.trim()) return text;
+      try{
+        updateSyncStatus('syncing','🔄 翻译中...');
+        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
+        const data=await res.json(); updateSyncStatus('synced','☁️ 已同步');
+        if(data.responseStatus===200){ return postProcessCatalan(data.responseData.translatedText); }
+        return postProcessCatalan(simpleTranslate(text));
+      }catch(e){ console.error(e); updateSyncStatus('synced','☁️ 已同步'); return postProcessCatalan(simpleTranslate(text)); }
+    }
+    function simpleTranslate(text){ return text.split(/(\W)/).map(tok=>translations[tok.toLowerCase()]||tok).join(''); }
+
+    // ---- Spanish autocorrect (accents + common typos) ----
+    function autocorrectSpanish(text){
+      if(!text) return text;
+      let s=' '+text+' ';
+      for(const [plain,acc] of Object.entries(accentMap)){
+        const re=new RegExp(`\\b${plain}\\b`,'gi');
+        s=s.replace(re,(m)=>{
+          if(m===m.toUpperCase()) return acc.toUpperCase();
+          if(m[0]===m[0].toUpperCase()) return acc[0].toUpperCase()+acc.slice(1);
+          return acc;
         });
+      }
+      s=s.replace(/\s+/g,' ').trim();
+      return s;
+    }
+    function autocorrectField(input){
+      const before=input.value;
+      const after=autocorrectSpanish(before);
+      if(before!==after){ input.value=after; }
+    }
+    function checkSpelling(input){
+      const text=input.value.toLowerCase().trim();
+      const hintId=(input.id==='dishSpanish')?'spanishHint':'manualSpanishHint';
+      const hint=document.getElementById(hintId);
+      if(!text){ hint.style.display='none'; input.classList.remove('input-warning'); return; }
+      const words=text.split(/\s+/); const corrections=[];
+      words.forEach(w=>{ if(spellCheck[w]) corrections.push(`"${w}" → "${spellCheck[w]}"`); });
+      if(corrections.length>0){ input.classList.add('input-warning'); hint.innerHTML='建议修正: '+corrections.join(', '); hint.style.display='block'; }
+      else{ input.classList.remove('input-warning'); hint.style.display='none'; }
+    }
 
-        async function loadInitialDishes(){
-            const initialDishes = [
-                { id: Date.now()+1, spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza", catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa", category:"primer", extra:"" },
-                { id: Date.now()+2, spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón", catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil", category:"primer", extra:"" },
-                { id: Date.now()+3, spanish:"Paella del señorito", catalan:"Paella del senyoret", category:"segundo", extra:"" },
-                { id: Date.now()+4, spanish:"Dorada al horno con patatas panadera", catalan:"Daurada al forn amb patates fornera", category:"segundo", extra:"" },
-                { id: Date.now()+5, spanish:"Tarta de queso", catalan:"Pastís de formatge", category:"postre", extra:"" },
-                { id: Date.now()+6, spanish:"Flan", catalan:"Flam", category:"postre", extra:"" },
-                { id: Date.now()+7, spanish:"Coulant de chocolate", catalan:"Coulant de xocolata", category:"postre", extra:"+ 2.00€" }
-            ];
-            if(dishes.length===0){ dishes = initialDishes; await saveCloudData(); }
-        }
+    async function autoTranslate(){
+      const spanish=document.getElementById('dishSpanish').value.trim(); if(!spanish) return;
+      const fixed=autocorrectSpanish(spanish);
+      if(fixed!==spanish) document.getElementById('dishSpanish').value=fixed;
+      const catalan=await translateText(fixed); document.getElementById('dishCatalan').value=catalan;
+    }
+    async function translateManual(){
+      const spanish=document.getElementById('manualSpanish').value.trim(); if(!spanish) return;
+      const fixed=autocorrectSpanish(spanish);
+      if(fixed!==spanish) document.getElementById('manualSpanish').value=fixed;
+      const catalan=await translateText(fixed); document.getElementById('manualCatalan').value=catalan;
+    }
 
-        function checkSpelling(input){
-            const text = input.value.toLowerCase().trim();
-            const hintId = input.id === 'dishSpanish' ? 'spanishHint' : 'manualSpanishHint';
-            const hint = document.getElementById(hintId);
-            if(!text){ hint.style.display='none'; input.classList.remove('input-warning'); return; }
-            const words = text.split(/\\s+/); const corrections = [];
-            words.forEach(w=>{ if(spellCheck[w]) corrections.push(`"${w}" → "${spellCheck[w]}"`); });
-            if(corrections.length>0){ input.classList.add('input-warning'); hint.innerHTML = `建议修正: ${corrections.join(', ')}`; hint.style.display='block'; }
-            else { input.classList.remove('input-warning'); hint.style.display='none'; }
-        }
+    const normalize=s=>s.trim().toLowerCase().replace(/\s+/g,' ');
+    function existsDuplicate(spanish,category){ const key=normalize(spanish); return dishes.some(d=>d.category===category && normalize(d.spanish)===key); }
 
-        function updatePricing(){
-            const dateInput = document.getElementById('menuDate');
-            const priceInput = document.getElementById('menuPrice');
-            const priceInfo = document.getElementById('priceInfo');
-            const selectedDate = new Date(dateInput.value);
-            const dayOfWeek = selectedDate.getDay(); const dateString = dateInput.value;
-            const isWeekend = dayOfWeek===0 || dayOfWeek===6; const isHoliday = spanishHolidays.includes(dateString);
-            if(isWeekend || isHoliday){ priceInput.value='18.50 €'; priceInfo.textContent = isHoliday ? '今天是西班牙法定假日，建议价格：18.50 €' : '今天是周末，建议价格：18.50 €'; }
-            else { priceInput.value='13.50 €'; priceInfo.textContent='今天是工作日，建议价格：13.50 €'; }
-        }
+    // Add / Delete
+    async function addDish(){
+      let spanish=document.getElementById('dishSpanish').value.trim();
+      const catalan=document.getElementById('dishCatalan').value.trim();
+      const category=document.getElementById('dishCategory').value;
+      const extra=document.getElementById('dishExtra').value.trim();
+      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      spanish=autocorrectSpanish(spanish);
+      if(existsDuplicate(spanish,category)){ alert('该分类下已存在相同菜名（西语）。'); return; }
+      const dish={id:Date.now(),spanish,catalan,category,extra};
+      dishes.push(dish); await saveCloudData(); renderDishesContainer();
+      document.getElementById('dishSpanish').value=''; document.getElementById('dishCatalan').value=''; document.getElementById('dishExtra').value='';
+      document.getElementById('spanishHint').style.display='none'; document.getElementById('dishSpanish').classList.remove('input-warning');
+    }
+    async function addManualDish(){
+      let spanish=document.getElementById('manualSpanish').value.trim();
+      const catalan=document.getElementById('manualCatalan').value.trim();
+      const category=document.getElementById('manualCategory').value;
+      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      spanish=autocorrectSpanish(spanish);
+      const dish={id:Date.now(),spanish,catalan,category,extra:'',temporary:true};
+      selectedDishes[category].push(dish); await saveCloudData(); renderSelectedDishes();
+      document.getElementById('manualSpanish').value=''; document.getElementById('manualCatalan').value='';
+      document.getElementById('manualSpanishHint').style.display='none'; document.getElementById('manualSpanish').classList.remove('input-warning');
+    }
 
-        // ---- 翻译：在线 + 术语表后处理 ----
-        function postProcessCatalan(text){
-            if(!text) return text;
-            let s = text;
-            // 短语优先
-            phraseGlossary.forEach(([re, ca])=>{ s = s.replace(re, ca); });
-            // 词级别兜底
-            s = s.split(/(\\W)/).map(tok => (translations[tok.toLowerCase()] || tok)).join('');
-            // 常见修正
-            s = s.replace(/\\s+/g,' ').replace(/\\s,\\s/g, ', ').replace(/\\s\\./g,'.').trim();
-            // 首字母不要全大写 —— 保留原样
-            return s;
-        }
+    function toggleSection(category){
+      const content=document.getElementById(`content-${category}`); const icon=document.getElementById(`icon-${category}`);
+      const isExp=content.classList.toggle('expanded'); if(icon) icon.classList.toggle('rotated',isExp);
+      collapseState[category]=isExp; saveCollapseState();
+    }
 
-        async function translateText(text){
-            if(!text.trim()) return text;
-            try{
-                updateSyncStatus('syncing','🔄 翻译中...');
-                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
-                const data = await response.json();
-                updateSyncStatus('synced','☁️ 已同步');
-                if(data.responseStatus===200){ return postProcessCatalan(data.responseData.translatedText); }
-                return postProcessCatalan(simpleTranslate(text));
-            }catch(e){
-                console.error('在线翻译失败:', e);
-                updateSyncStatus('synced','☁️ 已同步');
-                return postProcessCatalan(simpleTranslate(text));
-            }
-        }
-        function simpleTranslate(text){
-            // 简易逐词（仅兜底）
-            return text.split(/(\\W)/).map(tok => translations[tok.toLowerCase()] || tok).join('');
-        }
-        async function autoTranslate(){
-            const spanish = document.getElementById('dishSpanish').value.trim(); if(!spanish) return;
-            const catalan = await translateText(spanish); document.getElementById('dishCatalan').value = catalan;
-        }
-        async function translateManual(){
-            const spanish = document.getElementById('manualSpanish').value.trim(); if(!spanish) return;
-            const catalan = await translateText(spanish); document.getElementById('manualCatalan').value = catalan;
-        }
+    // ---- POSTRES: checkbox works; compact chips; delete as '×' icon (hover to show)
+    async function toggleDessertCheckbox(dishId){
+      const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
+      const list=selectedDishes.postre;
+      const idx=list.findIndex(d=>d.id===dishId);
+      if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
+      await saveCloudData(); renderSelectedDishes(); updateDessertCheckboxes();
+    }
+    function updateDessertCheckboxes(){
+      document.querySelectorAll('.dessert-grid input[type="checkbox"]').forEach(cb=>{
+        const id=parseInt(cb.dataset.dishId);
+        cb.checked=selectedDishes.postre.some(d=>d.id===id);
+      });
+    }
 
-        // ---- 工具 ----
-        const normalize = s => s.trim().toLowerCase().replace(/\\s+/g,' ');
-
-        function existsDuplicate(spanish, category){
-            const key = normalize(spanish);
-            return dishes.some(d => d.category===category && normalize(d.spanish)===key);
+    // ---- Left library -> draggable into right panel
+    function startDragFromLibrary(e,id){
+      const dish=dishes.find(d=>d.id===id); if(!dish) return;
+      e.dataTransfer.setData('text/plain', JSON.stringify({type:'library', id}));
+      e.dataTransfer.effectAllowed='copyMove';
+    }
+    function startDragSelected(e,dishId,category){
+      e.dataTransfer.setData('text/plain', JSON.stringify({type:'selected', dishId, category}));
+      const el=e.target.closest('.selected-dish'); if(el){ el.classList.add('dragging'); }
+    }
+    function allowDrop(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
+    async function drop(e,targetCategory){
+      e.preventDefault();
+      let data; try{ data=JSON.parse(e.dataTransfer.getData('text/plain')); }catch(_){ return; }
+      if(!data) return;
+      if(data.type==='library'){
+        const dish=dishes.find(d=>d.id===data.id); if(!dish) return;
+        const clone={...dish, category:targetCategory};
+        if(!selectedDishes[targetCategory].some(d=>d.id===dish.id)){
+          selectedDishes[targetCategory].push(clone);
         }
-
-        // ---- 添加、删除、折叠 ----
-        async function addDish(){
-            const spanish = document.getElementById('dishSpanish').value.trim();
-            const catalan = document.getElementById('dishCatalan').value.trim();
-            const category = document.getElementById('dishCategory').value;
-            const extra = document.getElementById('dishExtra').value.trim();
-            if(!spanish || !catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
-            if(existsDuplicate(spanish, category)){ alert('该分类下已存在相同菜名（西语）。'); return; }
-            const dish = { id: Date.now(), spanish, catalan, category, extra };
-            dishes.push(dish);
-            await saveCloudData();
-            renderDishesContainer(); // 将保留折叠状态
-            // reset
-            document.getElementById('dishSpanish').value=''; document.getElementById('dishCatalan').value=''; document.getElementById('dishExtra').value='';
-            document.getElementById('spanishHint').style.display='none'; document.getElementById('dishSpanish').classList.remove('input-warning');
+      }else if(data.type==='selected'){
+        const {dishId,category}=data;
+        if(targetCategory===category){
+          const idx=selectedDishes[category].findIndex(d=>d.id===dishId);
+          const item=selectedDishes[category].splice(idx,1)[0];
+          selectedDishes[category].push(item);
+        }else{
+          const idx=selectedDishes[category].findIndex(d=>d.id===dishId);
+          const item=selectedDishes[category].splice(idx,1)[0];
+          item.category=targetCategory;
+          selectedDishes[targetCategory].push(item);
         }
+      }
+      await saveCloudData(); renderSelectedDishes(); updateDessertCheckboxes();
+    }
+    function endDrag(){ document.querySelectorAll('.selected-dish.dragging').forEach(el=>el.classList.remove('dragging')); }
 
-        async function addManualDish(){
-            const spanish = document.getElementById('manualSpanish').value.trim();
-            const catalan = document.getElementById('manualCatalan').value.trim();
-            const category = document.getElementById('manualCategory').value;
-            if(!spanish || !catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
-            const dish = { id: Date.now(), spanish, catalan, category, extra:'', temporary:true };
-            selectedDishes[category].push(dish);
-            await saveCloudData();
-            renderSelectedDishes();
-            document.getElementById('manualSpanish').value=''; document.getElementById('manualCatalan').value='';
-            document.getElementById('manualSpanishHint').style.display='none'; document.getElementById('manualSpanish').classList.remove('input-warning');
+    function renderDishesContainer(){
+      const container=document.getElementById('dishesContainer');
+      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
+      let html='';
+      Object.keys(categories).forEach(category=>{
+        const categoryDishes=dishes.filter(d=>d.category===category);
+        const expanded=collapseState[category]===undefined?true:!!collapseState[category];
+        html+=`
+          <div class="collapsible-section">
+            <div class="section-header" onclick="toggleSection('${category}')">
+              <h3>${categories[category]} (${categoryDishes.length})</h3>
+              <span class="rotate-icon ${expanded?'rotated':''}" id="icon-${category}">▶</span>
+            </div>
+            <div class="section-content ${expanded?'expanded':''}" id="content-${category}">`;
+        if(category==='postre'){
+          html+='<div class="dessert-grid">';
+          categoryDishes.forEach(dish=>{
+            const isSelected=selectedDishes[category].some(d=>d.id===dish.id);
+            html+=`
+              <div class="dessert-chip left-draggable" draggable="true" ondragstart="startDragFromLibrary(event, ${dish.id})">
+                <input type="checkbox" ${isSelected?'checked':''} data-dish-id="${dish.id}" onchange="toggleDessertCheckbox(${dish.id}); event.stopPropagation();">
+                <label title="${dish.catalan}"><strong>${dish.spanish}</strong>${dish.extra?`<br><span style='color:#888;font-size:11px'>${dish.extra}</span>`:''}</label>
+                <button class="chip-remove" title="删除" onclick="deleteDish(${dish.id}); event.stopPropagation();">×</button>
+              </div>`;
+          });
+          html+='</div>';
+        }else{
+          categoryDishes.forEach(dish=>{
+            const isSelected=selectedDishes[category].some(d=>d.id===dish.id);
+            html+=`
+              <div class="dish-item ${isSelected?'selected':''} left-draggable" data-dish-id="${dish.id}" draggable="true" ondragstart="startDragFromLibrary(event, ${dish.id})">
+                <h4>${dish.spanish}</h4>
+                <p><em>${dish.catalan}</em></p>
+                ${dish.extra?`<p class="menu-item-extra">${dish.extra}</p>`:''}
+                <div class="dish-actions">
+                  <button class="btn ${isSelected?'btn-danger':'btn-secondary'}" onclick="toggleDish(${dish.id})">${isSelected?'移除':'选择'}</button>
+                  <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
+                </div>
+              </div>`;
+          });
         }
+        html+='</div></div>';
+      });
+      container.innerHTML=html;
+      updateDessertCheckboxes();
+    }
 
-        function toggleSection(category){
-            const content = document.getElementById(`content-${category}`);
-            const icon = document.getElementById(`icon-${category}`);
-            const isExp = content.classList.toggle('expanded');
-            if(icon) icon.classList.toggle('rotated', isExp);
-            collapseState[category] = isExp; saveCollapseState();
-        }
+    async function deleteDish(id){
+      if(!confirm('确定要删除这个菜品吗？')) return;
+      dishes=dishes.filter(d=>d.id!==id);
+      ['primer','segundo','postre'].forEach(cat=>{ selectedDishes[cat]=selectedDishes[cat].filter(d=>d.id!==id); });
+      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
+    }
 
-        async function toggleDessertCheckbox(dishId){
-            const dish = dishes.find(d=>d.id===dishId); if(!dish) return;
-            const list = selectedDishes.postre;
-            const idx = list.findIndex(d=>d.id===dishId);
-            if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
-            await saveCloudData();
-            renderSelectedDishes();
-            updateDessertCheckboxes();
+    async function toggleDish(id){
+      const dish=dishes.find(d=>d.id===id); if(!dish) return;
+      const list=selectedDishes[dish.category];
+      const idx=list.findIndex(d=>d.id===id);
+      if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
+      await saveCloudData(); updateDishItemStatus(id); renderSelectedDishes();
+    }
+    function updateDishItemStatus(dishId){
+      const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
+      const el=document.querySelector(`[data-dish-id="${dishId}"]`);
+      if(el){
+        const isSelected=selectedDishes[dish.category].some(d=>d.id===dishId);
+        const dishItem=el.closest('.dish-item');
+        if(dishItem){
+          const buttons=el.querySelectorAll('button'); const selectButton=buttons[0];
+          if(isSelected){ dishItem.classList.add('selected'); selectButton.textContent='移除'; selectButton.className='btn btn-danger'; }
+          else{ dishItem.classList.remove('selected'); selectButton.textContent='选择'; selectButton.className='btn btn-secondary'; }
         }
-        function updateDessertCheckboxes(){
-            const cbs = document.querySelectorAll('.dessert-checkboxes input[type="checkbox"]');
-            cbs.forEach(cb=>{
-                const id = parseInt(cb.dataset.dishId);
-                cb.checked = selectedDishes.postre.some(d=>d.id===id);
+      }
+    }
+
+    function editDish(dishId,category){
+      const dish=selectedDishes[category].find(d=>d.id===dishId); if(!dish) return;
+      const el=document.querySelector(`[data-selected-dish-id="${dishId}"]`); if(!el) return;
+      el.classList.add('edit-mode');
+      const contentDiv=el.querySelector('.dish-content');
+      contentDiv.innerHTML=`
+        <div class="edit-inputs">
+          <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜名" onblur="this.value=autocorrectSpanish(this.value)">
+          <input type="text" id="edit-catalan-${dishId}" value="${dish.catalan}" placeholder="加泰罗尼亚语翻译">
+          <input type="text" id="edit-extra-${dishId}" value="${dish.extra||''}" placeholder="额外费用">
+        </div>`;
+      const actionsDiv=el.querySelector('.dish-actions');
+      actionsDiv.innerHTML=`
+        <button class="btn btn-secondary" style="padding:3px 8px;font-size:11px" onclick="saveEdit(${dishId},'${category}')">保存</button>
+        <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="cancelEdit(${dishId},'${category}')">取消</button>`;
+    }
+    async function saveEdit(dishId,category){
+      const spanish=autocorrectSpanish(document.getElementById(`edit-spanish-${dishId}`).value.trim());
+      const catalan=document.getElementById(`edit-catalan-${dishId}`).value.trim();
+      const extra=document.getElementById(`edit-extra-${dishId}`).value.trim();
+      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      const dish=selectedDishes[category].find(d=>d.id===dishId);
+      dish.spanish=spanish; dish.catalan=catalan; dish.extra=extra;
+      await saveCloudData(); renderSelectedDishes();
+    }
+    function cancelEdit(){ renderSelectedDishes(); }
+
+    function renderSelectedDishes(){
+      const container=document.getElementById('selectedDishes');
+      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
+      let html=''; let hasSelected=false;
+      Object.keys(categories).forEach(category=>{
+        if(selectedDishes[category].length>0){
+          hasSelected=true;
+          html+=`<div class="category-section">
+            <div class="category-header">${categories[category]}</div>
+            <div class="category-dishes" ondrop="drop(event,'${category}')" ondragover="allowDrop(event)">`;
+          selectedDishes[category].forEach(dish=>{
+            html+=`<div class="selected-dish" draggable="true" data-selected-dish-id="${dish.id}" ondragstart="startDragSelected(event, ${dish.id}, '${category}')" ondragend="endDrag()">
+              <div class="drag-handle">⋮⋮</div>
+              <div class="dish-content">
+                <strong>${dish.spanish}</strong><br>
+                <em style="font-size:12px;color:#666">${dish.catalan}</em>
+                ${dish.extra?`<br><span style="font-size:12px;color:#888">${dish.extra}</span>`:''}
+                ${dish.temporary?'<br><span style="font-size:11px;color:#f5576c">✨ 手动添加</span>':''}
+              </div>
+              <div class="dish-actions">
+                <button class="btn btn-secondary" style="padding:3px 8px;font-size:11px" onclick="editDish(${dish.id},'${category}')">编辑</button>
+                <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="removeDishFromMenu(${dish.id},'${category}')">移除</button>
+              </div>
+            </div>`;
+          });
+          html+=`</div></div>`;
+        }else{
+          html+=`<div class="category-section">
+            <div class="category-header">${categories[category]}</div>
+            <div class="category-dishes" ondrop="drop(event,'${category}')" ondragover="allowDrop(event)">
+              <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
+            </div></div>`;
+        }
+      });
+      container.innerHTML=hasSelected?html:
+      `<div class="category-section"><div class="category-header">PRIMER PLATO</div><div class="category-dishes" ondrop="drop(event,'primer')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
+       <div class="category-section"><div class="category-header">SEGUNDO PLATO</div><div class="category-dishes" ondrop="drop(event,'segundo')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
+       <div class="category-section"><div class="category-header">POSTRES</div><div class="category-dishes" ondrop="drop(event,'postre')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
+    }
+
+    async function removeDishFromMenu(id,category){
+      selectedDishes[category]=selectedDishes[category].filter(d=>d.id!==id);
+      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
+    }
+
+    function generateMenu(){
+      const price=document.getElementById('menuPrice').value;
+      const date=new Date(document.getElementById('menuDate').value).toLocaleDateString('es-ES',{day:'numeric',month:'long'});
+      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
+      let menuHtml=`<div class="menu-header">
+        <div class="menu-title">Menú del día</div>
+        <div style="font-style:italic;color:#666;margin-bottom:15px">Restaurante sol</div>
+        <div class="menu-date-price"><span>${price}</span><span>${date}</span></div>
+      </div>`;
+      Object.keys(categories).forEach(category=>{
+        if(selectedDishes[category].length>0){
+          menuHtml+=`<div class="menu-section"><div class="section-title">${categories[category]}</div>`;
+          if(category==='postre'){
+            const spanish=selectedDishes[category].map(d=>d.spanish).join(', ');
+            const catalan=selectedDishes[category].map(d=>d.catalan).join(', ');
+            const hasExtra=selectedDishes[category].some(d=>d.extra);
+            menuHtml+=`<div class="menu-item"><div class="menu-item-spanish">${spanish}</div><div class="menu-item-catalan">${catalan}</div>${hasExtra?'<div class="menu-item-extra">(algunos con suplemento)</div>':''}</div>`;
+          }else{
+            selectedDishes[category].forEach(dish=>{
+              menuHtml+=`<div class="menu-item"><div class="menu-item-spanish">${dish.spanish}</div><div class="menu-item-catalan">${dish.catalan}</div>${dish.extra?`<div class="menu-item-extra">${dish.extra}</div>`:''}</div>`;
             });
+          }
+          menuHtml+='</div>';
         }
+      });
+      menuHtml+='<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
+      const mp=document.getElementById('menuPreview'); mp.innerHTML=menuHtml; mp.style.display='block';
+    }
 
-        function renderDishesContainer(){
-            const container = document.getElementById('dishesContainer');
-            const categories = { primer:'PRIMER PLATO', segundo:'SEGUNDO PLATO', postre:'POSTRES' };
-            let html='';
-            Object.keys(categories).forEach(category=>{
-                const categoryDishes = dishes.filter(d=>d.category===category);
-                const expanded = collapseState[category]===undefined ? true : !!collapseState[category];
-                html += `
-                <div class="collapsible-section">
-                    <div class="section-header" onclick="toggleSection('${category}')">
-                        <h3>${categories[category]} (${categoryDishes.length})</h3>
-                        <span class="rotate-icon ${expanded?'rotated':''}" id="icon-${category}">▶</span>
-                    </div>
-                    <div class="section-content ${expanded?'expanded':''}" id="content-${category}">`;
+    function printMenu(){
+      if(document.getElementById('menuPreview').style.display==='none'){ generateMenu(); }
+      const w=window.open('','_blank'); const content=document.getElementById('menuPreview').innerHTML;
+      w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del día</title>
+        <style>@page{margin:20mm 22mm;size:A4}body{font-family:Arial,sans-serif;margin:0;padding:0;color:#333;line-height:1.2}.menu-header{text-align:center;border-bottom:3px solid #333;padding-bottom:15px;margin-bottom:18px}.menu-title{font-size:2.2em;font-style:italic;margin-bottom:6px;color:#333;font-weight:bold}.menu-date-price{display:flex;justify-content:space-between;font-size:1.1em;font-weight:bold;margin-top:8px}.menu-section{margin-bottom:18px}.section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}.menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}.menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:12px;line-height:1.2}.menu-item-catalan{font-style:italic;color:#666;font-size:11px;line-height:1.2;margin-bottom:2px}.menu-item-extra{color:#888;font-size:11px;font-weight:500}.menu-section:last-of-type .menu-item-spanish,.menu-section:last-of-type .menu-item-catalan,.menu-section:last-of-type .menu-item-extra{font-size:10px}.menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}.menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}</style></head><body>${content}</body></html>`);
+      w.document.close(); w.focus(); w.print(); w.close();
+    }
 
-                if(category==='postre'){
-                    html += '<div class="dessert-checkboxes">';
-                    categoryDishes.forEach(dish=>{
-                        const isSelected = selectedDishes[category].some(d=>d.id===dish.id);
-                        html += `
-                        <div class="dessert-row" onclick="toggleDessertCheckbox(${dish.id})">
-                            <input type="checkbox" ${isSelected?'checked':''} data-dish-id="${dish.id}" onchange="toggleDessertCheckbox(${dish.id}); event.stopPropagation();">
-                            <label><strong>${dish.spanish}</strong><br><em>${dish.catalan}</em>${dish.extra?`<br><span style='color:#888;'>${dish.extra}</span>`:''}</label>
-                            <button class="btn btn-danger btn-small" title="删除该甜点" onclick="deleteDish(${dish.id}); event.stopPropagation();">删除</button>
-                        </div>`;
-                    });
-                    html += '</div>';
-                }else{
-                    categoryDishes.forEach(dish=>{
-                        const isSelected = selectedDishes[category].some(d=>d.id===dish.id);
-                        html += `
-                        <div class="dish-item ${isSelected?'selected':''}" data-dish-id="${dish.id}">
-                            <h4>${dish.spanish}</h4>
-                            <p><em>${dish.catalan}</em></p>
-                            ${dish.extra?`<p class="menu-item-extra">${dish.extra}</p>`:''}
-                            <div class="dish-actions">
-                                <button class="btn ${isSelected?'btn-danger':'btn-secondary'}" onclick="toggleDish(${dish.id})">${isSelected?'移除':'选择'}</button>
-                                <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
-                            </div>
-                        </div>`;
-                    });
-                }
-                html += '</div></div>';
-            });
-            container.innerHTML = html;
-            updateDessertCheckboxes();
-        }
+    async function clearSelectedDishes(){
+      if(!confirm('确定要清空所有已选菜品吗？')) return;
+      selectedDishes={primer:[],segundo:[],postre:[]};
+      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
+      document.getElementById('menuPreview').style.display='none';
+    }
 
-        async function deleteDish(id){
-            if(!confirm('确定要删除这个菜品吗？')) return;
-            // 从菜品库删除
-            dishes = dishes.filter(d=>d.id!==id);
-            // 同步从已选菜单中移除
-            ['primer','segundo','postre'].forEach(cat => {
-                selectedDishes[cat] = selectedDishes[cat].filter(d=>d.id!==id);
-            });
-            await saveCloudData();
-            renderDishesContainer();
-            renderSelectedDishes();
-        }
+    function exportData(){
+      const data={dishes,selectedDishes,exportDate:new Date().toISOString()};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url; a.download=`restaurant_menu_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
+    }
 
-        async function toggleDish(id){
-            const dish = dishes.find(d=>d.id===id); if(!dish) return;
-            const list = selectedDishes[dish.category];
-            const idx = list.findIndex(d=>d.id===id);
-            if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
-            await saveCloudData();
-            updateDishItemStatus(id);
-            renderSelectedDishes();
-        }
+    async function importData(event){
+      const file=event.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload=async e=>{
+        try{
+          const data=JSON.parse(e.target.result);
+          if(data.dishes && Array.isArray(data.dishes)){ dishes=data.dishes; }
+          if(data.selectedDishes){ selectedDishes=data.selectedDishes; }
+          await saveCloudData(); renderDishesContainer(); renderSelectedDishes(); alert('数据导入成功！');
+        }catch(err){ alert('导入失败：文件格式不正确'); }
+      };
+      reader.readAsText(file); event.target.value='';
+    }
 
-        function updateDishItemStatus(dishId){
-            const dish = dishes.find(d=>d.id===dishId); if(!dish) return;
-            const el = document.querySelector(`[data-dish-id="${dishId}"]`);
-            if(el){
-                const isSelected = selectedDishes[dish.category].some(d=>d.id===dishId);
-                const dishItem = el.closest('.dish-item');
-                if(dishItem){
-                    const buttons = el.querySelectorAll('button'); const selectButton = buttons[0];
-                    if(isSelected){ dishItem.classList.add('selected'); selectButton.textContent='移除'; selectButton.className='btn btn-danger'; }
-                    else { dishItem.classList.remove('selected'); selectButton.textContent='选择'; selectButton.className='btn btn-secondary'; }
-                }
-            }
-        }
-
-        function editDish(dishId, category){
-            const dish = selectedDishes[category].find(d=>d.id===dishId); if(!dish) return;
-            const el = document.querySelector(`[data-selected-dish-id="${dishId}"]`); if(!el) return;
-            el.classList.add('edit-mode');
-            const contentDiv = el.querySelector('.dish-content');
-            contentDiv.innerHTML = `
-                <div class="edit-inputs">
-                    <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜名">
-                    <input type="text" id="edit-catalan-${dishId}" value="${dish.catalan}" placeholder="加泰罗尼亚语翻译">
-                    <input type="text" id="edit-extra-${dishId}" value="${dish.extra||''}" placeholder="额外费用">
-                </div>`;
-            const actionsDiv = el.querySelector('.dish-actions');
-            actionsDiv.innerHTML = `
-                <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="saveEdit(${dishId}, '${category}')">保存</button>
-                <button class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;" onclick="cancelEdit(${dishId}, '${category}')">取消</button>`;
-        }
-        async function saveEdit(dishId, category){
-            const spanish = document.getElementById(`edit-spanish-${dishId}`).value.trim();
-            const catalan = document.getElementById(`edit-catalan-${dishId}`).value.trim();
-            const extra = document.getElementById(`edit-extra-${dishId}`).value.trim();
-            if(!spanish || !catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
-            const dish = selectedDishes[category].find(d=>d.id===dishId);
-            dish.spanish = spanish; dish.catalan = catalan; dish.extra = extra;
-            await saveCloudData(); renderSelectedDishes();
-        }
-        function cancelEdit(){ renderSelectedDishes(); }
-
-        // ---- 拖拽排序 ----
-        let draggedElement=null, draggedDishId=null, draggedCategory=null;
-        function startDrag(e, dishId, category){ draggedElement = e.target.closest('.selected-dish'); draggedDishId = dishId; draggedCategory = category; draggedElement.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; }
-        function allowDrop(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
-        async function drop(e, targetCategory){
-            e.preventDefault();
-            if(!draggedDishId) return;
-            const targetElement = e.target.closest('.selected-dish');
-            if(targetElement && targetElement!==draggedElement){
-                const targetDishId = parseInt(targetElement.dataset.selectedDishId);
-                const dish = selectedDishes[draggedCategory].find(d=>d.id===draggedDishId);
-                selectedDishes[draggedCategory] = selectedDishes[draggedCategory].filter(d=>d.id!==draggedDishId);
-                const targetIndex = selectedDishes[targetCategory].findIndex(d=>d.id===targetDishId);
-                selectedDishes[targetCategory].splice(targetIndex, 0, dish);
-            }else if(targetCategory !== draggedCategory){
-                const dish = selectedDishes[draggedCategory].find(d=>d.id===draggedDishId);
-                selectedDishes[draggedCategory] = selectedDishes[draggedCategory].filter(d=>d.id!==draggedDishId);
-                selectedDishes[targetCategory].push(dish);
-            }
-            await saveCloudData();
-            renderSelectedDishes(); endDrag();
-        }
-        function endDrag(){ if(draggedElement){ draggedElement.classList.remove('dragging'); } draggedElement=null; draggedDishId=null; draggedCategory=null; }
-
-        function renderSelectedDishes(){
-            const container = document.getElementById('selectedDishes');
-            const categories = { primer:'PRIMER PLATO', segundo:'SEGUNDO PLATO', postre:'POSTRES' };
-            let html=''; let hasSelected=false;
-            Object.keys(categories).forEach(category=>{
-                if(selectedDishes[category].length>0){
-                    hasSelected=true;
-                    html += `<div class="category-section">
-                        <div class="category-header">${categories[category]}</div>
-                        <div class="category-dishes" ondrop="drop(event, '${category}')" ondragover="allowDrop(event)">`;
-                    selectedDishes[category].forEach(dish=>{
-                        html += `<div class="selected-dish" draggable="true" data-selected-dish-id="${dish.id}" ondragstart="startDrag(event, ${dish.id}, '${category}')" ondragend="endDrag()">
-                            <div class="drag-handle">⋮⋮</div>
-                            <div class="dish-content">
-                                <strong>${dish.spanish}</strong><br>
-                                <em style="font-size: 12px; color: #666;">${dish.catalan}</em>
-                                ${dish.extra?`<br><span style="font-size: 12px; color: #888;">${dish.extra}</span>`:''}
-                                ${dish.temporary?'<br><span style="font-size: 11px; color: #f5576c;">✨ 手动添加</span>':''}
-                            </div>
-                            <div class="dish-actions">
-                                <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="editDish(${dish.id}, '${category}')">编辑</button>
-                                <button class="btn btn-danger" style="padding: 3px 8px; font-size: 11px;" onclick="removeDishFromMenu(${dish.id}, '${category}')">移除</button>
-                            </div>
-                        </div>`;
-                    });
-                    html += `</div></div>`;
-                }else{
-                    html += `<div class="category-section"><div class="category-header">${categories[category]}</div>
-                    <div class="category-dishes" ondrop="drop(event, '${category}')" ondragover="allowDrop(event)">
-                        <div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
-                }
-            });
-            container.innerHTML = hasSelected ? html :
-            `<div class="category-section"><div class="category-header">PRIMER PLATO</div><div class="category-dishes" ondrop="drop(event, 'primer')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-             <div class="category-section"><div class="category-header">SEGUNDO PLATO</div><div class="category-dishes" ondrop="drop(event, 'segundo')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-             <div class="category-section"><div class="category-header">POSTRES</div><div class="category-dishes" ondrop="drop(event, 'postre')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
-        }
-
-        async function removeDishFromMenu(id, category){
-            selectedDishes[category] = selectedDishes[category].filter(d=>d.id!==id);
-            await saveCloudData();
-            renderDishesContainer();
-            renderSelectedDishes();
-        }
-
-        function generateMenu(){
-            const price = document.getElementById('menuPrice').value;
-            const date = new Date(document.getElementById('menuDate').value).toLocaleDateString('es-ES',{ day:'numeric', month:'long' });
-            const categories = { primer:'PRIMER PLATO', segundo:'SEGUNDO PLATO', postre:'POSTRES' };
-            let menuHtml = `<div class="menu-header">
-                    <div class="menu-title">Menú del día</div>
-                    <div style="font-style: italic; color: #666; margin-bottom: 15px;">Restaurante sol</div>
-                    <div class="menu-date-price"><span>${price}</span><span>${date}</span></div>
-                </div>`;
-            Object.keys(categories).forEach(category=>{
-                if(selectedDishes[category].length>0){
-                    menuHtml += `<div class="menu-section"><div class="section-title">${categories[category]}</div>`;
-                    if(category==='postre'){
-                        const spanish = selectedDishes[category].map(d=>d.spanish).join(', ');
-                        const catalan = selectedDishes[category].map(d=>d.catalan).join(', ');
-                        const hasExtra = selectedDishes[category].some(d=>d.extra);
-                        menuHtml += `<div class="menu-item"><div class="menu-item-spanish">${spanish}</div>
-                                     <div class="menu-item-catalan">${catalan}</div>
-                                     ${hasExtra?'<div class="menu-item-extra">(algunos con suplemento)</div>':''}</div>`;
-                    }else{
-                        selectedDishes[category].forEach(dish=>{
-                            menuHtml += `<div class="menu-item"><div class="menu-item-spanish">${dish.spanish}</div>
-                                         <div class="menu-item-catalan">${dish.catalan}</div>
-                                         ${dish.extra?`<div class="menu-item-extra">${dish.extra}</div>`:''}</div>`;
-                        });
-                    }
-                    menuHtml += `</div>`;
-                }
-            });
-            menuHtml += '<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
-            document.getElementById('menuPreview').innerHTML = menuHtml;
-            document.getElementById('menuPreview').style.display = 'block';
-        }
-
-        function printMenu(){
-            if(document.getElementById('menuPreview').style.display==='none'){ generateMenu(); }
-            const w = window.open('', '_blank'); const content = document.getElementById('menuPreview').innerHTML;
-            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del día</title>
-                <style>
-                    @page { margin: 20mm 22mm; size: A4; }
-                    body { font-family: Arial, sans-serif; margin:0; padding:0; color:#333; line-height:1.2; }
-                    .menu-header { text-align:center; border-bottom:3px solid #333; padding-bottom:15px; margin-bottom:18px; }
-                    .menu-title { font-size:2.2em; font-style: italic; margin-bottom:6px; color:#333; font-weight:bold; }
-                    .menu-date-price { display:flex; justify-content:space-between; font-size:1.1em; font-weight:bold; margin-top:8px; }
-                    .menu-section { margin-bottom:18px; }
-                    .section-title { font-size:1.2em; font-weight:bold; margin-bottom:10px; color:#333; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #666; padding-bottom:3px; }
-                    .menu-item { margin-bottom:8px; padding-bottom:4px; padding-left:8px; }
-                    .menu-item-spanish { font-weight: normal; color:#333; margin-bottom:2px; font-size:12px; line-height:1.2; }
-                    .menu-item-catalan { font-style: italic; color:#666; font-size:11px; line-height:1.2; margin-bottom:2px; }
-                    .menu-item-extra { color:#888; font-size:11px; font-weight:500; }
-                    .menu-section:last-of-type .menu-item-spanish, .menu-section:last-of-type .menu-item-catalan, .menu-section:last-of-type .menu-item-extra { font-size:10px; }
-                    .menu-hours { text-align:center; margin-top:20px; padding-top:15px; border-top:2px solid #333; font-size:1.1em; font-weight:bold; letter-spacing:1px; }
-                    .menu-header > div:nth-child(2){ font-size:1em; color:#666; margin-bottom:12px; font-style: italic; }
-                </style></head><body>${content}</body></html>`);
-            w.document.close(); w.focus(); w.print(); w.close();
-        }
-
-        async function clearSelectedDishes(){
-            if(!confirm('确定要清空所有已选菜品吗？')) return;
-            selectedDishes = { primer:[], segundo:[], postre:[] };
-            await saveCloudData();
-            renderDishesContainer(); renderSelectedDishes();
-            document.getElementById('menuPreview').style.display='none';
-        }
-
-        function exportData(){
-            const data = { dishes, selectedDishes, exportDate: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-            const url = URL.createObjectURL(blob); const a = document.createElement('a');
-            a.href = url; a.download = `restaurant_menu_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
-        }
-
-        async function importData(event){
-            const file = event.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e){
-                try{
-                    const data = JSON.parse(e.target.result);
-                    if(data.dishes && Array.isArray(data.dishes)){ dishes = data.dishes; }
-                    if(data.selectedDishes){ selectedDishes = data.selectedDishes; }
-                    await saveCloudData(); renderDishesContainer(); renderSelectedDishes(); alert('数据导入成功！');
-                }catch(err){ alert('导入失败：文件格式不正确'); }
-            };
-            reader.readAsText(file); event.target.value='';
-        }
-
-        async function dedupeDishes(){
-            const before = dishes.length;
-            const map = new Map();
-            const result = [];
-            for(const d of dishes){
-                const key = d.category + '|' + normalize(d.spanish);
-                if(!map.has(key)){ map.set(key, true); result.push(d); }
-            }
-            const removed = before - result.length;
-            dishes = result;
-            await saveCloudData();
-            renderDishesContainer();
-            alert(removed>0 ? `已清理 ${removed} 条重复。` : '没有发现重复。');
-        }
-    </script>
+    async function dedupeDishes(){
+      const before=dishes.length; const map=new Map(); const result=[];
+      for(const d of dishes){ const key=d.category+'|'+normalize(d.spanish); if(!map.has(key)){ map.set(key,true); result.push(d); } }
+      const removed=before-result.length; dishes=result; await saveCloudData(); renderDishesContainer(); alert(removed>0?`已清理 ${removed} 条重复。`:'没有发现重复。');
+    }
+  </script>
 </body>
 </html>
