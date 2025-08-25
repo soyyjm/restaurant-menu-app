@@ -261,6 +261,7 @@
             border-radius: 6px;
             transition: background 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
 
         .dessert-checkbox:hover {
@@ -278,6 +279,30 @@
             cursor: pointer;
             font-size: 12px;
             line-height: 1.2;
+            flex: 1;
+        }
+
+        .dessert-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .dessert-checkbox:hover .dessert-delete {
+            opacity: 1;
         }
 
         /* 智能定价 */
@@ -525,7 +550,7 @@
             <div class="form-group">
                 <div class="translate-row">
                     <div>
-                        <label>西班牙语菜名</label>
+                        <label>西班牙语菜品</label>
                         <input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)">
                         <div class="correction-hint" id="spanishHint"></div>
                     </div>
@@ -590,7 +615,7 @@
                     <h4>🖊️ 手动添加菜品</h4>
                     <div class="translate-row">
                         <div>
-                            <input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)">
+                            <input type="text" id="manualSpanish" placeholder="西班牙语菜品" oninput="checkSpelling(this)">
                             <div class="correction-hint" id="manualSpanishHint"></div>
                         </div>
                         <div style="align-self: center;">
@@ -642,6 +667,13 @@
         let supabase;
         let isCloudMode = false;
         
+        // 保存折叠状态
+        let sectionStates = {
+            primer: true,
+            segundo: true,
+            postre: true
+        };
+        
         try {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             isCloudMode = true;
@@ -651,7 +683,7 @@
             updateSyncStatus('error', '💾 本地模式');
         }
 
-        // 本地数据（作为后备）
+        // 本地数据（作为备选）
         let dishes = [];
         let selectedDishes = {primer: [], segundo: [], postre: []};
 
@@ -662,16 +694,94 @@
             '2025-12-06', '2025-12-08', '2025-12-25'
         ];
 
-        // 翻译词典
+        // 改进的翻译词典（西班牙语到加泰罗尼亚语）
         const translations = {
-            'pollo': 'pollastre', 'jamón': 'pernil', 'queso': 'formatge',
-            'patatas': 'patates', 'huevo': 'ou', 'carne': 'carn',
-            'pescado': 'peix', 'verduras': 'verdures', 'arroz': 'arròs',
-            'pasta': 'pasta', 'ensalada': 'amanida', 'sopa': 'sopa',
-            'crema': 'crema', 'flan': 'flan', 'helado': 'gelat',
-            'fruta': 'fruita', 'chocolate': 'xocolata', 'con': 'amb',
-            'del': 'del', 'de': 'de', 'al': 'al', 'horno': 'forn',
-            'plancha': 'planxa', 'frito': 'fregit', 'asado': 'rostit'
+            // 肉类和蛋白质
+            'pollo': 'pollastre', 'jamón': 'pernil', 'cerdo': 'porc', 'ternera': 'vedella',
+            'cordero': 'xai', 'pavo': 'gall dindi', 'conejo': 'conill', 'carne': 'carn',
+            'huevo': 'ou', 'huevos': 'ous', 'chorizo': 'xoriço', 'morcilla': 'botifarra negra',
+            
+            // 海鲜
+            'pescado': 'peix', 'salmón': 'salmó', 'bacalao': 'bacallà', 'atún': 'tonyina',
+            'sardinas': 'sardines', 'gambas': 'gambes', 'langostinos': 'llagostins',
+            'mejillones': 'musclos', 'almejas': 'cloïsses', 'pulpo': 'pop', 'calamar': 'calamar',
+            'sepia': 'sípia', 'rape': 'rap', 'dorada': 'daurada', 'lubina': 'llobarro',
+            'merluza': 'lluç', 'rodaballo': 'rèmol', 'lenguado': 'llenguado', 'boquerones': 'seitons',
+            
+            // lácteos y quesos
+            'queso': 'formatge', 'leche': 'llet', 'nata': 'nata', 'mantequilla': 'mantega',
+            'yogur': 'iogurt', 'crema': 'crema',
+            
+            // Verduras y hortalizas
+            'verduras': 'verdures', 'patatas': 'patates', 'tomate': 'tomàquet',
+            'cebolla': 'ceba', 'ajo': 'all', 'pimiento': 'pebre', 'zanahoria': 'pastanaga',
+            'calabacín': 'carbassó', 'berenjena': 'albergínia', 'espinacas': 'espinacs',
+            'lechuga': 'enciam', 'apio': 'api', 'pepino': 'cogombre', 'rábano': 'rave',
+            'champiñones': 'xampinyons', 'setas': 'bolets', 'alcachofas': 'carxofes',
+            'espárragos': 'espàrrecs', 'judías': 'mongetes', 'guisantes': 'pèsols',
+            'habas': 'faves', 'puerro': 'porro', 'brócoli': 'bròquil', 'col': 'col',
+            'coliflor': 'coliflor', 'acelgas': 'bledes', 'remolacha': 'remolatxa',
+            
+            // Cereales y legumbres
+            'arroz': 'arròs', 'pasta': 'pasta', 'pan': 'pa', 'trigo': 'blat',
+            'lentejas': 'llenties', 'garbanzos': 'cigrons', 'alubias': 'mongetes',
+            'quinoa': 'quinoa', 'cebada': 'ordi', 'avena': 'civada',
+            
+            // Frutas
+            'fruta': 'fruita', 'manzana': 'poma', 'naranja': 'taronja', 'limón': 'llimona',
+            'plátano': 'plàtan', 'uvas': 'raïm', 'fresas': 'maduixes', 'melocotón': 'préssec',
+            'pera': 'pera', 'piña': 'pinya', 'sandía': 'síndria', 'melón': 'meló',
+            'cerezas': 'cireres', 'ciruelas': 'prunes', 'albaricoques': 'albercocs',
+            'frambuesas': 'gerd', 'moras': 'mores', 'arándanos': 'nabius',
+            
+            // Especias y condimentos
+            'sal': 'sal', 'pimienta': 'pebre', 'azúcar': 'sucre', 'miel': 'mel',
+            'aceite': 'oli', 'vinagre': 'vinagre', 'mostaza': 'mostassa',
+            'perejil': 'julivert', 'cilantro': 'coriandre', 'albahaca': 'alfàbrega',
+            'orégano': 'orenga', 'tomillo': 'farigola', 'romero': 'romaní',
+            'laurel': 'llorer', 'canela': 'canyella', 'pimentón': 'pebre vermell',
+            'azafrán': 'safrà', 'curry': 'curri', 'comino': 'comí',
+            
+            // Preparaciones y cocciones
+            'horno': 'forn', 'plancha': 'planxa', 'frito': 'fregit', 'asado': 'rostit',
+            'hervido': 'bullit', 'guisado': 'guisat', 'estofado': 'estofat',
+            'al vapor': 'al vapor', 'salteado': 'saltejat', 'gratinado': 'gratinat',
+            'marinado': 'marinat', 'ahumado': 'fumat', 'crudo': 'cru',
+            
+            // Postres y dulces
+            'flan': 'flan', 'helado': 'gelat', 'chocolate': 'xocolata',
+            'tarta': 'pastís', 'pastel': 'pastís', 'galletas': 'galetes',
+            'natillas': 'natilles', 'mousse': 'mousse', 'tiramisu': 'tiramisú',
+            'crema catalana': 'crema catalana', 'torrijas': 'torrijas',
+            
+            // Bebidas
+            'agua': 'aigua', 'vino': 'vi', 'cerveza': 'cervesa', 'café': 'cafè',
+            'té': 'te', 'zumo': 'suc', 'refresco': 'refresc',
+            
+            // Preposiciones y artículos comunes
+            'con': 'amb', 'del': 'del', 'de': 'de', 'al': 'al', 'la': 'la',
+            'el': 'el', 'los': 'els', 'las': 'les', 'y': 'i', 'en': 'en',
+            'sobre': 'sobre', 'para': 'per', 'por': 'per', 'sin': 'sense',
+            
+            // Platos típicos
+            'paella': 'paella', 'gazpacho': 'gaspatxo', 'tortilla': 'truita',
+            'croquetas': 'croquetes', 'ensaladilla': 'amanida russa',
+            'salmorejo': 'salmorejo', 'migas': 'migas', 'fabada': 'fabada',
+            'cocido': 'bullit', 'caldero': 'calderer', 'fideuà': 'fideuà',
+            'escalivada': 'escalivada', 'pa amb tomàquet': 'pa amb tomàquet',
+            
+            // Términos culinarios adicionales
+            'menú': 'menú', 'plato': 'plat', 'entrante': 'entrant',
+            'postre': 'postre', 'primer': 'primer', 'segundo': 'segon',
+            'racion': 'ració', 'tapa': 'tapa', 'montadito': 'montadito',
+            'bocadillo': 'entrepà', 'sandwich': 'sandvitx',
+            
+            // Adjetivos descriptivos
+            'fresco': 'fresc', 'tierno': 'tendre', 'crujiente': 'cruixent',
+            'jugoso': 'sucós', 'picante': 'picant', 'dulce': 'dolç',
+            'salado': 'salat', 'ácido': 'àcid', 'amargo': 'amarg',
+            'suave': 'suau', 'cremoso': 'cremós', 'ligero': 'lleuger',
+            'rico': 'ric', 'sabroso': 'saborós', 'delicioso': 'deliciós'
         };
 
         // 增强的拼写检查词典
@@ -683,7 +793,10 @@
             'berenjena': 'berenjenas', 'champiñon': 'champiñones',
             'limon': 'limón', 'melon': 'melón', 'oregano': 'orégano',
             'senor': 'señor', 'nina': 'niña', 'nino': 'niño', 'anos': 'años',
-            'manana': 'mañana', 'espanol': 'español', 'corazon': 'corazón'
+            'manana': 'mañana', 'espanol': 'español', 'corazon': 'corazón',
+            'gambón': 'gambas', 'langostino': 'langostinos', 'atun': 'atún',
+            'salmon': 'salmón', 'bacalao': 'bacalao', 'lubina': 'lubina',
+            'dorada': 'dorada', 'merluza': 'merluza', 'rodaballo': 'rodaballo'
         };
 
         // 同步状态更新
@@ -716,6 +829,12 @@
                 
                 if (!menuError && menuData) {
                     selectedDishes = menuData.dishes;
+                }
+                
+                // 加载折叠状态
+                const savedStates = localStorage.getItem('sectionStates');
+                if (savedStates) {
+                    sectionStates = JSON.parse(savedStates);
                 }
                 
                 dishes = dishesData || [];
@@ -760,6 +879,9 @@
                 
                 if (menuError) throw menuError;
                 
+                // 保存折叠状态到本地存储
+                localStorage.setItem('sectionStates', JSON.stringify(sectionStates));
+                
                 updateSyncStatus('synced', '☁️ 已同步');
                 
             } catch (error) {
@@ -769,15 +891,20 @@
             }
         }
 
-        // 本地数据操作（后备方案）
+        // 本地数据操作（备选方案）
         function loadLocalData() {
             dishes = JSON.parse(localStorage.getItem('restaurantDishes') || '[]');
             selectedDishes = JSON.parse(localStorage.getItem('selectedDishes') || '{"primer": [], "segundo": [], "postre": []}');
+            const savedStates = localStorage.getItem('sectionStates');
+            if (savedStates) {
+                sectionStates = JSON.parse(savedStates);
+            }
         }
 
         function saveLocalData() {
             localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
             localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
+            localStorage.setItem('sectionStates', JSON.stringify(sectionStates));
         }
 
         // 初始化
@@ -828,7 +955,7 @@
                 {
                     id: Date.now() + 5,
                     spanish: "Tarta de queso",
-                    catalan: "Pastis de formatge",
+                    catalan: "Pastís de formatge",
                     category: "postre",
                     extra: ""
                 },
@@ -907,46 +1034,75 @@
             }
         }
 
-        // 在线翻译功能
-async function translateText(text) {
-    if (!text.trim()) return text;
-    
-    try {
-        updateSyncStatus('syncing', '🔄 翻译中...');
-        const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
-        const data = await response.json();
-        
-        if (data.responseStatus === 200) {
-            updateSyncStatus('synced', '☁️ 已同步');
-            return data.responseData.translatedText;
-        } else {
-            // 翻译失败时使用本地词典
-            return simpleTranslate(text);
+        // 改进的简单翻译函数
+        function simpleTranslate(text) {
+            if (!text || !text.trim()) return text;
+            
+            let translated = text.toLowerCase();
+            
+            // 按长度排序，先替换长词组
+            const sortedTranslations = Object.keys(translations).sort((a, b) => b.length - a.length);
+            
+            sortedTranslations.forEach(spanish => {
+                const catalan = translations[spanish];
+                const regex = new RegExp(`\\b${spanish.replace(/[.*+?^${}()|[\]\\]/g, '\\            // Bebidas
+            'agua': 'aigua', 'vino': 'vi', 'cerveza': 'cervesa', 'café': 'cafè',
+            'té': 'te', 'zumo': 'suc', 'refresco': 'refresc',
+            
+            // Preposiciones y artículos comunes
+            'con': 'amb', 'del': 'del', 'de': 'de', 'al': 'al', 'la': 'la',
+            'el': 'el', 'los': 'els', 'las': 'les', 'y': 'i', 'en': 'en')}\\b`, 'gi');
+                translated = translated.replace(regex, catalan);
+            });
+            
+            // 保持原始大小写模式
+            if (text[0] === text[0].toUpperCase()) {
+                translated = translated[0].toUpperCase() + translated.slice(1);
+            }
+            
+            return translated;
         }
-    } catch (error) {
-        console.error('在线翻译失败:', error);
-        updateSyncStatus('synced', '☁️ 已同步');
-        // 失败时使用本地词典作为后备
-        return simpleTranslate(text);
-    }
-}
 
-// 自动翻译（异步版本）
-async function autoTranslate() {
-    const spanish = document.getElementById('dishSpanish').value.trim();
-    if (!spanish) return;
-    
-    const catalan = await translateText(spanish);
-    document.getElementById('dishCatalan').value = catalan;
-}
+        // 在线翻译功能
+        async function translateText(text) {
+            if (!text.trim()) return text;
+            
+            try {
+                updateSyncStatus('syncing', '🔄 翻译中...');
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
+                const data = await response.json();
+                
+                if (data.responseStatus === 200) {
+                    updateSyncStatus('synced', '☁️ 已同步');
+                    return data.responseData.translatedText;
+                } else {
+                    // 翻译失败时使用本地词典
+                    return simpleTranslate(text);
+                }
+            } catch (error) {
+                console.error('在线翻译失败:', error);
+                updateSyncStatus('synced', '☁️ 已同步');
+                // 失败时使用本地词典作为备选
+                return simpleTranslate(text);
+            }
+        }
 
-async function translateManual() {
-    const spanish = document.getElementById('manualSpanish').value.trim();
-    if (!spanish) return;
-    
-    const catalan = await translateText(spanish);
-    document.getElementById('manualCatalan').value = catalan;
-}
+        // 自动翻译（异步版本）
+        async function autoTranslate() {
+            const spanish = document.getElementById('dishSpanish').value.trim();
+            if (!spanish) return;
+            
+            const catalan = await translateText(spanish);
+            document.getElementById('dishCatalan').value = catalan;
+        }
+
+        async function translateManual() {
+            const spanish = document.getElementById('manualSpanish').value.trim();
+            if (!spanish) return;
+            
+            const catalan = await translateText(spanish);
+            document.getElementById('manualCatalan').value = catalan;
+        }
 
         // 添加菜品
         async function addDish() {
@@ -1009,13 +1165,23 @@ async function translateManual() {
             document.getElementById('manualSpanish').classList.remove('input-warning');
         }
 
-        // 折叠功能
+        // 折叠功能 - 保持状态
         function toggleSection(category) {
             const content = document.getElementById(`content-${category}`);
             const icon = document.getElementById(`icon-${category}`);
             
-            content.classList.toggle('expanded');
-            icon.classList.toggle('rotated');
+            sectionStates[category] = !sectionStates[category];
+            
+            if (sectionStates[category]) {
+                content.classList.add('expanded');
+                icon.classList.add('rotated');
+            } else {
+                content.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            }
+            
+            // 保存状态
+            localStorage.setItem('sectionStates', JSON.stringify(sectionStates));
         }
 
         // 甜点勾选功能
@@ -1037,6 +1203,18 @@ async function translateManual() {
             updateDessertCheckboxes();
         }
 
+        // 删除甜点菜品
+        async function deleteDessertDish(dishId) {
+            if (confirm('确定要删除这个甜点吗？')) {
+                dishes = dishes.filter(dish => dish.id !== dishId);
+                // 同时从已选菜品中移除
+                selectedDishes.postre = selectedDishes.postre.filter(dish => dish.id !== dishId);
+                await saveCloudData();
+                renderDishesContainer();
+                renderSelectedDishes();
+            }
+        }
+
         // 更新甜点勾选框状态
         function updateDessertCheckboxes() {
             const checkboxes = document.querySelectorAll('.dessert-checkboxes input[type="checkbox"]');
@@ -1047,7 +1225,7 @@ async function translateManual() {
             });
         }
 
-        // 渲染折叠式菜品容器
+        // 渲染折叠式菜品容器 - 保持状态
         function renderDishesContainer() {
             const container = document.getElementById('dishesContainer');
             const categories = {
@@ -1060,14 +1238,15 @@ async function translateManual() {
             
             Object.keys(categories).forEach(category => {
                 const categoryDishes = dishes.filter(dish => dish.category === category);
+                const isExpanded = sectionStates[category];
                 
                 html += `
                     <div class="collapsible-section">
                         <div class="section-header" onclick="toggleSection('${category}')">
                             <h3>${categories[category]} (${categoryDishes.length})</h3>
-                            <span class="rotate-icon" id="icon-${category}">▶</span>
+                            <span class="rotate-icon ${isExpanded ? 'rotated' : ''}" id="icon-${category}">▶</span>
                         </div>
-                        <div class="section-content" id="content-${category}">
+                        <div class="section-content ${isExpanded ? 'expanded' : ''}" id="content-${category}">
                 `;
                 
                 if (category === 'postre') {
@@ -1084,6 +1263,7 @@ async function translateManual() {
                                     <em>${dish.catalan}</em>
                                     ${dish.extra ? `<br><span style="color: #888;">${dish.extra}</span>` : ''}
                                 </label>
+                                <button class="dessert-delete" onclick="deleteDessertDish(${dish.id})" title="删除甜点">×</button>
                             </div>
                         `;
                     });
@@ -1117,8 +1297,13 @@ async function translateManual() {
         async function deleteDish(id) {
             if (confirm('确定要删除这个菜品吗？')) {
                 dishes = dishes.filter(dish => dish.id !== id);
+                // 同时从已选菜品中移除
+                Object.keys(selectedDishes).forEach(category => {
+                    selectedDishes[category] = selectedDishes[category].filter(dish => dish.id !== id);
+                });
                 await saveCloudData();
                 renderDishesContainer();
+                renderSelectedDishes();
             }
         }
 
@@ -1178,7 +1363,7 @@ async function translateManual() {
             
             contentDiv.innerHTML = `
                 <div class="edit-inputs">
-                    <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜名">
+                    <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜品">
                     <input type="text" id="edit-catalan-${dishId}" value="${dish.catalan}" placeholder="加泰罗尼亚语翻译">
                     <input type="text" id="edit-extra-${dishId}" value="${dish.extra || ''}" placeholder="额外费用">
                 </div>
