@@ -723,11 +723,12 @@ function applyPreviewFontSizes(){
           .section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}
           .menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}
           /* 非 postre 的菜品字号（打印） */
-          .menu-section:not(.postre-section) .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-          .menu-section:not(.postre-section) .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.mainCa}px !important;line-height:1.25;margin-bottom:2px}
-          /* postre 专用字号（打印） */
-          .menu-section.postre-section .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-          .menu-section.postre-section .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.postreCa}px !important;line-height:1.25;margin-bottom:2px}
+.menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
+.menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
+
+/* postre 专用字号（打印） */
+.menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
+.menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
           .menu-item-extra{color:#888;font-size:11px !important;font-weight:500}
           .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}
           .menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}
