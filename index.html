@@ -236,37 +236,57 @@
     const spanishHolidays=['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-08-15','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25'];
 
     // 打印字号设置（持久化）
-    let fontSettings = JSON.parse(localStorage.getItem('fontSettings')||'{"mainEs":12,"mainCa":11,"postreEs":12,"postreCa":11}');
-    function saveFontSettings(){ localStorage.setItem('fontSettings', JSON.stringify(fontSettings)); applyPreviewFontSizes(); }
-    function initFontControls(){
-      const $ = id => document.getElementById(id);
-      $('#fsMainEs').value = fontSettings.mainEs;
-      $('#fsMainCa').value = fontSettings.mainCa;
-      $('#fsPostreEs').value = fontSettings.postreEs;
-      $('#fsPostreCa').value = fontSettings.postreCa;
-      ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'].forEach(id=>{
-        document.getElementById(id).addEventListener('input', ()=>{
-          fontSettings.mainEs   = parseInt($('#fsMainEs').value)||12;
-          fontSettings.mainCa   = parseInt($('#fsMainCa').value)||11;
-          fontSettings.postreEs = parseInt($('#fsPostreEs').value)||12;
-          fontSettings.postreCa = parseInt($('#fsPostreCa').value)||11;
-          saveFontSettings();
-        });
-      });
-      applyPreviewFontSizes();
-    }
-    function applyPreviewFontSizes(){
-      // 在页面预览区也应用同样的字号（便于边调边看）
-      const css = `
-        /* 非 postre 的菜品字号 */
-        .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-        .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
-        /* postre 专用字号 */
-        .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-        .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
-      `;
-      document.getElementById('previewFontStyle').textContent = css;
-    }
+let fontSettings = JSON.parse(localStorage.getItem('fontSettings')||'{"mainEs":12,"mainCa":11,"postreEs":12,"postreCa":11}');
+function saveFontSettings(){ 
+  localStorage.setItem('fontSettings', JSON.stringify(fontSettings)); 
+  applyPreviewFontSizes(); 
+}
+
+/** 安全初始化：等到 4 个输入框都在 DOM 里再赋值和绑事件，拿不到就重试 */
+function initFontControls(){
+  const $ = id => document.getElementById(id);
+  const ids = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
+  const missing = ids.filter(id => !$(id));
+
+  if (missing.length){
+    // DOM 可能还没完成或者你 CDN 缓存的旧文件还在渲染，稍后再试
+    setTimeout(initFontControls, 50);
+    return;
+  }
+
+  // 赋初始值
+  $('#fsMainEs').value   = fontSettings.mainEs;
+  $('#fsMainCa').value   = fontSettings.mainCa;
+  $('#fsPostreEs').value = fontSettings.postreEs;
+  $('#fsPostreCa').value = fontSettings.postreCa;
+
+  // 绑输入事件（即时预览 + 保存）
+  ids.forEach(id=>{
+    $(id).addEventListener('input', ()=>{
+      fontSettings.mainEs   = parseInt($('#fsMainEs').value)||12;
+      fontSettings.mainCa   = parseInt($('#fsMainCa').value)||11;
+      fontSettings.postreEs = parseInt($('#fsPostreEs').value)||12;
+      fontSettings.postreCa = parseInt($('#fsPostreCa').value)||11;
+      saveFontSettings();
+    });
+  });
+
+  applyPreviewFontSizes();
+}
+
+/** 把字号应用到右侧预览（生成菜单后可见） */
+function applyPreviewFontSizes(){
+  const styleEl = document.getElementById('previewFontStyle');
+  if(!styleEl) return;
+  styleEl.textContent = `
+    /* 非 postre 的菜品字号（预览） */
+    #menuPreview .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
+    #menuPreview .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
+    /* postre 专用字号（预览） */
+    #menuPreview .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
+    #menuPreview .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
+  `;
+}
 
     // Accent & spelling dictionaries
     const accentMap={
