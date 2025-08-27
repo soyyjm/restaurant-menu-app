@@ -425,8 +425,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   const today = new Date();
   document.getElementById('menuDate').value = today.toISOString().split('T')[0];
 
-  await loadInitialDishes();
+  // 先取云端
   await loadCloudData();
+
+  // 云端和本地都空时，才播一次
+  await loadInitialDishes();
+  
   updatePricing();
   renderDishesContainer();
   renderSelectedDishes();
@@ -451,17 +455,27 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 // ======================================================
 
     async function loadInitialDishes(){
-      const initial=[
-        {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
-        {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
-        {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
-        {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
-        {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
-        {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
-        {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
-      ];
-      if(dishes.length===0){ dishes=initial; await saveCloudData(); }
-    }
+  // 已经播过就不再播（避免删除后又被初始数据顶回去）
+  if(localStorage.getItem('seeded_v1')==='1') return;
+
+  const initial = [
+    {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
+    {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
+    {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
+    {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
+    {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
+    {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
+    {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
+  ];
+
+  // 只有当云端/本地都空时才播种一次
+  const localHas = (Array.isArray(dishes) && dishes.length>0);
+  if(!localHas){
+    dishes = initial;
+    await saveCloudData();
+    localStorage.setItem('seeded_v1','1');
+  }
+}
 
     function updatePricing(){
       const dateInput=document.getElementById('menuDate'); const priceInput=document.getElementById('menuPrice'); const priceInfo=document.getElementById('priceInfo');
