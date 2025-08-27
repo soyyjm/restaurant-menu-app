@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>餐厅每日菜单管理工具 - 云端版（打印字号可调 v3.3）</title>
+  <title>餐厅每日菜单管理工具 - 云端版（打印字号可调 v3.3.1）</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
@@ -84,7 +84,6 @@
     .loading{opacity:.5;pointer-events:none}
     .help{font-size:12px;color:#666}
     .left-draggable{user-select:none}
-    /* 预览用的动态字号样式会插在 <style id="previewFontStyle"> 里 */
   </style>
 </head>
 <body>
@@ -133,9 +132,9 @@
 
     <div class="panel">
       <div class="menu-controls">
-        <h2>📋 每日菜单生成</h2>
+        <h2>📋 每日菜单生成（v3.3.1）</h2>
 
-        <!-- 新增：打印字号控制 -->
+        <!-- 打印字号控制 -->
         <div class="form-group" style="margin-top:6px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div style="border:1px solid #e7ebf0;border-radius:10px;padding:12px">
@@ -235,58 +234,53 @@
 
     const spanishHolidays=['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-08-15','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25'];
 
-    // 打印字号设置（持久化）
-let fontSettings = JSON.parse(localStorage.getItem('fontSettings')||'{"mainEs":12,"mainCa":11,"postreEs":12,"postreCa":11}');
-function saveFontSettings(){ 
-  localStorage.setItem('fontSettings', JSON.stringify(fontSettings)); 
-  applyPreviewFontSizes(); 
-}
+    /* ========== 打印字号设置（持久化） ========== */
+    let fontSettings = JSON.parse(localStorage.getItem('fontSettings')||'{"mainEs":12,"mainCa":11,"postreEs":12,"postreCa":11}');
+    function saveFontSettings(){ localStorage.setItem('fontSettings', JSON.stringify(fontSettings)); applyPreviewFontSizes(); }
 
-/** 安全初始化：等到 4 个输入框都在 DOM 里再赋值和绑事件，拿不到就重试 */
-function initFontControls(){
-  const $ = id => document.getElementById(id);
-  const ids = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
-  const missing = ids.filter(id => !$(id));
+    /** 安全初始化：等到 4 个输入框都在 DOM 里再赋值和绑事件，拿不到就重试 */
+    function initFontControls(){
+      const $ = id => document.getElementById(id);
+      const ids = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
+      const ok = ids.every(id => $(id));
+      if (!ok){
+        setTimeout(initFontControls, 50);
+        return;
+      }
+      // 赋初始值
+      $('#fsMainEs').value   = fontSettings.mainEs;
+      $('#fsMainCa').value   = fontSettings.mainCa;
+      $('#fsPostreEs').value = fontSettings.postreEs;
+      $('#fsPostreCa').value = fontSettings.postreCa;
 
-  if (missing.length){
-    // DOM 可能还没完成或者你 CDN 缓存的旧文件还在渲染，稍后再试
-    setTimeout(initFontControls, 50);
-    return;
-  }
+      // 绑输入事件（即时预览 + 保存）
+      ids.forEach(id=>{
+        $(id).addEventListener('input', ()=>{
+          fontSettings.mainEs   = parseInt($('#fsMainEs').value)||12;
+          fontSettings.mainCa   = parseInt($('#fsMainCa').value)||11;
+          fontSettings.postreEs = parseInt($('#fsPostreEs').value)||12;
+          fontSettings.postreCa = parseInt($('#fsPostreCa').value)||11;
+          saveFontSettings();
+        });
+      });
 
-  // 赋初始值
-  $('#fsMainEs').value   = fontSettings.mainEs;
-  $('#fsMainCa').value   = fontSettings.mainCa;
-  $('#fsPostreEs').value = fontSettings.postreEs;
-  $('#fsPostreCa').value = fontSettings.postreCa;
+      applyPreviewFontSizes();
+    }
 
-  // 绑输入事件（即时预览 + 保存）
-  ids.forEach(id=>{
-    $(id).addEventListener('input', ()=>{
-      fontSettings.mainEs   = parseInt($('#fsMainEs').value)||12;
-      fontSettings.mainCa   = parseInt($('#fsMainCa').value)||11;
-      fontSettings.postreEs = parseInt($('#fsPostreEs').value)||12;
-      fontSettings.postreCa = parseInt($('#fsPostreCa').value)||11;
-      saveFontSettings();
-    });
-  });
-
-  applyPreviewFontSizes();
-}
-
-/** 把字号应用到右侧预览（生成菜单后可见） */
-function applyPreviewFontSizes(){
-  const styleEl = document.getElementById('previewFontStyle');
-  if(!styleEl) return;
-  styleEl.textContent = `
-    /* 非 postre 的菜品字号（预览） */
-    #menuPreview .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-    #menuPreview .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
-    /* postre 专用字号（预览） */
-    #menuPreview .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-    #menuPreview .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
-  `;
-}
+    /** 把字号应用到右侧预览（生成菜单后可见） */
+    function applyPreviewFontSizes(){
+      const styleEl = document.getElementById('previewFontStyle');
+      if(!styleEl) return;
+      styleEl.textContent = `
+        /* 非 postre 的菜品字号（预览） */
+        #menuPreview .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
+        #menuPreview .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
+        /* postre 专用字号（预览） */
+        #menuPreview .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
+        #menuPreview .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
+      `;
+    }
+    /* ========== /打印字号设置 ========== */
 
     // Accent & spelling dictionaries
     const accentMap={
@@ -352,7 +346,7 @@ function applyPreviewFontSizes(){
       const today=new Date(); document.getElementById('menuDate').value=today.toISOString().split('T')[0];
       await loadInitialDishes(); await loadCloudData(); updatePricing(); renderDishesContainer(); renderSelectedDishes();
       document.getElementById('menuDate').addEventListener('change',updatePricing);
-      initFontControls(); // 初始化字号控制
+      initFontControls(); // 初始化字号控制（安全重试）
     });
 
     async function loadInitialDishes(){
@@ -376,7 +370,7 @@ function applyPreviewFontSizes(){
       else { priceInput.value='13.50 €'; priceInfo.textContent='今天是工作日，建议价格：13.50 €'; }
     }
 
-    // ---- Translation helpers ----
+    // 翻译/纠错（略，保持原功能）
     function postProcessCatalan(text){
       if(!text) return text; let s=text;
       phraseGlossary.forEach(([re,ca])=>{ s=s.replace(re,ca); });
@@ -395,8 +389,6 @@ function applyPreviewFontSizes(){
       }catch(e){ console.error(e); updateSyncStatus('synced','☁️ 已同步'); return postProcessCatalan(simpleTranslate(text)); }
     }
     function simpleTranslate(text){ return text.split(/(\W)/).map(tok=>translations[tok.toLowerCase()]||tok).join(''); }
-
-    // ---- Spanish autocorrect (accents + common typos) ----
     function autocorrectSpanish(text){
       if(!text) return text;
       let s=' '+text+' ';
@@ -426,7 +418,6 @@ function applyPreviewFontSizes(){
       if(corrections.length>0){ input.classList.add('input-warning'); hint.innerHTML='建议修正: '+corrections.join(', '); hint.style.display='block'; }
       else{ input.classList.remove('input-warning'); hint.style.display='none'; }
     }
-
     async function autoTranslate(){
       const spanish=document.getElementById('dishSpanish').value.trim(); if(!spanish) return;
       const fixed=autocorrectSpanish(spanish);
@@ -443,13 +434,12 @@ function applyPreviewFontSizes(){
     const normalize=s=>s.trim().toLowerCase().replace(/\s+/g,' ');
     function existsDuplicate(spanish,category){ const key=normalize(spanish); return dishes.some(d=>d.category===category && normalize(d.spanish)===key); }
 
-    // Add / Delete
     async function addDish(){
       let spanish=document.getElementById('dishSpanish').value.trim();
       const catalan=document.getElementById('dishCatalan').value.trim();
       const category=document.getElementById('dishCategory').value;
       const extra=document.getElementById('dishExtra').value.trim();
-      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
       spanish=autocorrectSpanish(spanish);
       if(existsDuplicate(spanish,category)){ alert('该分类下已存在相同菜名（西语）。'); return; }
       const dish={id:Date.now(),spanish,catalan,category,extra};
@@ -461,7 +451,7 @@ function applyPreviewFontSizes(){
       let spanish=document.getElementById('manualSpanish').value.trim();
       const catalan=document.getElementById('manualCatalan').value.trim();
       const category=document.getElementById('manualCategory').value;
-      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
       spanish=autocorrectSpanish(spanish);
       const dish={id:Date.now(),spanish,catalan,category,extra:'',temporary:true};
       selectedDishes[category].push(dish); await saveCloudData(); renderSelectedDishes();
@@ -475,7 +465,6 @@ function applyPreviewFontSizes(){
       collapseState[category]=isExp; saveCollapseState();
     }
 
-    // ---- POSTRES: checkbox works; compact chips; delete as '×' icon (hover to show)
     async function toggleDessertCheckbox(dishId){
       const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
       const list=selectedDishes.postre;
@@ -490,7 +479,6 @@ function applyPreviewFontSizes(){
       });
     }
 
-    // ---- Left library -> draggable into right panel
     function startDragFromLibrary(e,id){
       const dish=dishes.find(d=>d.id===id); if(!dish) return;
       e.dataTransfer.setData('text/plain', JSON.stringify({type:'library', id}));
@@ -623,7 +611,7 @@ function applyPreviewFontSizes(){
       const spanish=autocorrectSpanish(document.getElementById(`edit-spanish-${dishId}`).value.trim());
       const catalan=document.getElementById(`edit-catalan-${dishId}`).value.trim();
       const extra=document.getElementById(`edit-extra-${dishId}`).value.trim();
-      if(!spanish||!catalan){ alert('请填写菜品的西班牙语和加泰罗尼亚语名称'); return; }
+      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
       const dish=selectedDishes[category].find(d=>d.id===dishId);
       dish.spanish=spanish; dish.catalan=catalan; dish.extra=extra;
       await saveCloudData(); renderSelectedDishes();
@@ -636,9 +624,6 @@ function applyPreviewFontSizes(){
       let html=''; let hasSelected=false;
       Object.keys(categories).forEach(category=>{
         if(selectedDishes[category].length>0){
-          hasSelected=true;
-          // 给 postre 分区加上 postre-section 便于单独控制字号
-          const sectionClass = category==='postre' ? 'menu-section postre-section' : 'menu-section';
           html+=`<div class="category-section">
             <div class="category-header">${categories[category]}</div>
             <div class="category-dishes" ondrop="drop(event,'${category}')" ondragover="allowDrop(event)">`;
@@ -658,6 +643,7 @@ function applyPreviewFontSizes(){
             </div>`;
           });
           html+=`</div></div>`;
+          hasSelected=true;
         }else{
           html+=`<div class="category-section">
             <div class="category-header">${categories[category]}</div>
@@ -666,10 +652,12 @@ function applyPreviewFontSizes(){
             </div></div>`;
         }
       });
-      container.innerHTML=hasSelected?html:
-      `<div class="category-section"><div class="category-header">PRIMER PLATO</div><div class="category-dishes" ondrop="drop(event,'primer')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-       <div class="category-section"><div class="category-header">SEGUNDO PLATO</div><div class="category-dishes" ondrop="drop(event,'segundo')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-       <div class="category-section"><div class="category-header">POSTRES</div><div class="category-dishes" ondrop="drop(event,'postre')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
+      if(!hasSelected){
+        html = `<div class="category-section"><div class="category-header">PRIMER PLATO</div><div class="category-dishes" ondrop="drop(event,'primer')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
+        <div class="category-section"><div class="category-header">SEGUNDO PLATO</div><div class="category-dishes" ondrop="drop(event,'segundo')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
+        <div class="category-section"><div class="category-header">POSTRES</div><div class="category-dishes" ondrop="drop(event,'postre')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
+      }
+      container.innerHTML=html;
     }
 
     async function removeDishFromMenu(id,category){
@@ -688,7 +676,6 @@ function applyPreviewFontSizes(){
       </div>`;
       Object.keys(categories).forEach(category=>{
         if(selectedDishes[category].length>0){
-          // 给 postre 分区增加 postre-section class，便于打印时独立控制字号
           menuHtml+=`<div class="menu-section ${category==='postre'?'postre-section':''}"><div class="section-title">${categories[category]}</div>`;
           if(category==='postre'){
             const spanish=selectedDishes[category].map(d=>d.spanish).join(', ');
@@ -705,8 +692,7 @@ function applyPreviewFontSizes(){
       });
       menuHtml+='<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
       const mp=document.getElementById('menuPreview'); mp.innerHTML=menuHtml; mp.style.display='block';
-      // 生成后也刷新预览字号
-      applyPreviewFontSizes();
+      applyPreviewFontSizes(); // 生成后刷新预览字号
     }
 
     function printMenu(){
@@ -723,12 +709,11 @@ function applyPreviewFontSizes(){
           .section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}
           .menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}
           /* 非 postre 的菜品字号（打印） */
-.menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-.menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
-
-/* postre 专用字号（打印） */
-.menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-.menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
+          .menu-section:not(.postre-section) .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.mainEs}px !important;line-height:1.25}
+          .menu-section:not(.postre-section) .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.mainCa}px !important;line-height:1.25;margin-bottom:2px}
+          /* postre 专用字号（打印） */
+          .menu-section.postre-section .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.postreEs}px !important;line-height:1.25}
+          .menu-section.postre-section .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.postreCa}px !important;line-height:1.25;margin-bottom:2px}
           .menu-item-extra{color:#888;font-size:11px !important;font-weight:500}
           .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}
           .menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}
