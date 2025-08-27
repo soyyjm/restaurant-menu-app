@@ -241,27 +241,26 @@ function saveFontSettings(){ localStorage.setItem('fontSettings', JSON.stringify
 // 等4个输入框真的出现后再初始化，缺就重试；若始终缺，也不会报错
 function initFontControls(){
   const $ = id => document.getElementById(id);
-  const need = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
-  const ok = need.every(id => $(id));
-  if (!ok){
-    // 先尝试自动插入UI（防止HTML里没有）
-    ensureFontControls();
-    setTimeout(initFontControls, 100);
+  const ids = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
+  const els = ids.map(id => $(id));
+  if (els.some(el => !el)) {
+    // 还没插进来；不要继续
     return;
   }
-  // 赋初始值
-  $('#fsMainEs').value   = fontSettings.mainEs;
-  $('#fsMainCa').value   = fontSettings.mainCa;
-  $('#fsPostreEs').value = fontSettings.postreEs;
-  $('#fsPostreCa').value = fontSettings.postreCa;
+  // 赋值前再次判断
+  if ($('fsMainEs')) $('fsMainEs').value = fontSettings.mainEs;
+  if ($('fsMainCa')) $('fsMainCa').value = fontSettings.mainCa;
+  if ($('fsPostreEs')) $('fsPostreEs').value = fontSettings.postreEs;
+  if ($('fsPostreCa')) $('fsPostreCa').value = fontSettings.postreCa;
 
-  // 绑定事件
-  need.forEach(id=>{
-    $(id).addEventListener('input', ()=>{
-      fontSettings.mainEs   = parseInt($('#fsMainEs').value)||12;
-      fontSettings.mainCa   = parseInt($('#fsMainCa').value)||11;
-      fontSettings.postreEs = parseInt($('#fsPostreEs').value)||12;
-      fontSettings.postreCa = parseInt($('#fsPostreCa').value)||11;
+  ids.forEach(id=>{
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener('input', ()=>{
+      fontSettings.mainEs   = parseInt($('fsMainEs')?.value)||12;
+      fontSettings.mainCa   = parseInt($('fsMainCa')?.value)||11;
+      fontSettings.postreEs = parseInt($('fsPostreEs')?.value)||12;
+      fontSettings.postreCa = parseInt($('fsPostreCa')?.value)||11;
       saveFontSettings();
     });
   });
@@ -420,21 +419,32 @@ function ensureFontControls(){
   }
 }
 // ======================================================
+let __fontCtlInited = false;
+
 document.addEventListener('DOMContentLoaded', async ()=>{
   const today = new Date();
   document.getElementById('menuDate').value = today.toISOString().split('T')[0];
 
   await loadInitialDishes();
-  await loadCloudData();          // ← 别丢括号
+  await loadCloudData();
   updatePricing();
   renderDishesContainer();
-  renderSelectedDishes();         // ← 别丢括号
+  renderSelectedDishes();
 
-  // 先尝试插入字号控制 UI（如果 HTML 里没有，会自动插入）
+  // 先插 UI，再初始化（内部也带重试）
   ensureFontControls();
 
-  // 再初始化字号控制（内部也会重试，不会报错）
-  initFontControls();
+  const tryInit = () => {
+    if (__fontCtlInited) return;
+    initFontControls();
+    // 如果还没初始化成功（找不到元素），100ms 后再试
+    if (!document.getElementById('fsMainEs')) {
+      setTimeout(tryInit, 100);
+    } else {
+      __fontCtlInited = true;
+    }
+  };
+  tryInit();
 
   document.getElementById('menuDate').addEventListener('change', updatePricing);
 });
