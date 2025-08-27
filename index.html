@@ -133,6 +133,14 @@
     <div class="panel">
       <div class="menu-controls">
         <h2>📋 每日菜单生成（v3.3.1）</h2>
+        <div class="form-group" style="margin:6px 0 2px;display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn btn-danger btn-small" onclick="forceCloudOverwrite()">
+    ☁️⚠️ 强制云端替换
+  </button>
+  <button class="btn btn-secondary btn-small" onclick="forceLocalFromCloud()">
+    ⬇️ 用云端覆盖本地
+  </button>
+</div>
 
         <!-- 打印字号控制 -->
         <div class="form-group" style="margin-top:6px">
@@ -348,6 +356,58 @@ function printMenu(){
         dishes=dishesData||[]; updateSyncStatus('synced','☁️ 已同步');
       }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData(); }
     }
+
+    // 用“当前本地状态”强制覆盖云端（先清库再插入）
+async function forceCloudOverwrite(){
+  if(!isCloudMode){ alert('当前不是云端模式，无法覆盖云端。'); return; }
+  if(!confirm('确定要用本地数据覆盖云端【全部】数据吗？此操作不可撤销。')) return;
+  try{
+    updateSyncStatus('syncing','⚠️ 正在用本地覆盖云端...');
+    // 1) 清空云端 dishes
+    await supabase.from('dishes').delete().neq('id', null);
+    // 2) 重新插入本地全部菜品
+    if(dishes.length>0){
+      const now=new Date().toISOString();
+      const payload=dishes.map(d=>({...d,created_at:d.created_at||now,updated_at:now}));
+      await supabase.from('dishes').insert(payload);
+    }
+    // 3) 覆盖 selected_menu
+    await supabase.from('selected_menu').upsert({
+      id:1,
+      dishes:selectedDishes,
+      updated_at:new Date().toISOString()
+    });
+    updateSyncStatus('synced','☁️ 已用本地覆盖云端');
+  }catch(e){
+    console.error(e);
+    updateSyncStatus('error','⚠️ 覆盖失败');
+  }
+}
+
+// 从云端拉取并覆盖本地（相当于回滚到云端版本）
+async function forceLocalFromCloud(){
+  if(!isCloudMode){ alert('当前不是云端模式。'); return; }
+  try{
+    updateSyncStatus('syncing','⬇️ 正在用云端覆盖本地...');
+    const {data:dishesData}=await supabase.from('dishes').select('*').order('created_at',{ascending:true});
+    const {data:menuData}=await supabase.from('selected_menu').select('*').single();
+
+    dishes = dishesData || [];
+    selectedDishes = (menuData && menuData.dishes) ? menuData.dishes : {primer:[],segundo:[],postre:[]};
+
+    // 覆盖到本地存储 & 刷新 UI
+    localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
+    localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
+
+    renderDishesContainer();
+    renderSelectedDishes();
+    updateSyncStatus('synced','⬇️ 已用云端覆盖本地');
+  }catch(e){
+    console.error(e);
+    updateSyncStatus('error','⚠️ 拉取失败');
+  }
+}
+    
     async function saveCloudData(){
       if(!isCloudMode){ return saveLocalData(); }
       try{
