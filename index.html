@@ -46,7 +46,7 @@
     .dessert-chip{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;background:#f8f9fa;padding:6px 8px;border-radius:10px;border:1px solid #e7ebf0;position:relative}
     .dessert-chip label{font-size:12px;line-height:1.2;margin:0}
     .chip-remove{background:transparent;border:none;font-size:16px;line-height:1;cursor:pointer;color:#e74c3c;padding:0 6px;opacity:0;transition:opacity .2s}
-    .dessert-chip:hover .chip-remove{opacity:1}
+    .dessert-chip:hover .chip-remove{opacity:1} /* 悬浮时显示 × */
     .price-info{font-size:12px;color:#666;margin-top:5px}
     .manual-add{background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px}
     .manual-add h4{color:#667eea;margin-bottom:10px}
@@ -57,8 +57,8 @@
     .menu-section{margin-bottom:20px}
     .section-title{font-size:1.1em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase}
     .menu-item{margin-bottom:12px;padding-bottom:8px}
-    .menu-item-spanish{font-weight:500;color:#333;margin-bottom:2px;font-size:14px}
-    .menu-item-catalan{font-style:italic;color:#666;font-size:13px}
+    .menu-item-spanish{font-weight:500;color:#333;margin-bottom:2px;font-size:13px}
+    .menu-item-catalan{font-style:italic;color:#666;font-size:11px}
     .menu-item-extra{color:#888;font-size:11px}
     .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:1px solid #ddd;font-size:1em;font-weight:bold}
     .selected-dishes{background:#e8f4fd;padding:15px;border-radius:10px;margin-bottom:20px}
@@ -125,7 +125,6 @@
       <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
       <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
-      <button class="btn btn-danger" onclick="forceReplaceCloud()">☁️⚠️ 强制云端替换</button>
       <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
       <div class="help">提示：POSTRES 支持删除；左侧菜可直接拖拽到右侧分类；输入西语后会自动纠正常见重音。</div>
       <div id="dishesContainer"></div>
@@ -201,7 +200,7 @@
     };
     const spellCheck={
       'polla':'pollo','jamon':'jamón','patata':'patatas','huevos':'huevo','verdura':'verduras',
-      'pescao':'pescado','tomate':'tomate','cebolla':'cebolla','limon':'limón','melon':'melón','oregano':'orégano',
+      'pescao':'pescado','tomate':'tomate','cebolla':'cebolla','limon':'limón','melon':'melón','oregano':'或égano',
       'senor':'señor','nina':'niña','nino':'niño','anos':'años','manana':'mañana','espanol':'español','corazon':'corazón'
     };
 
@@ -226,7 +225,6 @@
     function loadLocalData(){ dishes=JSON.parse(localStorage.getItem('restaurantDishes')||'[]'); selectedDishes=JSON.parse(localStorage.getItem('selectedDishes')||'{"primer":[],"segundo":[],"postre":[]}'); }
     function saveLocalData(){ localStorage.setItem('restaurantDishes',JSON.stringify(dishes)); localStorage.setItem('selectedDishes',JSON.stringify(selectedDishes)); }
 
-    // 只在“云端+云端为空”的情况下再播种初始数据；否则绝不抢先写入
     async function seedInitialIfEmpty(){
       if(dishes.length>0) return;
       const initial=[
@@ -261,7 +259,6 @@
       }
     }
 
-    // ✅ 保存：先删除云端多余，再 upsert 本地
     async function saveCloudData(){
       if(!isCloudMode){ return saveLocalData(); }
       try{
@@ -289,8 +286,6 @@
         if(payload.length>0){
           const { error: upErr } = await supabase.from('dishes').upsert(payload);
           if(upErr) throw upErr;
-        }else{
-          // 本地为空则允许云端被清空（不 upsert）
         }
 
         // 同步右侧菜单
@@ -312,7 +307,7 @@
     document.addEventListener('DOMContentLoaded',async()=>{
       const today=new Date(); document.getElementById('menuDate').value=today.toISOString().split('T')[0];
 
-      // 🚩 正确顺序：先读云端 → 若确实为空再播种
+      // 正确顺序：先读云端 → 若确实为空再播种
       await loadCloudData();
       if(isCloudMode && dishes.length===0){ await seedInitialIfEmpty(); }
       if(!isCloudMode){ if(dishes.length===0){ await seedInitialIfEmpty(); } }
@@ -412,6 +407,7 @@
       document.getElementById('dishSpanish').value=''; document.getElementById('dishCatalan').value=''; document.getElementById('dishExtra').value='';
       document.getElementById('spanishHint').style.display='none'; document.getElementById('dishSpanish').classList.remove('input-warning');
     }
+
     async function addManualDish(){
       let spanish=document.getElementById('manualSpanish').value.trim();
       const catalan=document.getElementById('manualCatalan').value.trim();
@@ -430,7 +426,7 @@
       collapseState[category]=isExp; saveCollapseState();
     }
 
-    // ---- POSTRES: checkbox + grid
+    // ---- POSTRES: checkbox works; compact chips; delete as '×' icon (hover to show)
     async function toggleDessertCheckbox(dishId){
       const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
       const list=selectedDishes.postre;
@@ -445,7 +441,7 @@
       });
     }
 
-    // ---- Drag & Drop
+    // ---- Left library -> draggable into right panel
     function startDragFromLibrary(e,id){
       const dish=dishes.find(d=>d.id===id); if(!dish) return;
       e.dataTransfer.setData('text/plain', JSON.stringify({type:'library', id}));
@@ -663,8 +659,32 @@
       if(document.getElementById('menuPreview').style.display==='none'){ generateMenu(); }
       const w=window.open('','_blank'); const content=document.getElementById('menuPreview').innerHTML;
       w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del día</title>
-        <style>@page{margin:20mm 22mm;size:A4}body{font-family:Arial,sans-serif;margin:0;padding:0;color:#333;line-height:1.2}.menu-header{text-align:center;border-bottom:3px solid #333;padding-bottom:15px;margin-bottom:18px}.menu-title{font-size:2.2em;font-style:italic;margin-bottom:6px;color:#333;font-weight:bold}.menu-date-price{display:flex;justify-content:space-between;font-size:1.1em;font-weight:bold;margin-top:8px}.menu-section{margin-bottom:18px}.section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}.menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}.menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:12px;line-height:1.2}.menu-item-catalan{font-style:italic;color:#666;font-size:11px;line-height:1.2;margin-bottom:2px}.menu-item-extra{color:#888;font-size:11px;font-weight:500}.menu-section:last-of-type .menu-item-spanish,.menu-section:last-of-type .menu-item-catalan,.menu-section:last-of-type .menu-item-extra{font-size:10px}.menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}.menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}</style></head><body>${content}</body></html>`);
+        <style>
+          @page{margin:20mm 22mm;size:A4}
+          html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+          body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:0;padding:0;color:#333;line-height:1.3}
+          .menu-header{text-align:center;border-bottom:3px solid #333;padding-bottom:15px;margin-bottom:18px}
+          .menu-title{font-size:2.2em;font-style:italic;margin-bottom:6px;color:#333;font-weight:bold}
+          .menu-date-price{display:flex;justify-content:space-between;font-size:1.1em;font-weight:bold;margin-top:8px}
+          .menu-section{margin-bottom:18px}
+          .section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}
+          .menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}
+          /* 关键：打印字号 */
+          .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:12px !important;line-height:1.25}
+          .menu-item-catalan{font-style:italic;color:#666;font-size:11px !important;line-height:1.25;margin-bottom:2px}
+          .menu-item-extra{color:#888;font-size:11px !important;font-weight:500}
+          /* 去掉原来的最后分区缩小覆盖规则 */
+          .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}
+          .menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}
+        </style></head><body>${content}</body></html>`);
       w.document.close(); w.focus(); w.print(); w.close();
+    }
+
+    async function clearSelectedDishes(){
+      if(!confirm('确定要清空所有已选菜品吗？')) return;
+      selectedDishes={primer:[],segundo:[],postre:[]};
+      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
+      document.getElementById('menuPreview').style.display='none';
     }
 
     function exportData(){
@@ -692,52 +712,6 @@
       const before=dishes.length; const map=new Map(); const result=[];
       for(const d of dishes){ const key=d.category+'|'+normalize(d.spanish); if(!map.has(key)){ map.set(key,true); result.push(d); } }
       const removed=before-result.length; dishes=result; await saveCloudData(); renderDishesContainer(); alert(removed>0?`已清理 ${removed} 条重复。`:'没有发现重复。');
-    }
-
-    // ✅ 更稳妥的强制替换：先取全量 id，再 delete.in()
-    async function forceReplaceCloud(){
-      if(!isCloudMode){ alert('当前为本地模式，无法替换云端。'); return; }
-      if(!confirm('此操作将用“当前本地数据”整体覆盖云端 dishes 表。确定继续？')) return;
-      try{
-        updateSyncStatus('syncing','🧨 正在强制替换...');
-
-        // 先查出所有云端 id
-        const { data: allRows, error: selErr } = await supabase.from('dishes').select('id');
-        if(selErr) throw selErr;
-
-        // 批量删除全部
-        if(allRows && allRows.length){
-          const ids = allRows.map(r=>r.id);
-          const { error: delAllErr } = await supabase.from('dishes').delete().in('id', ids);
-          if(delAllErr) throw delAllErr;
-        }
-
-        // 重新插入本地的菜品
-        if(dishes.length>0){
-          const payload = dishes.map(d=>({
-            ...d,
-            created_at: d.created_at || new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
-          const { error: insErr } = await supabase.from('dishes').insert(payload);
-          if(insErr) throw insErr;
-        }
-
-        // 同步右侧菜单
-        const { error: menuErr } = await supabase.from('selected_menu').upsert({
-          id: 1,
-          dishes: selectedDishes,
-          updated_at: new Date().toISOString()
-        });
-        if(menuErr) throw menuErr;
-
-        updateSyncStatus('synced','✅ 云端已完全以本地数据为准');
-        alert('云端替换完成。');
-      }catch(e){
-        console.error(e);
-        updateSyncStatus('error','⚠️ 替换失败');
-        alert('替换失败：请检查 Supabase 权限（需要 delete/insert/upsert）或网络。');
-      }
     }
   </script>
 </body>
