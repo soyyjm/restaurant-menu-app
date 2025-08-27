@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>餐厅每日菜单管理工具 - 云端版（修复版 v3.1）</title>
+  <title>餐厅每日菜单管理工具 - 云端版（修复版 v3.2）</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
@@ -46,7 +46,7 @@
     .dessert-chip{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;background:#f8f9fa;padding:6px 8px;border-radius:10px;border:1px solid #e7ebf0;position:relative}
     .dessert-chip label{font-size:12px;line-height:1.2;margin:0}
     .chip-remove{background:transparent;border:none;font-size:16px;line-height:1;cursor:pointer;color:#e74c3c;padding:0 6px;opacity:0;transition:opacity .2s}
-    .dessert-chip:hover .chip-remove{opacity:1} /* 悬浮时显示 × */
+    .dessert-chip:hover .chip-remove{opacity:1}
     .price-info{font-size:12px;color:#666;margin-top:5px}
     .manual-add{background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px}
     .manual-add h4{color:#667eea;margin-bottom:10px}
@@ -125,7 +125,6 @@
       <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
       <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
-      <!-- 新增：强制云端替换按钮 -->
       <button class="btn btn-danger" onclick="forceReplaceCloud()">☁️⚠️ 强制云端替换</button>
       <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
       <div class="help">提示：POSTRES 支持删除；左侧菜可直接拖拽到右侧分类；输入西语后会自动纠正常见重音。</div>
@@ -227,47 +226,74 @@
     function loadLocalData(){ dishes=JSON.parse(localStorage.getItem('restaurantDishes')||'[]'); selectedDishes=JSON.parse(localStorage.getItem('selectedDishes')||'{"primer":[],"segundo":[],"postre":[]}'); }
     function saveLocalData(){ localStorage.setItem('restaurantDishes',JSON.stringify(dishes)); localStorage.setItem('selectedDishes',JSON.stringify(selectedDishes)); }
 
+    // 只在“云端+云端为空”的情况下再播种初始数据；否则绝不抢先写入
+    async function seedInitialIfEmpty(){
+      if(dishes.length>0) return;
+      const initial=[
+        {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
+        {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
+        {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
+        {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
+        {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
+        {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
+        {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
+      ];
+      dishes = initial;
+      await saveCloudData();
+    }
+
     async function loadCloudData(){
       if(!isCloudMode){ return loadLocalData(); }
       try{
         updateSyncStatus('syncing','🔄 同步中...');
         const {data:dishesData,error:dishesError}=await supabase.from('dishes').select('*').order('created_at',{ascending:true});
         if(dishesError) throw dishesError;
+
         const {data:menuData,error:menuError}=await supabase.from('selected_menu').select('*').single();
-        if(!menuError && menuData){ selectedDishes=menuData.dishes; }
-        dishes=dishesData||[]; updateSyncStatus('synced','☁️ 已同步');
-      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData(); }
+        if(!menuError && menuData && menuData.dishes){ selectedDishes=menuData.dishes; }
+
+        dishes=dishesData||[];
+        updateSyncStatus('synced','☁️ 已同步');
+      }catch(e){
+        console.error(e);
+        updateSyncStatus('error','⚠️ 同步失败');
+        loadLocalData();
+      }
     }
 
-    // ✅ 修复：保存时执行“删除同步”+ upsert
+    // ✅ 保存：先删除云端多余，再 upsert 本地
     async function saveCloudData(){
       if(!isCloudMode){ return saveLocalData(); }
       try{
         updateSyncStatus('syncing','🔄 保存中...');
 
-        // ① 取云端已有 id
+        // 取云端 id 列表
         const { data: existing, error: exErr } = await supabase.from('dishes').select('id');
         if(exErr) throw exErr;
         const cloudIds = new Set((existing||[]).map(r=>r.id));
         const localIds = new Set(dishes.map(d=>d.id));
 
-        // ② 删除云端多余项（云端有，但本地没有）
+        // 删除云端多余
         const idsToDelete = [...cloudIds].filter(id => !localIds.has(id));
         if(idsToDelete.length>0){
           const { error: delErr } = await supabase.from('dishes').delete().in('id', idsToDelete);
           if(delErr) throw delErr;
         }
 
-        // ③ upsert 本地项（新增/更新）
+        // upsert 本地
         const payload = dishes.map(d=>({
           ...d,
           created_at: d.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString()
         }));
-        const { error: upErr } = await supabase.from('dishes').upsert(payload);
-        if(upErr) throw upErr;
+        if(payload.length>0){
+          const { error: upErr } = await supabase.from('dishes').upsert(payload);
+          if(upErr) throw upErr;
+        }else{
+          // 本地为空则允许云端被清空（不 upsert）
+        }
 
-        // ④ 同步右侧菜单
+        // 同步右侧菜单
         const { error: menuErr } = await supabase.from('selected_menu').upsert({
           id: 1,
           dishes: selectedDishes,
@@ -285,22 +311,17 @@
 
     document.addEventListener('DOMContentLoaded',async()=>{
       const today=new Date(); document.getElementById('menuDate').value=today.toISOString().split('T')[0];
-      await loadInitialDishes(); await loadCloudData(); updatePricing(); renderDishesContainer(); renderSelectedDishes();
+
+      // 🚩 正确顺序：先读云端 → 若确实为空再播种
+      await loadCloudData();
+      if(isCloudMode && dishes.length===0){ await seedInitialIfEmpty(); }
+      if(!isCloudMode){ if(dishes.length===0){ await seedInitialIfEmpty(); } }
+
+      updatePricing();
+      renderDishesContainer();
+      renderSelectedDishes();
       document.getElementById('menuDate').addEventListener('change',updatePricing);
     });
-
-    async function loadInitialDishes(){
-      const initial=[
-        {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
-        {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
-        {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
-        {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
-        {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
-        {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
-        {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
-      ];
-      if(dishes.length===0){ dishes=initial; await saveCloudData(); }
-    }
 
     function updatePricing(){
       const dateInput=document.getElementById('menuDate'); const priceInput=document.getElementById('menuPrice'); const priceInfo=document.getElementById('priceInfo');
@@ -409,7 +430,7 @@
       collapseState[category]=isExp; saveCollapseState();
     }
 
-    // ---- POSTRES: checkbox works; compact chips; delete as '×' icon (hover to show)
+    // ---- POSTRES: checkbox + grid
     async function toggleDessertCheckbox(dishId){
       const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
       const list=selectedDishes.postre;
@@ -424,7 +445,7 @@
       });
     }
 
-    // ---- Left library -> draggable into right panel
+    // ---- Drag & Drop
     function startDragFromLibrary(e,id){
       const dish=dishes.find(d=>d.id===id); if(!dish) return;
       e.dataTransfer.setData('text/plain', JSON.stringify({type:'library', id}));
@@ -646,13 +667,6 @@
       w.document.close(); w.focus(); w.print(); w.close();
     }
 
-    async function clearSelectedDishes(){
-      if(!confirm('确定要清空所有已选菜品吗？')) return;
-      selectedDishes={primer:[],segundo:[],postre:[]};
-      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
-      document.getElementById('menuPreview').style.display='none';
-    }
-
     function exportData(){
       const data={dishes,selectedDishes,exportDate:new Date().toISOString()};
       const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -680,17 +694,25 @@
       const removed=before-result.length; dishes=result; await saveCloudData(); renderDishesContainer(); alert(removed>0?`已清理 ${removed} 条重复。`:'没有发现重复。');
     }
 
-    // 🧨 一键：强制用本地覆盖云端（按钮已在上方添加）
+    // ✅ 更稳妥的强制替换：先取全量 id，再 delete.in()
     async function forceReplaceCloud(){
       if(!isCloudMode){ alert('当前为本地模式，无法替换云端。'); return; }
       if(!confirm('此操作将用“当前本地数据”整体覆盖云端 dishes 表。确定继续？')) return;
       try{
         updateSyncStatus('syncing','🧨 正在强制替换...');
-        // 清空云端 dishes
-        const { error: delAllErr } = await supabase.from('dishes').delete().neq('id', -1);
-        if(delAllErr) throw delAllErr;
 
-        // 重建云端
+        // 先查出所有云端 id
+        const { data: allRows, error: selErr } = await supabase.from('dishes').select('id');
+        if(selErr) throw selErr;
+
+        // 批量删除全部
+        if(allRows && allRows.length){
+          const ids = allRows.map(r=>r.id);
+          const { error: delAllErr } = await supabase.from('dishes').delete().in('id', ids);
+          if(delAllErr) throw delAllErr;
+        }
+
+        // 重新插入本地的菜品
         if(dishes.length>0){
           const payload = dishes.map(d=>({
             ...d,
@@ -710,7 +732,7 @@
         if(menuErr) throw menuErr;
 
         updateSyncStatus('synced','✅ 云端已完全以本地数据为准');
-        alert('云端替换完成。历史重复数据已经清空。');
+        alert('云端替换完成。');
       }catch(e){
         console.error(e);
         updateSyncStatus('error','⚠️ 替换失败');
