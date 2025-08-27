@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>餐厅每日菜单管理工具 - 云端版（修复版 v3）</title>
+  <title>餐厅每日菜单管理工具 - 云端版（修复版 v3.1）</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
@@ -125,6 +125,8 @@
       <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
       <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
+      <!-- 新增：强制云端替换按钮 -->
+      <button class="btn btn-danger" onclick="forceReplaceCloud()">☁️⚠️ 强制云端替换</button>
       <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
       <div class="help">提示：POSTRES 支持删除；左侧菜可直接拖拽到右侧分类；输入西语后会自动纠正常见重音。</div>
       <div id="dishesContainer"></div>
@@ -224,6 +226,7 @@
 
     function loadLocalData(){ dishes=JSON.parse(localStorage.getItem('restaurantDishes')||'[]'); selectedDishes=JSON.parse(localStorage.getItem('selectedDishes')||'{"primer":[],"segundo":[],"postre":[]}'); }
     function saveLocalData(){ localStorage.setItem('restaurantDishes',JSON.stringify(dishes)); localStorage.setItem('selectedDishes',JSON.stringify(selectedDishes)); }
+
     async function loadCloudData(){
       if(!isCloudMode){ return loadLocalData(); }
       try{
@@ -235,16 +238,49 @@
         dishes=dishesData||[]; updateSyncStatus('synced','☁️ 已同步');
       }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData(); }
     }
+
+    // ✅ 修复：保存时执行“删除同步”+ upsert
     async function saveCloudData(){
       if(!isCloudMode){ return saveLocalData(); }
       try{
         updateSyncStatus('syncing','🔄 保存中...');
-        const {error:dishesError}=await supabase.from('dishes').upsert(dishes.map(d=>({...d,created_at:d.created_at||new Date().toISOString(),updated_at:new Date().toISOString()})));
-        if(dishesError) throw dishesError;
-        const {error:menuError}=await supabase.from('selected_menu').upsert({id:1,dishes:selectedDishes,updated_at:new Date().toISOString()});
-        if(menuError) throw menuError;
+
+        // ① 取云端已有 id
+        const { data: existing, error: exErr } = await supabase.from('dishes').select('id');
+        if(exErr) throw exErr;
+        const cloudIds = new Set((existing||[]).map(r=>r.id));
+        const localIds = new Set(dishes.map(d=>d.id));
+
+        // ② 删除云端多余项（云端有，但本地没有）
+        const idsToDelete = [...cloudIds].filter(id => !localIds.has(id));
+        if(idsToDelete.length>0){
+          const { error: delErr } = await supabase.from('dishes').delete().in('id', idsToDelete);
+          if(delErr) throw delErr;
+        }
+
+        // ③ upsert 本地项（新增/更新）
+        const payload = dishes.map(d=>({
+          ...d,
+          created_at: d.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        const { error: upErr } = await supabase.from('dishes').upsert(payload);
+        if(upErr) throw upErr;
+
+        // ④ 同步右侧菜单
+        const { error: menuErr } = await supabase.from('selected_menu').upsert({
+          id: 1,
+          dishes: selectedDishes,
+          updated_at: new Date().toISOString()
+        });
+        if(menuErr) throw menuErr;
+
         updateSyncStatus('synced','☁️ 已同步');
-      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 保存失败'); saveLocalData(); }
+      }catch(e){
+        console.error(e);
+        updateSyncStatus('error','⚠️ 保存失败');
+        saveLocalData();
+      }
     }
 
     document.addEventListener('DOMContentLoaded',async()=>{
@@ -642,6 +678,44 @@
       const before=dishes.length; const map=new Map(); const result=[];
       for(const d of dishes){ const key=d.category+'|'+normalize(d.spanish); if(!map.has(key)){ map.set(key,true); result.push(d); } }
       const removed=before-result.length; dishes=result; await saveCloudData(); renderDishesContainer(); alert(removed>0?`已清理 ${removed} 条重复。`:'没有发现重复。');
+    }
+
+    // 🧨 一键：强制用本地覆盖云端（按钮已在上方添加）
+    async function forceReplaceCloud(){
+      if(!isCloudMode){ alert('当前为本地模式，无法替换云端。'); return; }
+      if(!confirm('此操作将用“当前本地数据”整体覆盖云端 dishes 表。确定继续？')) return;
+      try{
+        updateSyncStatus('syncing','🧨 正在强制替换...');
+        // 清空云端 dishes
+        const { error: delAllErr } = await supabase.from('dishes').delete().neq('id', -1);
+        if(delAllErr) throw delAllErr;
+
+        // 重建云端
+        if(dishes.length>0){
+          const payload = dishes.map(d=>({
+            ...d,
+            created_at: d.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }));
+          const { error: insErr } = await supabase.from('dishes').insert(payload);
+          if(insErr) throw insErr;
+        }
+
+        // 同步右侧菜单
+        const { error: menuErr } = await supabase.from('selected_menu').upsert({
+          id: 1,
+          dishes: selectedDishes,
+          updated_at: new Date().toISOString()
+        });
+        if(menuErr) throw menuErr;
+
+        updateSyncStatus('synced','✅ 云端已完全以本地数据为准');
+        alert('云端替换完成。历史重复数据已经清空。');
+      }catch(e){
+        console.error(e);
+        updateSyncStatus('error','⚠️ 替换失败');
+        alert('替换失败：请检查 Supabase 权限（需要 delete/insert/upsert）或网络。');
+      }
     }
   </script>
 </body>
