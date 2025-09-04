@@ -559,32 +559,38 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   try {
     updateSyncStatus('syncing', '🔄 翻译中...');
     
-    // 尝试不同的 LibreTranslate 实例
-    const response = await fetch('https://libretranslate.com/translate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: text,
-        source: 'es',
-        target: 'ca'
-      })
-    });
-    
-    const data = await response.json();
-    updateSyncStatus('synced', '☁️ 已同步');
-    
-    if (data.translatedText) {
-      return postProcessCatalan(data.translatedText);
+    // 方案1：MyMemory API
+    try {
+      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
+      const data = await res.json();
+      updateSyncStatus('synced', '☁️ 已同步');
+      
+      if (data.responseStatus === 200) {
+        return postProcessCatalan(data.responseData.translatedText);
+      }
+    } catch (e) {
+      console.log('MyMemory 失败，尝试备用方案');
     }
     
-    throw new Error('No translation returned');
+    // 方案2：Google Translate 免费接口（非官方）
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=ca&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        updateSyncStatus('synced', '☁️ 已同步');
+        return postProcessCatalan(data[0][0][0]);
+      }
+    } catch (e) {
+      console.log('Google Translate 备用方案也失败');
+    }
+    
+    updateSyncStatus('synced', '☁️ 已同步');
+    return postProcessCatalan(simpleTranslate(text));
     
   } catch (e) {
-    console.error('LibreTranslate 失败:', e);
-    updateSyncStatus('synced', '☁️ 已同步');
-    return await fallbackToMyMemory(text);
+    console.error(e);
+    updateSyncStatus('error', '⚠️ 翻译失败');
+    return postProcessCatalan(simpleTranslate(text));
   }
 }
 
