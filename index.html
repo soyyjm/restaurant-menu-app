@@ -553,50 +553,31 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       s=s.replace(/\s+/g,' ').replace(/\s, \s/g, ', ').replace(/\s\./g,'.').trim();
       return s;
     }
-    async function translateText(text) {
-  if (!text.trim()) return text;
-  
-  try {
-    updateSyncStatus('syncing', '🔄 翻译中...');
-    
-    // 增加超时和重试机制
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
-    
-    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`, {
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    const data = await res.json();
-    updateSyncStatus('synced', '☁️ 已同步');
-    
-    if (data.responseStatus === 200) {
-      return postProcessCatalan(data.responseData.translatedText);
+    async function translateText(text){
+      if(!text.trim()) return text;
+      try{
+        updateSyncStatus('syncing','🔄 翻译中...');
+        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
+        const data=await res.json(); updateSyncStatus('synced','☁️ 已同步');
+        if(data.responseStatus===200){ return postProcessCatalan(data.responseData.translatedText); }
+        return postProcessCatalan(simpleTranslate(text));
+      }catch(e){ console.error(e); updateSyncStatus('synced','☁️ 已同步'); return postProcessCatalan(simpleTranslate(text)); }
     }
-    
-    // 如果 API 返回错误，使用本地翻译
-    return postProcessCatalan(simpleTranslate(text));
-    
-  } catch (e) {
-    console.error(e);
-    updateSyncStatus('synced', '☁️ 已同步');
-    return postProcessCatalan(simpleTranslate(text));
-  }
-}
-async function fallbackToMyMemory(text) {
-  try {
-    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
-    const data = await res.json();
-    if (data.responseStatus === 200) {
-      return postProcessCatalan(data.responseData.translatedText);
+    function simpleTranslate(text){ return text.split(/(\W)/).map(tok=>translations[tok.toLowerCase()]||tok).join(''); }
+    function autocorrectSpanish(text){
+      if(!text) return text;
+      let s=' '+text+' ';
+      for(const [plain,acc] of Object.entries(accentMap)){
+        const re=new RegExp(`\\b${plain}\\b`,'gi');
+        s=s.replace(re,(m)=>{
+          if(m===m.toUpperCase()) return acc.toUpperCase();
+          if(m[0]===m[0].toUpperCase()) return acc[0].toUpperCase()+acc.slice(1);
+          return acc;
+        });
+      }
+      s=s.replace(/\s+/g,' ').trim();
+      return s;
     }
-  } catch (e) {
-    console.error('MyMemory 也失败了:', e);
-  }
-  
-  return postProcessCatalan(simpleTranslate(text));
-}
     function autocorrectField(input){
       const before=input.value;
       const after=autocorrectSpanish(before);
