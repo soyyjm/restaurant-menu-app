@@ -559,8 +559,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   try {
     updateSyncStatus('syncing', '🔄 翻译中...');
     
-    // 首先尝试 LibreTranslate
-    const response = await fetch('https://libretranslate.de/translate', {
+    // 尝试不同的 LibreTranslate 实例
+    const response = await fetch('https://libretranslate.com/translate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -579,8 +579,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       return postProcessCatalan(data.translatedText);
     }
     
-    // 如果 LibreTranslate 失败，回退到 MyMemory
-    return await fallbackToMyMemory(text);
+    throw new Error('No translation returned');
     
   } catch (e) {
     console.error('LibreTranslate 失败:', e);
@@ -600,7 +599,6 @@ async function fallbackToMyMemory(text) {
     console.error('MyMemory 也失败了:', e);
   }
   
-  // 最后回退到本地词典翻译
   return postProcessCatalan(simpleTranslate(text));
 }
     function autocorrectField(input){
