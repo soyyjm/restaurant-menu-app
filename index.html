@@ -1378,8 +1378,29 @@ function parseGeminiTranslation(raw) {
   return singleLine ? { catalan: singleLine, correctedSpanish: '' } : null;
 }
 
+function splitSupplementSuffix(text) {
+  const trimmed = text.trim();
+  const match = trimmed.match(/\s*(\(?\+\s*\d+(?:[.,]\d{1,2})?\s*€\)?)\s*$/);
+  if (!match) return { dishName: trimmed, supplement: '' };
+  return {
+    dishName: trimmed.slice(0, match.index).trim(),
+    supplement: ` ${match[1].trim()}`
+  };
+}
+
+function appendSupplementSuffix(text, supplement) {
+  const trimmed = (text || '').trim();
+  if (!trimmed || !supplement) return trimmed;
+  const alreadyHasSupplement = /\s*(\(?\+\s*\d+(?:[.,]\d{1,2})?\s*€\)?)\s*$/.test(trimmed);
+  return alreadyHasSupplement ? trimmed : `${trimmed}${supplement}`;
+}
+
 async function translateText(text) {
-  if (!text.trim()) return { catalan: '', correctedSpanish: '' };
+  const originalText = text.trim();
+  if (!originalText) return { catalan: '', correctedSpanish: '' };
+
+  const { dishName, supplement } = splitSupplementSuffix(originalText);
+  const textToTranslate = dishName || originalText;
 
   // Method 1: Gemini 2.5 Flash (best quality, understands food context)
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
@@ -1396,10 +1417,11 @@ async function translateText(text) {
                 parts: [{
                   text: `You are a Spanish-to-Catalan translator for a restaurant menu.
 First correct spelling errors and missing accents in the Spanish dish name, then translate it to Catalan.
+The dish name may have had a price supplement removed before translation. Do not invent, remove, or translate price supplements.
 Return valid JSON only, with no markdown and no explanation:
 {"es":"corrected Spanish","ca":"Catalan translation"}
 
-Dish name: ${JSON.stringify(text.trim())}`
+Dish name: ${JSON.stringify(textToTranslate)}`
                 }]
               }],
               generationConfig: {
@@ -1420,13 +1442,13 @@ Dish name: ${JSON.stringify(text.trim())}`
               .join('\n')
               .trim();
             const parsed = parseGeminiTranslation(raw);
-            if (parsed?.catalan && parsed.catalan.length >= text.trim().length * 0.4) {
+            if (parsed?.catalan && parsed.catalan.length >= textToTranslate.length * 0.4) {
               return {
-                catalan: parsed.catalan,
-                correctedSpanish: parsed.correctedSpanish || ''
+                catalan: appendSupplementSuffix(parsed.catalan, supplement),
+                correctedSpanish: appendSupplementSuffix(parsed.correctedSpanish || '', supplement)
               };
             }
-            console.warn(`Gemini attempt ${attempt + 1}: unexpected format "${raw}" for "${text}"`);
+            console.warn(`Gemini attempt ${attempt + 1}: unexpected format "${raw}" for "${textToTranslate}"`);
             continue;
           }
         } else {
@@ -1446,13 +1468,13 @@ Dish name: ${JSON.stringify(text.trim())}`
 
   // Method 2: Google Translate (non-official, no key needed)
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=ca&dt=t&q=${encodeURIComponent(text)}`;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=ca&dt=t&q=${encodeURIComponent(textToTranslate)}`;
     const res = await fetch(url);
     if (res.ok) {
       const data = await res.json();
       if (data?.[0]?.[0]?.[0]) {
         const catalan = data[0].map(s => s[0]).join('').replace(' ,', ',').replace(' .', '.');
-        return { catalan, correctedSpanish: '' };
+        return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '' };
       }
     }
   } catch(e) {
@@ -1465,8 +1487,8 @@ Dish name: ${JSON.stringify(text.trim())}`
     'huevos':'ous','queso':'formatge','con':'amb','y':'i','de':'de','al':'al','a la':'a la',
     'frito':'fregit','asado':'rostit','horno':'forn','plancha':'planxa','salsa':'salsa',
     'crema':'crema','tarta':'pastís','helado':'gelat','fruta':'fruita','pan':'pa' };
-  const catalan = text.split(' ').map(w => dict[w.toLowerCase()] || w).join(' ');
-  return { catalan, correctedSpanish: '' };
+  const catalan = textToTranslate.split(' ').map(w => dict[w.toLowerCase()] || w).join(' ');
+  return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '' };
 }
 
 async function doTranslate() {
