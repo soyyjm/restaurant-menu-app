@@ -1,0 +1,16 @@
+{
+  "name": "Menú del Día — Restaurante Sol",
+  "short_name": "Menú App",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#faf8f5",
+  "theme_color": "#c4652a",
+  "description": "Gestión diaria del menú del día con traducción automática al catalán.",
+  "icons": [
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,935 +1,2498 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>餐厅每日菜单管理工具 - 云端版（打印字号可调 v3.3.1）</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
-    .sync-status{position:fixed;top:20px;right:20px;background:rgba(255,255,255,.9);padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;z-index:1000;backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
-    .sync-status.synced{color:#28a745;border-left:3px solid #28a745}
-    .sync-status.syncing{color:#ffc107;border-left:3px solid #ffc107}
-    .sync-status.error{color:#dc3545;border-left:3px solid #dc3545}
-    .container{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:30px;height:calc(100vh - 40px)}
-    .panel{background:rgba(255,255,255,.95);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.1);backdrop-filter:blur(10px);overflow-y:auto}
-    .panel h2{color:#333;margin-bottom:20px;font-size:1.8em;font-weight:600}
-    .form-group{margin-bottom:15px}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-    .translate-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
-    label{display:block;margin-bottom:5px;font-weight:500;color:#555}
-    input,select,textarea{width:100%;padding:12px 15px;border:2px solid #e1e5e9;border-radius:10px;font-size:14px;transition:all .3s ease}
-    input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
-    .input-warning{border-color:#ff9800!important;box-shadow:0 0 0 3px rgba(255,152,0,.1)!important}
-    .correction-hint{font-size:12px;color:#ff9800;margin-top:5px;padding:5px 10px;background:rgba(255,152,0,.1);border-radius:5px;display:none}
-    .btn{background:linear-gradient(45deg,#667eea,#764ba2);color:#fff;border:none;padding:12px 25px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:500;transition:all .3s ease;margin-right:10px;margin-bottom:10px}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}
-    .btn-small{padding:6px 10px;font-size:12px;margin:0}
-    .btn-secondary{background:linear-gradient(45deg,#f093fb,#f5576c)}
-    .btn-danger{background:linear-gradient(45deg,#ff6b6b,#ee5a24)}
-    .btn-translate{background:linear-gradient(45deg,#4ecdc4,#44a08d);padding:12px 15px;min-width:80px}
-    .collapsible-section{border:2px solid #e1e5e9;border-radius:10px;margin-bottom:15px}
-    .section-header{background:#f8f9fa;padding:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:8px;transition:background .3s ease}
-    .section-header:hover{background:#e9ecef}
-    .section-header h3{color:#667eea;font-size:1.1em;font-weight:600}
-    .section-content{overflow:hidden;transition:all .3s ease}
-    .section-content:not(.expanded){max-height:0;padding:0}
-    .section-content.expanded{max-height:none;padding:15px}
-    .dish-item{background:#f8f9fa;padding:15px;margin-bottom:10px;border-radius:10px;border-left:4px solid #667eea;position:relative}
-    .dish-item.selected{background:#e8f4fd;border-left-color:#f5576c}
-    .dish-item h4{color:#333;margin-bottom:5px}
-    .dish-item p{color:#666;font-size:13px;margin-bottom:3px}
-    .dish-actions{position:absolute;top:10px;right:10px}
-    .dish-actions button{padding:5px 10px;font-size:12px;margin-left:5px}
-    /* POSTRES compact grid */
-    .dessert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
-    .dessert-chip{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;background:#f8f9fa;padding:6px 8px;border-radius:10px;border:1px solid #e7ebf0;position:relative}
-    .dessert-chip label{font-size:12px;line-height:1.2;margin:0}
-    .chip-remove{background:transparent;border:none;font-size:16px;line-height:1;cursor:pointer;color:#e74c3c;padding:0 6px;opacity:0;transition:opacity .2s}
-    .dessert-chip:hover .chip-remove{opacity:1} /* 悬浮时显示 × */
-    .price-info{font-size:12px;color:#666;margin-top:5px}
-    .manual-add{background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:15px}
-    .manual-add h4{color:#667eea;margin-bottom:10px}
-    .menu-preview{background:#fff;padding:25px;margin-top:20px;border-radius:10px;font-family:Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.1);font-size:13px;line-height:1.4}
-    .menu-header{text-align:center;border-bottom:2px solid #333;padding-bottom:15px;margin-bottom:20px}
-    .menu-title{font-size:2em;font-style:italic;margin-bottom:8px;color:#333}
-    .menu-date-price{display:flex;justify-content:space-between;font-size:1em;font-weight:bold}
-    .menu-section{margin-bottom:20px}
-    .section-title{font-size:1.1em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase}
-    .menu-item{margin-bottom:12px;padding-bottom:8px}
-    .menu-item-spanish{font-weight:500;color:#333;margin-bottom:2px;font-size:13px}
-    .menu-item-catalan{font-style:italic;color:#666;font-size:11px}
-    .menu-item-extra{color:#888;font-size:11px}
-    .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:1px solid #ddd;font-size:1em;font-weight:bold}
-    .selected-dishes{background:#e8f4fd;padding:15px;border-radius:10px;margin-bottom:20px}
-    .selected-dishes h3{margin-bottom:10px;color:#333}
-    .selected-dish{display:flex;justify-content:space-between;align-items:center;padding:12px 8px;margin-bottom:8px;background:#fff;border-radius:8px;border-left:4px solid #667eea;cursor:grab;transition:all .2s ease;position:relative}
-    .selected-dish:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);transform:translateY(-1px)}
-    .selected-dish.dragging{opacity:.5;transform:rotate(5deg);cursor:grabbing}
-    .selected-dish .dish-content{flex:1;margin-right:10px}
-    .selected-dish .dish-actions{display:flex;gap:5px}
-    .selected-dish .drag-handle{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#ccc;font-size:14px;cursor:grab}
-    .selected-dish .drag-handle:hover{color:#667eea}
-    .edit-mode{background:#fff3cd!important;border-left-color:#ffc107!important}
-    .edit-inputs{display:flex;flex-direction:column;gap:8px;flex:1;margin-right:10px}
-    .edit-inputs input{padding:6px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px}
-    .edit-inputs input:focus{outline:none;border-color:#667eea}
-    .category-section{margin-bottom:20px;border-radius:8px;overflow:hidden}
-    .category-header{background:linear-gradient(45deg,#667eea,#764ba2);color:#fff;padding:8px 12px;font-weight:bold;font-size:14px}
-    .category-dishes{min-height:50px;padding:10px}
-    .drop-zone{border:2px dashed #667eea;background:rgba(102,126,234,.05);border-radius:8px;padding:20px;text-align:center;color:#667eea}
-    .rotate-icon{transition:transform .3s ease}
-    .rotate-icon.rotated{transform:rotate(90deg)}
-    .menu-controls{margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #e1e5e9}
-    .loading{opacity:.5;pointer-events:none}
-    .help{font-size:12px;color:#666}
-    .left-draggable{user-select:none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menú del Día — Restaurante Sol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ==========================================
+   DESIGN SYSTEM
+   Aesthetic: Warm editorial — a tool that feels
+   like a beautifully organized kitchen notebook
+   ========================================== */
+:root {
+  --ink: #14110d;
+  --ink-soft: #2f2923;
+  --ink-faint: #4e463f;
+  --paper: #faf8f5;
+  --paper-warm: #f5f0ea;
+  --paper-hover: #f0ebe3;
+  --cream: #ede7dd;
+  --terracotta: #c4652a;
+  --terracotta-light: #f8e8dc;
+  --terracotta-dark: #a14f1b;
+  --olive: #5a6e3c;
+  --olive-light: #e8eddf;
+  --olive-dark: #3d4c28;
+  --wine: #7a2e3b;
+  --wine-light: #f3e4e7;
+  --blue-link: #3b6fa0;
+  --shadow-sm: 0 1px 3px rgba(26,22,18,0.06);
+  --shadow-md: 0 4px 12px rgba(26,22,18,0.08);
+  --shadow-lg: 0 8px 30px rgba(26,22,18,0.12);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --transition: 0.2s ease;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================
+   LAYOUT — Two-column: workspace + preview
+   ========================================== */
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  min-height: 100vh;
+}
+
+.workspace {
+  padding: 32px 40px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.preview-sidebar {
+  background: white;
+  border-left: 1px solid var(--cream);
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+/* ==========================================
+   HEADER
+   ========================================== */
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--cream);
+}
+
+.app-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.date-price-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.date-price-bar input, .date-price-bar select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  background: white;
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.date-price-bar input:focus {
+  border-color: var(--terracotta);
+}
+
+.price-badge {
+  background: var(--terracotta-light);
+  color: var(--terracotta-dark);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ==========================================
+   QUICK INPUT — The core daily workflow
+   ========================================== */
+.quick-input-section {
+  background: white;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-input-section h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--ink);
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.field input, .field select {
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  transition: all var(--transition);
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--terracotta);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(196,101,42,0.08);
+}
+
+.field input.translating {
+  border-color: var(--olive);
+  background: var(--olive-light);
+}
+
+.category-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.category-row .field { flex: 1; }
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--terracotta);
+  color: white;
+}
+.btn-primary:hover { background: var(--terracotta-dark); transform: translateY(-1px); }
+
+.btn-secondary {
+  background: var(--paper-warm);
+  color: var(--ink-soft);
+  border: 1px solid var(--cream);
+}
+.btn-secondary:hover { background: var(--cream); }
+
+.btn-olive {
+  background: var(--olive);
+  color: white;
+}
+.btn-olive:hover { background: var(--olive-dark); }
+
+.btn-pdf {
+  background: var(--blue-link);
+  color: white;
+}
+.btn-pdf:hover { background: #2d5a85; transform: translateY(-1px); }
+
+.btn-icon {
+  background: none;
+  border: 1px solid var(--cream);
+  color: var(--ink-faint);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all var(--transition);
+}
+.btn-icon:hover { background: var(--paper-warm); color: var(--ink); }
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--cream);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+
+.autocomplete-dropdown.visible { display: block; }
+
+.autocomplete-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: background var(--transition);
+}
+
+.autocomplete-item:hover, .autocomplete-item.highlighted {
+  background: var(--terracotta-light);
+}
+
+.autocomplete-item .cat-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+
+.autocomplete-item em {
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+/* ==========================================
+   TODAY'S MENU BUILDER
+   ========================================== */
+.menu-section {
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--cream);
+}
+
+.section-header h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.section-header .count {
+  font-size: 12px;
+  color: var(--ink-faint);
+  background: var(--paper-warm);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.dish-list {
+  min-height: 48px;
+}
+
+.dish-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+  transition: all var(--transition);
+  cursor: default;
+  position: relative;
+}
+
+.dish-card:hover {
+  border-color: #d5ccc2;
+  box-shadow: var(--shadow-sm);
+}
+
+.dish-card .drag-handle {
+  color: var(--cream);
+  cursor: grab;
+  font-size: 14px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.dish-card .drag-handle:active { cursor: grabbing; }
+
+.dish-card .dish-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.dish-card .dish-es {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.dish-card .dish-ca {
+  font-size: 13px;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.dish-card .dish-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.dish-card:hover .dish-actions { opacity: 1; }
+
+.dish-action-btn {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all var(--transition);
+}
+
+.dish-action-btn:hover { color: var(--ink); background: var(--paper-warm); }
+.dish-action-btn.delete:hover { color: var(--wine); background: var(--wine-light); }
+
+.drop-hint {
+  text-align: center;
+  padding: 16px;
+  color: var(--ink-faint);
+  font-size: 13px;
+  border: 1.5px dashed var(--cream);
+  border-radius: var(--radius);
+  font-style: italic;
+}
+
+.dish-card.dragging { opacity: 0.4; }
+
+.dish-card.editing {
+  border-color: var(--terracotta);
+  background: var(--terracotta-light);
+}
+
+/* Flash animation */
+@keyframes cardFlash {
+  0% { background: #fef3c7; }
+  100% { background: white; }
+}
+.dish-card.flash { animation: cardFlash 0.6s ease-out; }
+
+/* ==========================================
+   DISH LIBRARY (collapsed by default)
+   ========================================== */
+.library-section {
+  margin-top: 8px;
+  border-top: 1px solid var(--cream);
+  padding-top: 20px;
+}
+
+.library-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 8px 0;
+  width: 100%;
+  text-align: left;
+}
+
+.library-toggle .arrow {
+  transition: transform 0.3s ease;
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.library-toggle .arrow.open { transform: rotate(90deg); }
+
+.library-content {
+  display: none;
+  padding-top: 12px;
+}
+
+.library-content.open { display: block; }
+
+.library-search {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 10px 14px 10px 36px;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239b9185' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color var(--transition);
+}
+
+.library-search:focus { border-color: var(--terracotta); }
+
+.library-category {
+  margin-bottom: 16px;
+}
+
+.library-category-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--cream);
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+  font-size: 14px;
+}
+
+.library-item:hover { background: var(--paper-warm); }
+
+.library-item .lib-es { flex: 1; }
+.library-item .lib-ca { color: var(--ink-faint); font-style: italic; font-size: 12px; flex: 1; }
+
+.library-item .lib-add {
+  opacity: 0;
+  transition: opacity var(--transition);
+  color: var(--olive);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.library-item:hover .lib-add { opacity: 1; }
+
+.library-item .lib-delete {
+  opacity: 0;
+  transition: opacity var(--transition);
+  color: var(--wine);
+  cursor: pointer;
+  font-size: 13px;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+}
+
+.library-item:hover .lib-delete { opacity: 1; }
+
+.library-item.in-menu {
+  background: var(--olive-light);
+}
+
+/* ==========================================
+   PREVIEW SIDEBAR
+   ========================================== */
+.preview-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-header h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.preview-body {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.menu-preview-frame {
+  background: white;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.mp-header {
+  text-align: center;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.mp-title {
+  font-size: 28px;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.mp-restaurant {
+  font-size: 14px;
+  color: var(--ink-faint);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+.mp-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mp-section {
+  margin-bottom: 18px;
+}
+
+.mp-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.mp-item {
+  margin-bottom: 8px;
+}
+
+.mp-item-es {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.mp-item-ca {
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.mp-hours {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.preview-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--cream);
+  display: flex;
+  gap: 8px;
+}
+
+.preview-actions .btn { flex: 1; justify-content: center; }
+
+/* ==========================================
+   HISTORY PANEL
+   ========================================== */
+.history-section {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cream);
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition);
+  font-size: 13px;
+}
+
+.history-item:hover { background: var(--paper-warm); }
+
+.history-date {
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 80px;
+}
+
+.history-summary {
+  color: var(--ink-faint);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-load-btn {
+  opacity: 0;
+  transition: opacity var(--transition);
+  font-size: 11px;
+  color: var(--blue-link);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.history-item:hover .history-load-btn { opacity: 1; }
+
+/* ==========================================
+   TOAST
+   ========================================== */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--ink);
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease-out;
+  pointer-events: auto;
+}
+
+.toast.success { border-bottom: 3px solid var(--olive); }
+.toast.error { border-bottom: 3px solid var(--wine); }
+.toast.info { border-bottom: 3px solid var(--terracotta); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   SYNC STATUS
+   ========================================== */
+.sync-badge {
+  font-size: 11px;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--olive);
+}
+
+.sync-dot.error { background: var(--wine); }
+.sync-dot.syncing { background: var(--terracotta); animation: pulse 1s infinite; }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ==========================================
+   MODAL (for settings)
+   ========================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,22,18,0.4);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.visible { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal-row label {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.modal-row input, .modal-row select {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  outline: none;
+}
+
+.modal-row input:focus { border-color: var(--terracotta); }
+
+.modal-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--ink-faint);
+  line-height: 1;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+  .preview-sidebar {
+    border-left: none;
+    border-top: 1px solid var(--cream);
+  }
+  .workspace { padding: 20px 16px; max-height: none; }
+  .app-header { flex-wrap: wrap; gap: 12px; }
+  .date-price-bar { margin-left: 0; }
+  .input-row { grid-template-columns: 1fr; }
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .menu-preview-frame, .menu-preview-frame * { visibility: visible; }
+  .menu-preview-frame {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    padding: 20mm;
+  }
+}
+
+/* ==========================================
+   EDIT INLINE
+   ========================================== */
+.inline-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr minmax(130px, 0.7fr) auto;
+  gap: 8px;
+  padding: 8px;
+  background: var(--terracotta-light);
+  border: 1px solid var(--terracotta);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+}
+
+.inline-edit-row input,
+.inline-edit-row select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 6px 10px;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  outline: none;
+}
+
+.inline-edit-row input:focus,
+.inline-edit-row select:focus { border-color: var(--terracotta); }
+
+.inline-edit-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .inline-edit-row {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-edit-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* ==========================================
+   KEYBOARD HINT
+   ========================================== */
+.hint {
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-top: 6px;
+}
+
+kbd {
+  background: var(--paper-warm);
+  border: 1px solid var(--cream);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 11px;
+  font-family: var(--font-body);
+}
+</style>
 </head>
 <body>
-  <div id="syncStatus" class="sync-status synced">☁️ 已同步</div>
-  <div class="container">
-    <div class="panel">
-      <h2>🍽️ 菜品数据库管理</h2>
-      <div class="form-group">
-        <div class="translate-row">
-          <div>
-            <label>西班牙语菜名</label>
-            <input type="text" id="dishSpanish" placeholder="例: Paella del señorito" oninput="checkSpelling(this)" onblur="autocorrectField(this)">
-            <div class="correction-hint" id="spanishHint"></div>
-          </div>
-          <div style="align-self:end"><button class="btn btn-translate" onclick="autoTranslate()">🔄 翻译</button></div>
-          <div>
-            <label>加泰罗尼亚语翻译</label>
-            <input type="text" id="dishCatalan" placeholder="例: Paella del senyoret">
-          </div>
-        </div>
+
+<div class="app-layout">
+  <!-- ========== LEFT: WORKSPACE ========== -->
+  <div class="workspace">
+    <div class="app-header">
+      <h1 class="app-title">Menú del Día</h1>
+      <div class="sync-badge" id="syncStatus">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncText">Conectando...</span>
       </div>
-      <div class="form-group">
-        <div class="form-row">
-          <div>
-            <label>分类</label>
-            <select id="dishCategory">
-              <option value="primer">PRIMER PLATO</option>
-              <option value="segundo">SEGUNDO PLATO</option>
-              <option value="postre">POSTRES</option>
-            </select>
-          </div>
-          <div>
-            <label>额外费用</label>
-            <input type="text" id="dishExtra" placeholder="例: +3.00€">
-          </div>
-        </div>
+      <div class="date-price-bar">
+        <input type="date" id="menuDate">
+        <input type="text" id="menuPrice" style="width:90px" placeholder="14.50 €">
+        <span class="price-badge" id="priceInfo"></span>
       </div>
-      <button class="btn" onclick="addDish()">➕ 添加菜品</button>
-      <button class="btn btn-secondary" onclick="exportData()">📥 导出数据</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
-      <button class="btn btn-secondary" onclick="dedupeDishes()">🧹 清理重复</button>
-      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
-      <div class="help">提示：POSTRES 支持删除；左侧菜可直接拖拽到右侧分类；输入西语后会自动纠正常见重音。</div>
-      <div id="dishesContainer"></div>
     </div>
 
-    <div class="panel">
-      <div class="menu-controls">
-        <h2>📋 每日菜单生成（v3.3.1）</h2>
-        <div class="form-group" style="margin:6px 0 2px;display:flex;gap:8px;flex-wrap:wrap">
-  <button class="btn btn-danger btn-small" onclick="forceCloudOverwrite()">
-    ☁️⚠️ 强制云端替换
-  </button>
-  <button class="btn btn-secondary btn-small" onclick="forceLocalFromCloud()">
-    ⬇️ 用云端覆盖本地
-  </button>
-</div>
-
-        <!-- 打印字号控制 -->
-        <div class="form-group" style="margin-top:6px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="border:1px solid #e7ebf0;border-radius:10px;padding:12px">
-              <div style="font-weight:600;color:#555;margin-bottom:8px">菜品（Primer/Segundo）打印字号</div>
-              <div class="form-row">
-                <div>
-                  <label>西语 (px)</label>
-                  <input id="fsMainEs" type="number" min="8" max="28" step="1">
-                </div>
-                <div>
-                  <label>加泰 (px)</label>
-                  <input id="fsMainCa" type="number" min="8" max="28" step="1">
-                </div>
-              </div>
-            </div>
-            <div style="border:1px solid #e7ebf0;border-radius:10px;padding:12px">
-              <div style="font-weight:600;color:#555;margin-bottom:8px">Postres 打印字号</div>
-              <div class="form-row">
-                <div>
-                  <label>西语 (px)</label>
-                  <input id="fsPostreEs" type="number" min="8" max="28" step="1">
-                </div>
-                <div>
-                  <label>加泰 (px)</label>
-                  <input id="fsPostreCa" type="number" min="8" max="28" step="1">
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="margin-top:8px;font-size:12px;color:#666">这些设置会用于右侧预览和打印，并自动保存。</div>
+    <!-- QUICK INPUT -->
+    <div class="quick-input-section">
+      <h2>Añadir plato</h2>
+      <div class="input-row">
+        <div class="field autocomplete-wrapper">
+          <label>Español</label>
+          <input type="text" id="inputEs" placeholder="Escribe el nombre del plato..." autocomplete="off" spellcheck="true" lang="es">
+          <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
         </div>
-
-        <div class="form-group">
-          <div class="form-row">
-            <div>
-              <label>菜单价格</label>
-              <input type="text" id="menuPrice" value="13.50 €">
-              <div class="price-info" id="priceInfo">今天是工作日，建议价格：13.50 €</div>
-            </div>
-            <div>
-              <label>日期</label>
-              <input type="date" id="menuDate">
-            </div>
-          </div>
+        <button class="btn-icon" id="btnTranslate" title="Traducir">🔄</button>
+        <div class="field">
+          <label>Català</label>
+          <input type="text" id="inputCa" placeholder="Traducción automática..." autocomplete="off">
         </div>
-
-        <div class="manual-add">
-          <h4>🖊️ 手动添加菜品</h4>
-          <div class="translate-row">
-            <div>
-              <input type="text" id="manualSpanish" placeholder="西班牙语菜名" oninput="checkSpelling(this)" onblur="autocorrectField(this)">
-              <div class="correction-hint" id="manualSpanishHint"></div>
-            </div>
-            <div style="align-self:center"><button class="btn btn-translate btn-small" onclick="translateManual()">🔄</button></div>
-            <div><input type="text" id="manualCatalan" placeholder="加泰罗尼亚语翻译"></div>
-          </div>
-          <div class="form-row" style="margin-top:10px">
-            <select id="manualCategory">
-              <option value="primer">PRIMER PLATO</option>
-              <option value="segundo">SEGUNDO PLATO</option>
-              <option value="postre">POSTRES</option>
-            </select>
-            <button class="btn btn-small" onclick="addManualDish()">添加到菜单</button>
-          </div>
+        <div class="field" style="min-width:130px">
+          <label>Categoría</label>
+          <select id="inputCategory">
+            <option value="primer">Primer Plato</option>
+            <option value="segundo">Segundo Plato</option>
+            <option value="postre">Postres</option>
+          </select>
         </div>
-
-        <div class="selected-dishes">
-          <h3>今日菜单</h3>
-          <div id="selectedDishes">
-            <p style="color:#888;text-align:center;padding:20px">请从左侧菜品库中选择或拖拽到对应分类</p>
-          </div>
-        </div>
-        <button class="btn" onclick="generateMenu()">🍴 生成菜单</button>
-        <button class="btn btn-secondary" onclick="printMenu()">🖨️ 打印菜单</button>
-        <button class="btn btn-danger" onclick="clearSelectedDishes()">🗑️ 清空选择</button>
       </div>
-      <div class="menu-preview" id="menuPreview" style="display:none"></div>
+      <div class="action-row">
+        <button class="btn btn-primary" id="btnAddMenu">➕ Añadir al menú de hoy</button>
+        <button class="btn btn-secondary" id="btnSaveLib">💾 Guardar en biblioteca</button>
+        <button class="btn btn-secondary" id="btnBoth">✅ Ambos</button>
+      </div>
+      <p class="hint"><kbd>Enter</kbd> traduce y añade al menú &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> traduce y guarda en biblioteca &nbsp;·&nbsp; Escribe para buscar platos existentes</p>
+    </div>
+
+    <!-- TODAY'S MENU -->
+    <div id="menuBuilder">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- DISH LIBRARY -->
+    <div class="library-section">
+      <button class="library-toggle" id="libraryToggle">
+        <span class="arrow" id="libraryArrow">▶</span>
+        📚 Biblioteca de Platos
+        <span id="libraryCount" style="font-size:13px;color:var(--ink-faint);font-family:var(--font-body)"></span>
+      </button>
+      <div class="library-content" id="libraryContent">
+        <input type="text" class="library-search" id="librarySearch" placeholder="Buscar platos...">
+        <div id="libraryList"></div>
+      </div>
+    </div>
+
+    <!-- MENU HISTORY -->
+    <div class="library-section" style="border-top: 1px solid var(--cream); padding-top: 16px; margin-top: 16px;">
+      <button class="library-toggle" id="historyToggle">
+        <span class="arrow" id="historyArrow">▶</span>
+        📅 Historial de Menús
+      </button>
+      <div class="library-content" id="historyContent">
+        <div id="historyList"></div>
+      </div>
     </div>
   </div>
 
-  <!-- 预览动态字号样式注入点 -->
-  <style id="previewFontStyle"></style>
-
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL='https://nkteqmgslcrqiglzcsyv.supabase.co';
-    const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
-    let supabase, isCloudMode=false;
-    try{ supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY); isCloudMode=true; updateSyncStatus('synced','☁️ 云端模式'); }
-    catch(e){ updateSyncStatus('error','💾 本地模式'); }
-
-    let dishes=[];
-    let selectedDishes={primer:[],segundo:[],postre:[]};
-    let collapseState=JSON.parse(localStorage.getItem('collapseState')||'{"primer":true,"segundo":true,"postre":true}');
-    function saveCollapseState(){ localStorage.setItem('collapseState',JSON.stringify(collapseState)); }
-    function updateSyncStatus(status,msg){ const el=document.getElementById('syncStatus'); el.className=`sync-status ${status}`; el.textContent=msg; }
-
-    const spanishHolidays=['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-08-15','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25'];
-
-   // 持久化字号
-let fontSettings = JSON.parse(localStorage.getItem('fontSettings')||'{"mainEs":12,"mainCa":11,"postreEs":12,"postreCa":11}');
-function saveFontSettings(){ localStorage.setItem('fontSettings', JSON.stringify(fontSettings)); applyPreviewFontSizes(); }
-
-// 等4个输入框真的出现后再初始化，缺就重试；若始终缺，也不会报错
-function initFontControls(){
-  const $ = id => document.getElementById(id);
-  const ids = ['fsMainEs','fsMainCa','fsPostreEs','fsPostreCa'];
-  const els = ids.map(id => $(id));
-  if (els.some(el => !el)) {
-    // 还没插进来；不要继续
-    return;
-  }
-  // 赋值前再次判断
-  if ($('fsMainEs')) $('fsMainEs').value = fontSettings.mainEs;
-  if ($('fsMainCa')) $('fsMainCa').value = fontSettings.mainCa;
-  if ($('fsPostreEs')) $('fsPostreEs').value = fontSettings.postreEs;
-  if ($('fsPostreCa')) $('fsPostreCa').value = fontSettings.postreCa;
-
-  ids.forEach(id=>{
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener('input', ()=>{
-      fontSettings.mainEs   = parseInt($('fsMainEs')?.value)||12;
-      fontSettings.mainCa   = parseInt($('fsMainCa')?.value)||11;
-      fontSettings.postreEs = parseInt($('fsPostreEs')?.value)||12;
-      fontSettings.postreCa = parseInt($('fsPostreCa')?.value)||11;
-      saveFontSettings();
-    });
-  });
-
-  applyPreviewFontSizes();
-}
-
-// 预览里的字号（#menuPreview 作用域）
-function applyPreviewFontSizes(){
-  const styleEl = document.getElementById('previewFontStyle');
-  if(!styleEl) return;
-  styleEl.textContent = `
-    #menuPreview .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-    #menuPreview .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
-    #menuPreview .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-    #menuPreview .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
-  `;
-}
-
-// 打印时把字号写进打印窗口的 <style>（带 !important）
-function printMenu(){
-  if(document.getElementById('menuPreview').style.display==='none'){ generateMenu(); }
-  const w=window.open('','_blank'); const content=document.getElementById('menuPreview').innerHTML;
-  const css = `
-    @page{margin:20mm 22mm;size:A4}
-    html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
-    body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:0;padding:0;color:#333;line-height:1.3}
-    .menu-header{text-align:center;border-bottom:3px solid #333;padding-bottom:15px;margin-bottom:18px}
-    .menu-title{font-size:2.2em;font-style:italic;margin-bottom:6px;color:#333;font-weight:bold}
-    .menu-date-price{display:flex;justify-content:space-between;font-size:1.1em;font-weight:bold;margin-top:8px}
-    .menu-section{margin-bottom:18px}
-    .section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}
-    .menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}
-    .menu-section:not(.postre-section) .menu-item-spanish{font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-    .menu-section:not(.postre-section) .menu-item-catalan{font-size:${fontSettings.mainCa}px !important;line-height:1.25}
-    .menu-section.postre-section .menu-item-spanish{font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-    .menu-section.postre-section .menu-item-catalan{font-size:${fontSettings.postreCa}px !important;line-height:1.25}
-    .menu-item-extra{color:#888;font-size:11px !important;font-weight:500}
-    .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}
-  `;
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del día</title><style>${css}</style></head><body>${content}</body></html>`);
-  w.document.close(); w.focus(); w.print(); w.close();
-}
-    /* ========== /打印字号设置 ========== */
-
-    // Accent & spelling dictionaries
-    const accentMap={
-      'jamon':'jamón','limon':'limón','melon':'melón','corazon':'corazón','arbol':'árbol','te':'té','cafe':'café','menu':'menú','senor':'señor','senora':'señora','nino':'niño','nina':'niña','pina':'piña','exito':'éxito','manana':'mañana','espana':'españa','espanol':'español','oregano':'orégano','champinon':'champiñón','champones':'champiñones','salmon':'salmón','atun':'atún','calabacin':'calabacín','berengena':'berenjena','canonigos':'canónigos','couscous':'cuscús'
-    };
-    const spellCheck={
-      'polla':'pollo','jamon':'jamón','patata':'patatas','huevos':'huevo','verdura':'verduras',
-      'pescao':'pescado','tomate':'tomate','cebolla':'cebolla','limon':'limón','melon':'melón','oregano':'orégano',
-      'senor':'señor','nina':'niña','nino':'niño','anos':'años','manana':'mañana','espanol':'español','corazon':'corazón'
-    };
-
-    const translations={
-      'pollo':'pollastre','jamón':'pernil','queso':'formatge','patatas':'patates','huevo':'ou','carne':'carn','pescado':'peix','verduras':'verdures','arroz':'arròs','pasta':'pasta','ensalada':'amanida','sopa':'sopa','crema':'crema','flan':'flan','helado':'gelat','fruta':'fruita','chocolate':'xocolata','con':'amb','del':'del','de':'de','al':'al','horno':'forn','plancha':'planxa','frito':'fregit','asado':'rostit','ternera':'vedella','cerdo':'porc','setas':'bolets','seta':'bolet','gambas':'gambes','calamar':'calamar','calamares':'calamars','lechuga':'enciam','tomate':'tomàquet','pimiento':'pebrot','cebolla':'ceba'
-    };
-    const phraseGlossary=[
-      [/a la plancha/gi,'a la planxa'],
-      [/al horno/gi,'al forn'],
-      [/frito(s)?/gi,'fregit$1'],
-      [/rebozado/gi,'arrebossat'],
-      [/del d[ií]a/gi,'del dia'],
-      [/ensalada/gi,'amanida'],
-      [/sopa del d[ií]a/gi,'sopa del dia'],
-      [/crema del d[ií]a/gi,'crema del dia'],
-      [/tarta de queso/gi,'pastís de formatge'],
-      [/solomillo/gi,'filet'],
-      [/salmorejo/gi,'salmorejo'],
-      [/paella del se[nñ]orito/gi,'paella del senyoret']
-    ];
-
-    function loadLocalData(){ dishes=JSON.parse(localStorage.getItem('restaurantDishes')||'[]'); selectedDishes=JSON.parse(localStorage.getItem('selectedDishes')||'{"primer":[],"segundo":[],"postre":[]}'); }
-    function saveLocalData(){ localStorage.setItem('restaurantDishes',JSON.stringify(dishes)); localStorage.setItem('selectedDishes',JSON.stringify(selectedDishes)); }
-
-    async function loadCloudData(){
-      if(!isCloudMode){ return loadLocalData(); }
-      try{
-        updateSyncStatus('syncing','🔄 同步中...');
-        const {data:dishesData,error:dishesError}=await supabase.from('dishes').select('*').order('created_at',{ascending:true});
-        if(dishesError) throw dishesError;
-        const {data:menuData,error:menuError}=await supabase.from('selected_menu').select('*').single();
-        if(!menuError && menuData){ selectedDishes=menuData.dishes; }
-        dishes=dishesData||[]; updateSyncStatus('synced','☁️ 已同步');
-      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 同步失败'); loadLocalData(); }
-    }
-
-    // 用“当前本地状态”强制覆盖云端（先清库再插入）
-async function forceCloudOverwrite(){
-  if(!isCloudMode){ alert('当前不是云端模式，无法覆盖云端。'); return; }
-  if(!confirm('确定要用本地数据覆盖云端【全部】数据吗？此操作不可撤销。')) return;
-  try{
-    updateSyncStatus('syncing','⚠️ 正在用本地覆盖云端...');
-    // 1) 清空云端 dishes
-    await supabase.from('dishes').delete().neq('id', null);
-    // 2) 重新插入本地全部菜品
-    if(dishes.length>0){
-      const now=new Date().toISOString();
-      const payload=dishes.map(d=>({...d,created_at:d.created_at||now,updated_at:now}));
-      await supabase.from('dishes').insert(payload);
-    }
-    // 3) 覆盖 selected_menu
-    await supabase.from('selected_menu').upsert({
-      id:1,
-      dishes:selectedDishes,
-      updated_at:new Date().toISOString()
-    });
-    updateSyncStatus('synced','☁️ 已用本地覆盖云端');
-  }catch(e){
-    console.error(e);
-    updateSyncStatus('error','⚠️ 覆盖失败');
-  }
-}
-
-// 从云端拉取并覆盖本地（相当于回滚到云端版本）
-async function forceLocalFromCloud(){
-  if(!isCloudMode){ alert('当前不是云端模式。'); return; }
-  try{
-    updateSyncStatus('syncing','⬇️ 正在用云端覆盖本地...');
-    const {data:dishesData}=await supabase.from('dishes').select('*').order('created_at',{ascending:true});
-    const {data:menuData}=await supabase.from('selected_menu').select('*').single();
-
-    dishes = dishesData || [];
-    selectedDishes = (menuData && menuData.dishes) ? menuData.dishes : {primer:[],segundo:[],postre:[]};
-
-    // 覆盖到本地存储 & 刷新 UI
-    localStorage.setItem('restaurantDishes', JSON.stringify(dishes));
-    localStorage.setItem('selectedDishes', JSON.stringify(selectedDishes));
-
-    renderDishesContainer();
-    renderSelectedDishes();
-    updateSyncStatus('synced','⬇️ 已用云端覆盖本地');
-  }catch(e){
-    console.error(e);
-    updateSyncStatus('error','⚠️ 拉取失败');
-  }
-}
-    
-    async function saveCloudData(){
-      if(!isCloudMode){ return saveLocalData(); }
-      try{
-        updateSyncStatus('syncing','🔄 保存中...');
-        const {data:existing}=await supabase.from('dishes').select('id');
-        const cloudIds=new Set((existing||[]).map(r=>r.id));
-        const localIds=new Set(dishes.map(d=>d.id));
-        const idsToDelete=[...cloudIds].filter(id=>!localIds.has(id));
-        if(idsToDelete.length>0){await supabase.from('dishes').delete().in('id',idsToDelete);}
-        if(dishes.length>0){
-          const payload=dishes.map(d=>({...d,created_at:d.created_at||new Date().toISOString(),updated_at:new Date().toISOString()}));
-          await supabase.from('dishes').upsert(payload);
-        }
-        await supabase.from('selected_menu').upsert({id:1,dishes:selectedDishes,updated_at:new Date().toISOString()});
-        updateSyncStatus('synced','☁️ 已同步');
-      }catch(e){ console.error(e); updateSyncStatus('error','⚠️ 保存失败'); saveLocalData(); }
-    }
-
-    // ====== 自修复：如果4个字号输入框不存在，就自动插入到右侧「每日菜单生成」里 ======
-function ensureFontControls(){
-  // 右侧控制面板
-  const panel = document.querySelector('.menu-controls');
-  if(!panel) { setTimeout(ensureFontControls, 50); return; }
-
-  // 已经有则跳过
-  if (document.getElementById('fsMainEs')) return;
-
-  const wrap = document.createElement('div');
-  wrap.className = 'form-group';
-  wrap.style.marginTop = '6px';
-  wrap.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div style="border:1px solid #e7ebf0;border-radius:10px;padding:12px">
-        <div style="font-weight:600;color:#555;margin-bottom:8px">菜品（Primer/Segundo）打印字号</div>
-        <div class="form-row">
-          <div>
-            <label>西语 (px)</label>
-            <input id="fsMainEs" type="number" min="8" max="28" step="1">
-          </div>
-          <div>
-            <label>加泰 (px)</label>
-            <input id="fsMainCa" type="number" min="8" max="28" step="1">
-          </div>
-        </div>
-      </div>
-      <div style="border:1px solid #e7ebf0;border-radius:10px;padding:12px">
-        <div style="font-weight:600;color:#555;margin-bottom:8px">Postres 打印字号</div>
-        <div class="form-row">
-          <div>
-            <label>西语 (px)</label>
-            <input id="fsPostreEs" type="number" min="8" max="28" step="1">
-          </div>
-          <div>
-            <label>加泰 (px)</label>
-            <input id="fsPostreCa" type="number" min="8" max="28" step="1">
-          </div>
-        </div>
+  <!-- ========== RIGHT: PREVIEW ========== -->
+  <div class="preview-sidebar">
+    <div class="preview-header">
+      <h2>Vista Previa</h2>
+      <button class="btn-icon" id="btnSettings" title="Ajustes de impresión">⚙️</button>
+    </div>
+    <div class="preview-body">
+      <div class="menu-preview-frame" id="menuPreview">
+        <!-- Rendered by JS -->
       </div>
     </div>
-    <div style="margin-top:8px;font-size:12px;color:#666">这些设置会用于右侧预览和打印，并自动保存。</div>
-  `;
+    <div class="preview-actions">
+      <button class="btn btn-primary" id="btnPrint">🖨️ Imprimir</button>
+      <button class="btn btn-olive" id="btnShare">📤 Compartir</button>
+      <button class="btn btn-pdf" id="btnPDF">📄 PDF</button>
+      <button class="btn btn-secondary" id="btnClear" style="color:var(--wine)">🗑️ Vaciar</button>
+    </div>
+  </div>
+</div>
 
-  // 插到「每日菜单生成」标题下
-  const h2 = panel.querySelector('h2');
-  if (h2 && h2.parentNode) {
-    h2.parentNode.insertBefore(wrap, h2.nextSibling);
-  } else {
-    panel.prepend(wrap);
-  }
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <button class="modal-close" id="closeSettings">&times;</button>
+    <h2>Ajustes</h2>
+
+    <div style="background:var(--olive-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔐 Cuenta Supabase</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Necesario para el modo estricto (002). Usa email + contraseña.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <input type="email" id="authEmail" placeholder="email@dominio.com" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+        <input type="password" id="authPassword" placeholder="Contraseña" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button class="btn btn-primary btn-small" id="authSignIn" style="font-size:12px;padding:6px 12px;">Entrar</button>
+        <button class="btn btn-secondary btn-small" id="authSignUp" style="font-size:12px;padding:6px 12px;">Crear cuenta</button>
+        <button class="btn btn-secondary btn-small" id="authSignOut" style="font-size:12px;padding:6px 12px;">Salir</button>
+      </div>
+      <div id="authStatus" style="font-size:12px;color:var(--ink-faint);margin-top:8px;"></div>
+    </div>
+    
+    <div style="background:var(--terracotta-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔑 API de Traducción (Gemini)</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">
+        Obtén tu clave gratis en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--terracotta)">aistudio.google.com/apikey</a><br>
+        Sin tarjeta de crédito. ~500 traducciones/día gratis.
+      </div>
+      <input type="password" id="geminiKeyInput" placeholder="Pega tu API Key aquí..." style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-primary btn-small" id="saveGeminiKey" style="font-size:12px;padding:6px 12px;">Guardar</button>
+        <button class="btn btn-secondary btn-small" id="testGeminiKey" style="font-size:12px;padding:6px 12px;">🧪 Probar traducción</button>
+        <span id="geminiStatus" style="font-size:12px;color:var(--ink-faint);align-self:center;"></span>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:16px;margin-bottom:12px;">Estilo de Impresión</h3>
+    <div class="modal-row"><label>Tamaño título</label><input type="number" id="psTitleSize" min="16" max="48" step="1"></div>
+    <div class="modal-row"><label>Alineación título</label><select id="psTitleAlign"><option value="center">Centro</option><option value="left">Izquierda</option></select></div>
+    <div class="modal-row"><label>Tamaño precio/fecha</label><input type="number" id="psPriceSize" min="10" max="30" step="1"></div>
+    <div class="modal-row"><label>Tamaño categoría</label><input type="number" id="psSectionSize" min="10" max="28" step="1"></div>
+    <div class="modal-row"><label>Fuente plato (ES)</label><input type="number" id="psMainEs" min="8" max="24" step="1"></div>
+    <div class="modal-row"><label>Fuente plato (CA)</label><input type="number" id="psMainCa" min="8" max="24" step="1"></div>
+    <div class="modal-row"><label>Fuente postre (ES)</label><input type="number" id="psPostreEs" min="8" max="24" step="1"></div>
+    <div class="modal-row"><label>Fuente postre (CA)</label><input type="number" id="psPostreCa" min="8" max="24" step="1"></div>
+    <div class="modal-row"><label>Espacio entre categorías</label><input type="number" id="psSectionMargin" min="0" max="50" step="1"></div>
+    <div class="modal-row"><label>Espacio entre platos</label><input type="number" id="psItemMargin" min="0" max="50" step="1"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="closeSettingsBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+// ============================================================
+// MENÚ DEL DÍA v2.0 — Streamlined Daily Workflow
+// ============================================================
+(function() {
+'use strict';
+
+// ==================== CONFIG ====================
+const SUPABASE_URL = 'https://nkteqmgslcrqiglzcsyv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
+
+const HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-06-24','2025-08-15','2025-09-11','2025-09-24','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25','2025-12-26',
+                  '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26'];
+
+const CATEGORY_LABELS = { primer: 'PRIMER PLATO', segundo: 'SEGUNDO PLATO', postre: 'POSTRES' };
+
+// ==================== STATE ====================
+let supabase, isCloud = false;
+let library = [];     // All saved dishes
+let todayMenu = { primer: [], segundo: [], postre: [] };
+let menuHistory = {};  // { 'YYYY-MM-DD': { primer: [...], segundo: [...], postre: [...] } }
+const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18 };
+let printSettings = { ...DEFAULT_PRINT_SETTINGS };
+let editingId = null;
+let autocompleteHighlight = -1;
+let currentUser = null;
+let hasOwnerColumns = false;
+let authSubscription = null;
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
+const SETTINGS_MAP = { psTitleSize: 'titleSize', psTitleAlign: 'titleAlign', psPriceSize: 'priceSize', psSectionSize: 'sectionSize', psMainEs: 'mainEs', psMainCa: 'mainCa', psPostreEs: 'postreEs', psPostreCa: 'postreCa', psSectionMargin: 'sectionMargin', psItemMargin: 'itemMargin' };
+
+function toIntInRange(value, fallback, min, max) {
+  const n = Number.parseInt(value, 10);
+  if (Number.isNaN(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
 }
-// ======================================================
-let __fontCtlInited = false;
 
-document.addEventListener('DOMContentLoaded', async ()=>{
-  const today = new Date();
-  document.getElementById('menuDate').value = today.toISOString().split('T')[0];
-
-  // 先取云端
-  await loadCloudData();
-
-  // 云端和本地都空时，才播一次
-  await loadInitialDishes();
-  
-  updatePricing();
-  renderDishesContainer();
-  renderSelectedDishes();
-
-  // 先插 UI，再初始化（内部也带重试）
-  ensureFontControls();
-
-  const tryInit = () => {
-    if (__fontCtlInited) return;
-    initFontControls();
-    // 如果还没初始化成功（找不到元素），100ms 后再试
-    if (!document.getElementById('fsMainEs')) {
-      setTimeout(tryInit, 100);
-    } else {
-      __fontCtlInited = true;
-    }
+function normalizePrintSettings(input = {}) {
+  const base = { ...DEFAULT_PRINT_SETTINGS, ...input };
+  return {
+    titleSize: toIntInRange(base.titleSize, DEFAULT_PRINT_SETTINGS.titleSize, 16, 64),
+    titleAlign: (base.titleAlign === 'left' || base.titleAlign === 'center') ? base.titleAlign : DEFAULT_PRINT_SETTINGS.titleAlign,
+    sectionSize: toIntInRange(base.sectionSize, DEFAULT_PRINT_SETTINGS.sectionSize, 10, 32),
+    mainEs: toIntInRange(base.mainEs, DEFAULT_PRINT_SETTINGS.mainEs, 10, 32),
+    mainCa: toIntInRange(base.mainCa, DEFAULT_PRINT_SETTINGS.mainCa, 8, 28),
+    postreEs: toIntInRange(base.postreEs, DEFAULT_PRINT_SETTINGS.postreEs, 10, 32),
+    postreCa: toIntInRange(base.postreCa, DEFAULT_PRINT_SETTINGS.postreCa, 8, 28),
+    sectionMargin: toIntInRange(base.sectionMargin, DEFAULT_PRINT_SETTINGS.sectionMargin, 6, 40),
+    itemMargin: toIntInRange(base.itemMargin, DEFAULT_PRINT_SETTINGS.itemMargin, 4, 28),
+    priceSize: toIntInRange(base.priceSize, DEFAULT_PRINT_SETTINGS.priceSize, 10, 36)
   };
-  tryInit();
+}
 
-  document.getElementById('menuDate').addEventListener('change', updatePricing);
-});
-// ======================================================
+function withOwner(record) {
+  if (hasOwnerColumns && currentUser?.id) return { ...record, owner_id: currentUser.id };
+  return record;
+}
 
-    async function loadInitialDishes(){
-  // 已经播过就不再播（避免删除后又被初始数据顶回去）
-  if(localStorage.getItem('seeded_v1')==='1') return;
+function applyOwnerFilter(query) {
+  if (hasOwnerColumns && currentUser?.id) return query.eq('owner_id', currentUser.id);
+  return query;
+}
 
-  const initial = [
-    {id:Date.now()+1,spanish:"Ensalada con crujiente de pollo, piña, frutos secos y vinagreta de miel y mostaza",catalan:"Amanida amb cruixent de pollastre, pinya, fruita seca i vinagreta de mel i mostassa",category:"primer",extra:""},
-    {id:Date.now()+2,spanish:"Salmorejo cordobés con huevo rallado y virutas de jamón",catalan:"Salmorejo cordovès amb ou ratllat i encenalls de pernil",category:"primer",extra:""},
-    {id:Date.now()+3,spanish:"Paella del señorito",catalan:"Paella del senyoret",category:"segundo",extra:""},
-    {id:Date.now()+4,spanish:"Dorada al horno con patatas panadera",catalan:"Daurada al forn amb patates fornera",category:"segundo",extra:""},
-    {id:Date.now()+5,spanish:"Tarta de queso",catalan:"Pastís de formatge",category:"postre",extra:""},
-    {id:Date.now()+6,spanish:"Flan",catalan:"Flam",category:"postre",extra:""},
-    {id:Date.now()+7,spanish:"Coulant de chocolate",catalan:"Coulant de xocolata",category:"postre",extra:"+ 2.00€"}
-  ];
+async function detectOwnerColumns() {
+  if (!isCloud || !supabase) { hasOwnerColumns = false; return false; }
+  const { error } = await supabase.from('dishes').select('owner_id').limit(1);
+  if (!error) { hasOwnerColumns = true; return true; }
 
-  // 只有当云端/本地都空时才播种一次
-  const localHas = (Array.isArray(dishes) && dishes.length>0);
-  if(!localHas){
-    dishes = initial;
-    await saveCloudData();
-    localStorage.setItem('seeded_v1','1');
+  const msg = (error.message || '') + ' ' + (error.details || '');
+  if (/owner_id/i.test(msg) && /(does not exist|not found|schema cache)/i.test(msg)) {
+    hasOwnerColumns = false;
+    return false;
+  }
+
+  // If uncertain, keep compatibility mode and log for debugging.
+  hasOwnerColumns = false;
+  console.warn('Owner column detection warning:', error);
+  return false;
+}
+
+function refreshAuthUI() {
+  const statusEl = $('authStatus');
+  const emailEl = $('authEmail');
+  const passEl = $('authPassword');
+  const signInBtn = $('authSignIn');
+  const signUpBtn = $('authSignUp');
+  const signOutBtn = $('authSignOut');
+
+  if (!statusEl) return;
+
+  if (currentUser) {
+    const label = currentUser.email || ('uid:' + String(currentUser.id || '').slice(0, 8));
+    statusEl.textContent = '✅ Sesión: ' + label + (hasOwnerColumns ? ' · owner_id activo' : ' · modo compatibilidad');
+    if (emailEl && currentUser.email) emailEl.value = currentUser.email;
+    if (passEl) passEl.value = '';
+    if (signInBtn) signInBtn.disabled = true;
+    if (signUpBtn) signUpBtn.disabled = true;
+    if (signOutBtn) signOutBtn.disabled = false;
+  } else {
+    statusEl.textContent = '⚠️ Sin sesión — inicia sesión antes de activar 002';
+    if (signInBtn) signInBtn.disabled = false;
+    if (signUpBtn) signUpBtn.disabled = false;
+    if (signOutBtn) signOutBtn.disabled = true;
   }
 }
 
-    function updatePricing(){
-      const dateInput=document.getElementById('menuDate'); const priceInput=document.getElementById('menuPrice'); const priceInfo=document.getElementById('priceInfo');
-      const selectedDate=new Date(dateInput.value); const day=selectedDate.getDay(); const dateStr=dateInput.value;
-      const isWeekend=(day===0||day===6); const isHoliday=spanishHolidays.includes(dateStr);
-      if(isWeekend||isHoliday){ priceInput.value='18.50 €'; priceInfo.textContent=isHoliday?'今天是西班牙法定假日，建议价格：18.50 €':'今天是周末，建议价格：18.50 €'; }
-      else { priceInput.value='13.50 €'; priceInfo.textContent='今天是工作日，建议价格：13.50 €'; }
+// ==================== INIT ====================
+async function init() {
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    isCloud = true;
+
+    const { data } = await supabase.auth.getSession();
+    currentUser = data?.session?.user || null;
+    await detectOwnerColumns();
+
+    const { data: authData } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user || null;
+      await detectOwnerColumns();
+      refreshAuthUI();
+      await loadAll();
+      initSettingsUI();
+      renderAll();
+    });
+    authSubscription = authData?.subscription || null;
+  } catch(e) { 
+    syncUI('error', 'Modo local'); 
+  }
+
+  await loadAll();
+  setDate();
+  initSettingsUI();
+  bindEvents();
+  refreshAuthUI();
+  renderAll();
+}
+
+// ==================== DATA LAYER ====================
+async function loadAll() {
+  // Always load from localStorage first (instant)
+  try { library = JSON.parse(localStorage.getItem('v2_library') || '[]'); } catch(e) { library = []; }
+  try { todayMenu = JSON.parse(localStorage.getItem('v2_todayMenu') || '{"primer":[],"segundo":[],"postre":[]}'); } catch(e) { todayMenu = { primer: [], segundo: [], postre: [] }; }
+  try { menuHistory = JSON.parse(localStorage.getItem('v2_history') || '{}'); } catch(e) { menuHistory = {}; }
+  try { printSettings = normalizePrintSettings({ ...printSettings, ...JSON.parse(localStorage.getItem('v2_printSettings') || '{}') }); } catch(e) { printSettings = normalizePrintSettings(printSettings); }
+
+  if (!isCloud) { syncUI('ok', 'Local'); return; }
+  if (!currentUser) { syncUI('error', 'Inicia sesión para sincronizar'); return; }
+
+  try {
+    syncUI('syncing', 'Sincronizando...');
+    const [libRes, menuRes, histRes, settRes] = await Promise.allSettled([
+      applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })),
+      applyOwnerFilter(supabase.from('selected_menu').select('*').eq('id', 1).maybeSingle()),
+      applyOwnerFilter(supabase.from('menu_history').select('*').order('date', { ascending: false }).limit(30)),
+      applyOwnerFilter(supabase.from('settings').select('*').eq('id', 1).maybeSingle())
+    ]);
+
+    let hasCloudError = false;
+
+    if (libRes.status === 'fulfilled' && !libRes.value.error) {
+      if (libRes.value.data) library = libRes.value.data;
+    } else {
+      hasCloudError = true;
+      console.warn('Cloud load dishes failed:', libRes.status === 'fulfilled' ? libRes.value.error : libRes.reason);
     }
 
-    // 翻译/纠错（略，保持原功能）
-    function postProcessCatalan(text){
-      if(!text) return text; let s=text;
-      phraseGlossary.forEach(([re,ca])=>{ s=s.replace(re,ca); });
-      s=s.split(/(\W)/).map(tok=>(translations[tok.toLowerCase()]||tok)).join('');
-      s=s.replace(/\s+/g,' ').replace(/\s, \s/g, ', ').replace(/\s\./g,'.').trim();
-      return s;
+    if (menuRes.status === 'fulfilled' && !menuRes.value.error) {
+      if (menuRes.value.data?.dishes) todayMenu = { primer: [], segundo: [], postre: [], ...menuRes.value.data.dishes };
+    } else {
+      hasCloudError = true;
+      console.warn('Cloud load selected_menu failed:', menuRes.status === 'fulfilled' ? menuRes.value.error : menuRes.reason);
     }
-    async function translateText(text){
-      if(!text.trim()) return text;
-      try{
-        updateSyncStatus('syncing','🔄 翻译中...');
-        const res=await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=es|ca`);
-        const data=await res.json(); updateSyncStatus('synced','☁️ 已同步');
-        if(data.responseStatus===200){ return postProcessCatalan(data.responseData.translatedText); }
-        return postProcessCatalan(simpleTranslate(text));
-      }catch(e){ console.error(e); updateSyncStatus('synced','☁️ 已同步'); return postProcessCatalan(simpleTranslate(text)); }
-    }
-    function simpleTranslate(text){ return text.split(/(\W)/).map(tok=>translations[tok.toLowerCase()]||tok).join(''); }
-    function autocorrectSpanish(text){
-      if(!text) return text;
-      let s=' '+text+' ';
-      for(const [plain,acc] of Object.entries(accentMap)){
-        const re=new RegExp(`\\b${plain}\\b`,'gi');
-        s=s.replace(re,(m)=>{
-          if(m===m.toUpperCase()) return acc.toUpperCase();
-          if(m[0]===m[0].toUpperCase()) return acc[0].toUpperCase()+acc.slice(1);
-          return acc;
-        });
+
+    if (histRes.status === 'fulfilled' && !histRes.value.error) {
+      if (histRes.value.data) {
+        menuHistory = {};
+        histRes.value.data.forEach(h => { menuHistory[h.date] = h.dishes; });
       }
-      s=s.replace(/\s+/g,' ').trim();
-      return s;
-    }
-    function autocorrectField(input){
-      const before=input.value;
-      const after=autocorrectSpanish(before);
-      if(before!==after){ input.value=after; }
-    }
-    function checkSpelling(input){
-      const text=input.value.toLowerCase().trim();
-      const hintId=(input.id==='dishSpanish')?'spanishHint':'manualSpanishHint';
-      const hint=document.getElementById(hintId);
-      if(!text){ hint.style.display='none'; input.classList.remove('input-warning'); return; }
-      const words=text.split(/\s+/); const corrections=[];
-      words.forEach(w=>{ if(spellCheck[w]) corrections.push(`"${w}" → "${spellCheck[w]}"`); });
-      if(corrections.length>0){ input.classList.add('input-warning'); hint.innerHTML='建议修正: '+corrections.join(', '); hint.style.display='block'; }
-      else{ input.classList.remove('input-warning'); hint.style.display='none'; }
-    }
-    async function autoTranslate(){
-      const spanish=document.getElementById('dishSpanish').value.trim(); if(!spanish) return;
-      const fixed=autocorrectSpanish(spanish);
-      if(fixed!==spanish) document.getElementById('dishSpanish').value=fixed;
-      const catalan=await translateText(fixed); document.getElementById('dishCatalan').value=catalan;
-    }
-    async function translateManual(){
-      const spanish=document.getElementById('manualSpanish').value.trim(); if(!spanish) return;
-      const fixed=autocorrectSpanish(spanish);
-      if(fixed!==spanish) document.getElementById('manualSpanish').value=fixed;
-      const catalan=await translateText(fixed); document.getElementById('manualCatalan').value=catalan;
+    } else {
+      hasCloudError = true;
+      console.warn('Cloud load history failed:', histRes.status === 'fulfilled' ? histRes.value.error : histRes.reason);
     }
 
-    const normalize=s=>s.trim().toLowerCase().replace(/\s+/g,' ');
-    function existsDuplicate(spanish,category){ const key=normalize(spanish); return dishes.some(d=>d.category===category && normalize(d.spanish)===key); }
-
-    async function addDish(){
-      let spanish=document.getElementById('dishSpanish').value.trim();
-      const catalan=document.getElementById('dishCatalan').value.trim();
-      const category=document.getElementById('dishCategory').value;
-      const extra=document.getElementById('dishExtra').value.trim();
-      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
-      spanish=autocorrectSpanish(spanish);
-      if(existsDuplicate(spanish,category)){ alert('该分类下已存在相同菜名（西语）。'); return; }
-      const dish={id:Date.now(),spanish,catalan,category,extra};
-      dishes.push(dish); await saveCloudData(); renderDishesContainer();
-      document.getElementById('dishSpanish').value=''; document.getElementById('dishCatalan').value=''; document.getElementById('dishExtra').value='';
-      document.getElementById('spanishHint').style.display='none'; document.getElementById('dishSpanish').classList.remove('input-warning');
-    }
-    async function addManualDish(){
-      let spanish=document.getElementById('manualSpanish').value.trim();
-      const catalan=document.getElementById('manualCatalan').value.trim();
-      const category=document.getElementById('manualCategory').value;
-      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
-      spanish=autocorrectSpanish(spanish);
-      const dish={id:Date.now(),spanish,catalan,category,extra:'',temporary:true};
-      selectedDishes[category].push(dish); await saveCloudData(); renderSelectedDishes();
-      document.getElementById('manualSpanish').value=''; document.getElementById('manualCatalan').value='';
-      document.getElementById('manualSpanishHint').style.display='none'; document.getElementById('manualSpanish').classList.remove('input-warning');
+    if (settRes.status === 'fulfilled' && !settRes.value.error) {
+      if (settRes.value.data?.print_settings) printSettings = normalizePrintSettings({ ...printSettings, ...settRes.value.data.print_settings });
+    } else {
+      hasCloudError = true;
+      console.warn('Cloud load settings failed:', settRes.status === 'fulfilled' ? settRes.value.error : settRes.reason);
     }
 
-    function toggleSection(category){
-      const content=document.getElementById(`content-${category}`); const icon=document.getElementById(`icon-${category}`);
-      const isExp=content.classList.toggle('expanded'); if(icon) icon.classList.toggle('rotated',isExp);
-      collapseState[category]=isExp; saveCollapseState();
-    }
+    saveLocal();
+    syncUI(hasCloudError ? 'error' : 'ok', hasCloudError ? 'Sync parcial' : 'Sincronizado');
+  } catch(e) {
+    console.error('Cloud load failed:', e);
+    syncUI('error', 'Fallo sync');
+  }
+}
 
-    async function toggleDessertCheckbox(dishId){
-      const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
-      const list=selectedDishes.postre;
-      const idx=list.findIndex(d=>d.id===dishId);
-      if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
-      await saveCloudData(); renderSelectedDishes(); updateDessertCheckboxes();
-    }
-    function updateDessertCheckboxes(){
-      document.querySelectorAll('.dessert-grid input[type="checkbox"]').forEach(cb=>{
-        const id=parseInt(cb.dataset.dishId);
-        cb.checked=selectedDishes.postre.some(d=>d.id===id);
-      });
-    }
+function saveLocal() {
+  localStorage.setItem('v2_library', JSON.stringify(library));
+  localStorage.setItem('v2_todayMenu', JSON.stringify(todayMenu));
+  localStorage.setItem('v2_history', JSON.stringify(menuHistory));
+  localStorage.setItem('v2_printSettings', JSON.stringify(printSettings));
+}
 
-    function startDragFromLibrary(e,id){
-      const dish=dishes.find(d=>d.id===id); if(!dish) return;
-      e.dataTransfer.setData('text/plain', JSON.stringify({type:'library', id}));
-      e.dataTransfer.effectAllowed='copyMove';
-    }
-    function startDragSelected(e,dishId,category){
-      e.dataTransfer.setData('text/plain', JSON.stringify({type:'selected', dishId, category}));
-      const el=e.target.closest('.selected-dish'); if(el){ el.classList.add('dragging'); }
-    }
-    function allowDrop(e){ e.preventDefault(); e.dataTransfer.dropEffect='move'; }
-    async function drop(e,targetCategory){
-      e.preventDefault();
-      let data; try{ data=JSON.parse(e.dataTransfer.getData('text/plain')); }catch(_){ return; }
-      if(!data) return;
-      if(data.type==='library'){
-        const dish=dishes.find(d=>d.id===data.id); if(!dish) return;
-        const clone={...dish, category:targetCategory};
-        if(!selectedDishes[targetCategory].some(d=>d.id===dish.id)){
-          selectedDishes[targetCategory].push(clone);
-        }
-      }else if(data.type==='selected'){
-        const {dishId,category}=data;
-        if(targetCategory===category){
-          const idx=selectedDishes[category].findIndex(d=>d.id===dishId);
-          const item=selectedDishes[category].splice(idx,1)[0];
-          selectedDishes[category].push(item);
-        }else{
-          const idx=selectedDishes[category].findIndex(d=>d.id===dishId);
-          const item=selectedDishes[category].splice(idx,1)[0];
-          item.category=targetCategory;
-          selectedDishes[targetCategory].push(item);
-        }
-      }
-      await saveCloudData(); renderSelectedDishes(); updateDessertCheckboxes();
-    }
-    function endDrag(){ document.querySelectorAll('.selected-dish.dragging').forEach(el=>el.classList.remove('dragging')); }
+async function saveMenu() {
+  // Auto-save to history
+  const dateStr = $('menuDate').value;
+  if (dateStr) {
+    const hasContent = Object.values(todayMenu).some(arr => arr.length > 0);
+    if (hasContent) menuHistory[dateStr] = JSON.parse(JSON.stringify(todayMenu));
+  }
+  // Trim history to max 60 entries
+  const histDates = Object.keys(menuHistory).sort();
+  while (histDates.length > 60) {
+    delete menuHistory[histDates.shift()];
+  }
+  saveLocal();
 
-    function renderDishesContainer(){
-      const container=document.getElementById('dishesContainer');
-      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
-      let html='';
-      Object.keys(categories).forEach(category=>{
-        const categoryDishes=dishes.filter(d=>d.category===category);
-        const expanded=collapseState[category]===undefined?true:!!collapseState[category];
-        html+=`
-          <div class="collapsible-section">
-            <div class="section-header" onclick="toggleSection('${category}')">
-              <h3>${categories[category]} (${categoryDishes.length})</h3>
-              <span class="rotate-icon ${expanded?'rotated':''}" id="icon-${category}">▶</span>
-            </div>
-            <div class="section-content ${expanded?'expanded':''}" id="content-${category}">`;
-        if(category==='postre'){
-          html+='<div class="dessert-grid">';
-          categoryDishes.forEach(dish=>{
-            const isSelected=selectedDishes[category].some(d=>d.id===dish.id);
-            html+=`
-              <div class="dessert-chip left-draggable" draggable="true" ondragstart="startDragFromLibrary(event, ${dish.id})">
-                <input type="checkbox" ${isSelected?'checked':''} data-dish-id="${dish.id}" onchange="toggleDessertCheckbox(${dish.id}); event.stopPropagation();">
-                <label title="${dish.catalan}"><strong>${dish.spanish}</strong>${dish.extra?`<br><span style='color:#888;font-size:11px'>${dish.extra}</span>`:''}</label>
-                <button class="chip-remove" title="删除" onclick="deleteDish(${dish.id}); event.stopPropagation();">×</button>
-              </div>`;
-          });
-          html+='</div>';
-        }else{
-          categoryDishes.forEach(dish=>{
-            const isSelected=selectedDishes[category].some(d=>d.id===dish.id);
-            html+=`
-              <div class="dish-item ${isSelected?'selected':''} left-draggable" data-dish-id="${dish.id}" draggable="true" ondragstart="startDragFromLibrary(event, ${dish.id})">
-                <h4>${dish.spanish}</h4>
-                <p><em>${dish.catalan}</em></p>
-                ${dish.extra?`<p class="menu-item-extra">${dish.extra}</p>`:''}
-                <div class="dish-actions">
-                  <button class="btn ${isSelected?'btn-danger':'btn-secondary'}" onclick="toggleDish(${dish.id})">${isSelected?'移除':'选择'}</button>
-                  <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
-                </div>
-              </div>`;
-          });
-        }
-        html+='</div></div>';
-      });
-      container.innerHTML=html;
-      updateDessertCheckboxes();
+  if (!isCloud || !currentUser) return;
+  try {
+    syncUI('syncing', 'Guardando...');
+    await supabase.from('selected_menu').upsert(withOwner({ id: 1, dishes: todayMenu, updated_at: new Date().toISOString() }));
+    if (dateStr) {
+      await supabase.from('menu_history').upsert(withOwner({ date: dateStr, dishes: todayMenu, updated_at: new Date().toISOString() }), { onConflict: 'date' });
     }
+    syncUI('ok', 'Guardado');
+  } catch(e) { syncUI('error', 'Error guardar'); }
+}
 
-    async function deleteDish(id){
-      if(!confirm('确定要删除这个菜品吗？')) return;
-      dishes=dishes.filter(d=>d.id!==id);
-      ['primer','segundo','postre'].forEach(cat=>{ selectedDishes[cat]=selectedDishes[cat].filter(d=>d.id!==id); });
-      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
-    }
+async function saveLibrary() {
+  saveLocal();
+  if (!isCloud || !currentUser) return;
+  try {
+    syncUI('syncing', 'Guardando...');
+    const upserts = library.map((d, i) => withOwner({ ...d, order_index: i, updated_at: new Date().toISOString() }));
+    await supabase.from('dishes').upsert(upserts, { onConflict: 'id' });
+    syncUI('ok', 'Guardado');
+  } catch(e) { syncUI('error', 'Error guardar'); }
+}
 
-    async function toggleDish(id){
-      const dish=dishes.find(d=>d.id===id); if(!dish) return;
-      const list=selectedDishes[dish.category];
-      const idx=list.findIndex(d=>d.id===id);
-      if(idx>=0){ list.splice(idx,1); } else { list.push(dish); }
-      await saveCloudData(); updateDishItemStatus(id); renderSelectedDishes();
-    }
-    function updateDishItemStatus(dishId){
-      const dish=dishes.find(d=>d.id===dishId); if(!dish) return;
-      const el=document.querySelector(`[data-dish-id="${dishId}"]`);
-      if(el){
-        const isSelected=selectedDishes[dish.category].some(d=>d.id===dishId);
-        const dishItem=el.closest('.dish-item');
-        if(dishItem){
-          const buttons=el.querySelectorAll('button'); const selectButton=buttons[0];
-          if(isSelected){ dishItem.classList.add('selected'); selectButton.textContent='移除'; selectButton.className='btn btn-danger'; }
-          else{ dishItem.classList.remove('selected'); selectButton.textContent='选择'; selectButton.className='btn btn-secondary'; }
-        }
-      }
-    }
+async function deleteFromCloud(id) {
+  if (!isCloud || !currentUser) return;
+  try {
+    let q = supabase.from('dishes').delete().eq('id', id);
+    if (hasOwnerColumns && currentUser?.id) q = q.eq('owner_id', currentUser.id);
+    await q;
+  } catch(e) {}
+}
 
-    function editDish(dishId,category){
-      const dish=selectedDishes[category].find(d=>d.id===dishId); if(!dish) return;
-      const el=document.querySelector(`[data-selected-dish-id="${dishId}"]`); if(!el) return;
-      el.classList.add('edit-mode');
-      const contentDiv=el.querySelector('.dish-content');
-      contentDiv.innerHTML=`
-        <div class="edit-inputs">
-          <input type="text" id="edit-spanish-${dishId}" value="${dish.spanish}" placeholder="西班牙语菜名" onblur="this.value=autocorrectSpanish(this.value)">
-          <input type="text" id="edit-catalan-${dishId}" value="${dish.catalan}" placeholder="加泰罗尼亚语翻译">
-          <input type="text" id="edit-extra-${dishId}" value="${dish.extra||''}" placeholder="额外费用">
-        </div>`;
-      const actionsDiv=el.querySelector('.dish-actions');
-      actionsDiv.innerHTML=`
-        <button class="btn btn-secondary" style="padding:3px 8px;font-size:11px" onclick="saveEdit(${dishId},'${category}')">保存</button>
-        <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="cancelEdit(${dishId},'${category}')">取消</button>`;
-    }
-    async function saveEdit(dishId,category){
-      const spanish=autocorrectSpanish(document.getElementById(`edit-spanish-${dishId}`).value.trim());
-      const catalan=document.getElementById(`edit-catalan-${dishId}`).value.trim();
-      const extra=document.getElementById(`edit-extra-${dishId}`).value.trim();
-      if(!spanish||!catalan){ alert('请填写菜品的西/加泰名称'); return; }
-      const dish=selectedDishes[category].find(d=>d.id===dishId);
-      dish.spanish=spanish; dish.catalan=catalan; dish.extra=extra;
-      await saveCloudData(); renderSelectedDishes();
-    }
-    function cancelEdit(){ renderSelectedDishes(); }
+// ==================== TRANSLATION ====================
+// Gemini 2.5 Flash (Free Tier) — best quality for menu context
+// Fallback: Google Translate non-official → Local dictionary
+//
+// 获取 API Key: https://aistudio.google.com/apikey
+// 免费额度: ~500次/天, 15次/分钟 — 餐馆菜单绰绰有余
 
-    function renderSelectedDishes(){
-      const container=document.getElementById('selectedDishes');
-      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
-      let html=''; let hasSelected=false;
-      Object.keys(categories).forEach(category=>{
-        if(selectedDishes[category].length>0){
-          html+=`<div class="category-section">
-            <div class="category-header">${categories[category]}</div>
-            <div class="category-dishes" ondrop="drop(event,'${category}')" ondragover="allowDrop(event)">`;
-          selectedDishes[category].forEach(dish=>{
-            html+=`<div class="selected-dish" draggable="true" data-selected-dish-id="${dish.id}" ondragstart="startDragSelected(event, ${dish.id}, '${category}')" ondragend="endDrag()">
-              <div class="drag-handle">⋮⋮</div>
-              <div class="dish-content">
-                <strong>${dish.spanish}</strong><br>
-                <em style="font-size:12px;color:#666">${dish.catalan}</em>
-                ${dish.extra?`<br><span style="font-size:12px;color:#888">${dish.extra}</span>`:''}
-                ${dish.temporary?'<br><span style="font-size:11px;color:#f5576c">✨ 手动添加</span>':''}
-              </div>
-              <div class="dish-actions">
-                <button class="btn btn-secondary" style="padding:3px 8px;font-size:11px" onclick="editDish(${dish.id},'${category}')">编辑</button>
-                <button class="btn btn-danger" style="padding:3px 8px;font-size:11px" onclick="removeDishFromMenu(${dish.id},'${category}')">移除</button>
-              </div>
-            </div>`;
-          });
-          html+=`</div></div>`;
-          hasSelected=true;
-        }else{
-          html+=`<div class="category-section">
-            <div class="category-header">${categories[category]}</div>
-            <div class="category-dishes" ondrop="drop(event,'${category}')" ondragover="allowDrop(event)">
-              <div class="drop-zone">拖拽菜品到此处或从左侧选择</div>
-            </div></div>`;
-        }
-      });
-      if(!hasSelected){
-        html = `<div class="category-section"><div class="category-header">PRIMER PLATO</div><div class="category-dishes" ondrop="drop(event,'primer')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-        <div class="category-section"><div class="category-header">SEGUNDO PLATO</div><div class="category-dishes" ondrop="drop(event,'segundo')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>
-        <div class="category-section"><div class="category-header">POSTRES</div><div class="category-dishes" ondrop="drop(event,'postre')" ondragover="allowDrop(event)"><div class="drop-zone">拖拽菜品到此处或从左侧选择</div></div></div>`;
-      }
-      container.innerHTML=html;
-    }
+function parseGeminiTranslation(raw) {
+  const cleaned = raw
+    .replace(/```(?:json)?/gi, '')
+    .replace(/```/g, '')
+    .replace(/^["'«»]+|["'«»]+$/g, '')
+    .trim();
 
-    async function removeDishFromMenu(id,category){
-      selectedDishes[category]=selectedDishes[category].filter(d=>d.id!==id);
-      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
-    }
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      const catalan = String(parsed.ca || parsed.catalan || '').trim();
+      const correctedSpanish = String(parsed.es || parsed.spanish || parsed.correctedSpanish || '').trim();
+      if (catalan) return { catalan, correctedSpanish };
+    } catch(e) {}
+  }
 
-    function generateMenu(){
-      const price=document.getElementById('menuPrice').value;
-      const date=new Date(document.getElementById('menuDate').value).toLocaleDateString('es-ES',{day:'numeric',month:'long'});
-      const categories={primer:'PRIMER PLATO',segundo:'SEGUNDO PLATO',postre:'POSTRES'};
-      let menuHtml=`<div class="menu-header">
-        <div class="menu-title">Menú del día</div>
-        <div style="font-style:italic;color:#666;margin-bottom:15px">Restaurante sol</div>
-        <div class="menu-date-price"><span>${price}</span><span>${date}</span></div>
-      </div>`;
-      Object.keys(categories).forEach(category=>{
-        if(selectedDishes[category].length>0){
-          menuHtml+=`<div class="menu-section ${category==='postre'?'postre-section':''}"><div class="section-title">${categories[category]}</div>`;
-          if(category==='postre'){
-            const spanish=selectedDishes[category].map(d=>d.spanish).join(', ');
-            const catalan=selectedDishes[category].map(d=>d.catalan).join(', ');
-            const hasExtra=selectedDishes[category].some(d=>d.extra);
-            menuHtml+=`<div class="menu-item"><div class="menu-item-spanish">${spanish}</div><div class="menu-item-catalan">${catalan}</div>${hasExtra?'<div class="menu-item-extra">(algunos con suplemento)</div>':''}</div>`;
-          }else{
-            selectedDishes[category].forEach(dish=>{
-              menuHtml+=`<div class="menu-item"><div class="menu-item-spanish">${dish.spanish}</div><div class="menu-item-catalan">${dish.catalan}</div>${dish.extra?`<div class="menu-item-extra">${dish.extra}</div>`:''}</div>`;
-            });
+  const esMatch = cleaned.match(/(?:^|\n)\s*(?:ES|Español|Spanish)\s*[:\-]\s*(.+)$/im);
+  const caMatch = cleaned.match(/(?:^|\n)\s*(?:CA|Català|Catalan)\s*[:\-]\s*(.+)$/im);
+  if (caMatch?.[1]) return { catalan: caMatch[1].trim(), correctedSpanish: esMatch?.[1]?.trim() || '' };
+
+  const singleLine = cleaned.split('\n').map(l => l.replace(/^(?:ES|CA)\s*[:\-]\s*/i, '').trim()).filter(Boolean)[0];
+  return singleLine ? { catalan: singleLine, correctedSpanish: '' } : null;
+}
+
+async function translateText(text) {
+  if (!text.trim()) return { catalan: '', correctedSpanish: '' };
+
+  // Method 1: Gemini 2.5 Flash (best quality, understands food context)
+  const geminiKey = localStorage.getItem('gemini_api_key') || '';
+  if (geminiKey) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are a Spanish-to-Catalan translator for a restaurant menu.
+First correct spelling errors and missing accents in the Spanish dish name, then translate it to Catalan.
+Return valid JSON only, with no markdown and no explanation:
+{"es":"corrected Spanish","ca":"Catalan translation"}
+
+Dish name: ${JSON.stringify(text.trim())}`
+                }]
+              }],
+              generationConfig: {
+                temperature: 0,
+                maxOutputTokens: 256,
+                thinkingConfig: { thinkingBudget: 0 }
+              }
+            })
           }
-          menuHtml+='</div>';
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const candidate = data.candidates?.[0];
+          if (candidate?.content?.parts) {
+            const raw = candidate.content.parts
+              .filter(p => p.text)
+              .map(p => p.text.trim())
+              .join('\n')
+              .trim();
+            const parsed = parseGeminiTranslation(raw);
+            if (parsed?.catalan && parsed.catalan.length >= text.trim().length * 0.4) {
+              return {
+                catalan: parsed.catalan,
+                correctedSpanish: parsed.correctedSpanish || ''
+              };
+            }
+            console.warn(`Gemini attempt ${attempt + 1}: unexpected format "${raw}" for "${text}"`);
+            continue;
+          }
+        } else {
+          const err = await res.json().catch(() => ({}));
+          console.warn('Gemini error:', res.status, err.error?.message);
+          if (res.status === 403 || res.status === 401) {
+            toast('API Key de Gemini inválida — ve a Ajustes ⚙️', 'error');
+          }
+          break;
+        }
+      } catch(e) {
+        console.warn('Gemini request failed:', e);
+        break;
+      }
+    }
+  }
+
+  // Method 2: Google Translate (non-official, no key needed)
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=ca&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.[0]?.[0]?.[0]) {
+        const catalan = data[0].map(s => s[0]).join('').replace(' ,', ',').replace(' .', '.');
+        return { catalan, correctedSpanish: '' };
+      }
+    }
+  } catch(e) {
+    console.warn('Google fallback failed:', e);
+  }
+
+  // Method 3: Local dictionary (last resort)
+  const dict = { 'pollo':'pollastre','jamón':'pernil','ternera':'vedella','cerdo':'porc',
+    'pescado':'peix','ensalada':'amanida','sopa':'sopa','arroz':'arròs','patatas':'patates',
+    'huevos':'ous','queso':'formatge','con':'amb','y':'i','de':'de','al':'al','a la':'a la',
+    'frito':'fregit','asado':'rostit','horno':'forn','plancha':'planxa','salsa':'salsa',
+    'crema':'crema','tarta':'pastís','helado':'gelat','fruta':'fruita','pan':'pa' };
+  const catalan = text.split(' ').map(w => dict[w.toLowerCase()] || w).join(' ');
+  return { catalan, correctedSpanish: '' };
+}
+
+async function doTranslate() {
+  const esInput = $('inputEs');
+  const caInput = $('inputCa');
+  const text = esInput.value.trim();
+  if (!text) return;
+  
+  caInput.classList.add('translating');
+  caInput.value = 'Traduciendo...';
+  
+  try {
+    const result = await translateText(text);
+    caInput.value = result.catalan;
+    // If Gemini corrected the Spanish, update the input
+    if (result.correctedSpanish && result.correctedSpanish !== text) {
+      esInput.value = result.correctedSpanish;
+      toast('Traducido ✨ español corregido', 'success');
+    } else {
+      toast('Traducido', 'success');
+    }
+  } catch(e) {
+    caInput.value = '';
+    toast('Error de traducción', 'error');
+  }
+  
+  caInput.classList.remove('translating');
+}
+
+// ==================== AUTOCOMPLETE ====================
+function showAutocomplete(query) {
+  const dropdown = $('autocompleteDropdown');
+  if (!query || query.length < 2) { dropdown.classList.remove('visible'); return; }
+  
+  const q = query.toLowerCase();
+  const matches = library.filter(d => 
+    d.spanish.toLowerCase().includes(q) || d.catalan.toLowerCase().includes(q)
+  ).slice(0, 8);
+  
+  if (matches.length === 0) { dropdown.classList.remove('visible'); return; }
+  
+  autocompleteHighlight = -1;
+  dropdown.innerHTML = matches.map((d, i) => `
+    <div class="autocomplete-item" data-id="${d.id}" data-index="${i}">
+      <span>${highlightMatch(d.spanish, q)} <em>· ${esc(d.catalan)}</em></span>
+      <span class="cat-tag">${CATEGORY_LABELS[d.category] || ''}</span>
+    </div>
+  `).join('');
+  dropdown.classList.add('visible');
+}
+
+function highlightMatch(text, query) {
+  const idx = text.toLowerCase().indexOf(query);
+  if (idx === -1) return esc(text);
+  return esc(text.slice(0, idx)) + '<strong>' + esc(text.slice(idx, idx + query.length)) + '</strong>' + esc(text.slice(idx + query.length));
+}
+
+function selectAutocomplete(id) {
+  const dish = library.find(d => d.id === id);
+  if (!dish) return;
+  $('inputEs').value = dish.spanish;
+  $('inputCa').value = dish.catalan;
+  $('inputCategory').value = dish.category;
+  $('autocompleteDropdown').classList.remove('visible');
+  $('inputEs').focus();
+}
+
+// ==================== MENU ACTIONS ====================
+async function addToMenu() {
+  let es = $('inputEs').value.trim();
+  let ca = $('inputCa').value.trim();
+  const cat = $('inputCategory').value;
+  if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
+  if (!ca) { 
+    await doTranslate();
+    es = $('inputEs').value.trim();
+    ca = $('inputCa').value.trim();
+    if (!ca) { toast('Falta la traducción', 'error'); return; }
+  }
+  
+  const finalCa = ca;
+  
+  // Check duplicate
+  if (todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase())) {
+    toast('Ya está en el menú', 'info');
+    return;
+  }
+  
+  const dish = { id: uid(), spanish: es, catalan: finalCa, category: cat };
+  todayMenu[cat].push(dish);
+  await saveMenu();
+  clearInputs();
+  renderMenuBuilder();
+  renderPreview();
+  toast('Añadido al menú', 'success');
+}
+
+async function addToLibrary() {
+  const es = $('inputEs').value.trim();
+  const ca = $('inputCa').value.trim();
+  const cat = $('inputCategory').value;
+  if (!es || !ca) { toast('Falta nombre o traducción', 'error'); return; }
+  
+  if (library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat)) {
+    toast('Ya existe en la biblioteca', 'info');
+    return;
+  }
+  
+  const dish = { id: uid(), spanish: es, catalan: ca, category: cat, created_at: new Date().toISOString() };
+  library.unshift(dish);
+  await saveLibrary();
+  clearInputs();
+  renderLibrary();
+  toast('Guardado en biblioteca', 'success');
+}
+
+async function addBoth() {
+  let es = $('inputEs').value.trim();
+  let ca = $('inputCa').value.trim();
+  const cat = $('inputCategory').value;
+  if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
+  if (!ca) {
+    await doTranslate();
+    es = $('inputEs').value.trim();
+    ca = $('inputCa').value.trim();
+  }
+  const finalCa = ca;
+  if (!finalCa) { toast('Falta la traducción', 'error'); return; }
+  
+  // Add to library if not exists
+  if (!library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat)) {
+    library.unshift({ id: uid(), spanish: es, catalan: finalCa, category: cat, created_at: new Date().toISOString() });
+    await saveLibrary();
+  }
+
+  // Add to menu if not exists
+  if (!todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase())) {
+    todayMenu[cat].push({ id: uid(), spanish: es, catalan: finalCa, category: cat });
+    await saveMenu();
+  }
+  
+  clearInputs();
+  renderAll();
+  toast('Añadido al menú y biblioteca', 'success');
+}
+
+async function addFromLibrary(id) {
+  const dish = library.find(d => d.id === id);
+  if (!dish) return;
+  const cat = dish.category;
+  if (todayMenu[cat].some(d => d.spanish.toLowerCase() === dish.spanish.toLowerCase())) {
+    toast('Ya está en el menú', 'info');
+    return;
+  }
+  todayMenu[cat].push({ ...dish, id: uid() });
+  await saveMenu();
+  renderMenuBuilder();
+  renderPreview();
+  renderLibrary();
+  toast('Añadido al menú', 'success');
+}
+
+async function removeFromMenu(id, category) {
+  todayMenu[category] = todayMenu[category].filter(d => d.id !== id);
+  await saveMenu();
+  renderMenuBuilder();
+  renderPreview();
+  renderLibrary();
+}
+
+async function deleteFromLibrary(id) {
+  if (!confirm('¿Eliminar de la biblioteca?')) return;
+  library = library.filter(d => d.id !== id);
+  await saveLibrary();
+  await deleteFromCloud(id);
+  renderLibrary();
+  toast('Eliminado', 'success');
+}
+
+async function moveInMenu(id, category, direction) {
+  const list = todayMenu[category];
+  const idx = list.findIndex(d => d.id === id);
+  if (direction === 'up' && idx > 0) [list[idx-1], list[idx]] = [list[idx], list[idx-1]];
+  if (direction === 'down' && idx < list.length - 1) [list[idx+1], list[idx]] = [list[idx], list[idx+1]];
+  await saveMenu();
+  renderMenuBuilder();
+  renderPreview();
+}
+
+async function startInlineEdit(id, category) {
+  editingId = id;
+  renderMenuBuilder();
+}
+
+async function saveInlineEdit(id, category) {
+  const row = document.querySelector(`.inline-edit-row[data-id="${id}"]`);
+  if (!row) return;
+  const es = row.querySelector('.edit-es').value.trim();
+  const ca = row.querySelector('.edit-ca').value.trim();
+  const newCategory = row.querySelector('.edit-category')?.value || category;
+  if (!es || !ca) return;
+
+  const sourceList = todayMenu[category] || [];
+  const idx = sourceList.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  if (newCategory !== category && (todayMenu[newCategory] || []).some(d => d.id !== id && d.spanish.toLowerCase() === es.toLowerCase())) {
+    toast('Ya existe en esa categoría', 'info');
+    return;
+  }
+
+  const dish = sourceList[idx];
+  const oldSpanish = dish.spanish;
+  const oldCatalan = dish.catalan;
+  const oldCategory = dish.category || category;
+  dish.spanish = es;
+  dish.catalan = ca;
+  dish.category = newCategory;
+
+  if (newCategory !== category) {
+    sourceList.splice(idx, 1);
+    todayMenu[newCategory] = todayMenu[newCategory] || [];
+    todayMenu[newCategory].push(dish);
+  }
+
+  const libraryDish = library.find(d =>
+    d.category === oldCategory &&
+    d.spanish.toLowerCase() === oldSpanish.toLowerCase() &&
+    d.catalan.toLowerCase() === oldCatalan.toLowerCase()
+  );
+  if (libraryDish) {
+    libraryDish.spanish = es;
+    libraryDish.catalan = ca;
+    libraryDish.category = newCategory;
+    libraryDish.updated_at = new Date().toISOString();
+  }
+
+  editingId = null;
+  await saveMenu();
+  if (libraryDish) await saveLibrary();
+  renderMenuBuilder();
+  renderPreview();
+  renderLibrary();
+  toast(newCategory === category ? 'Plato actualizado' : 'Categoría actualizada', 'success');
+}
+
+function cancelInlineEdit() {
+  editingId = null;
+  renderMenuBuilder();
+}
+
+async function clearMenu() {
+  if (!confirm('¿Vaciar el menú de hoy?')) return;
+  todayMenu = { primer: [], segundo: [], postre: [] };
+  await saveMenu();
+  renderAll();
+  toast('Menú vaciado', 'info');
+}
+
+async function loadFromHistory(dateStr) {
+  const hist = menuHistory[dateStr];
+  if (!hist) return;
+  if (Object.values(todayMenu).some(a => a.length > 0)) {
+    if (!confirm(`¿Cargar el menú del ${dateStr}? Se reemplazará el menú actual.`)) return;
+  }
+  todayMenu = JSON.parse(JSON.stringify(hist));
+  await saveMenu();
+  renderAll();
+  toast(`Menú del ${dateStr} cargado`, 'success');
+}
+
+// ==================== RENDERING ====================
+function renderAll() {
+  renderMenuBuilder();
+  renderPreview();
+  renderLibrary();
+  renderHistory();
+}
+
+function renderMenuBuilder() {
+  let html = '';
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    const dishes = todayMenu[cat] || [];
+    html += `<div class="menu-section">
+      <div class="section-header">
+        <h3>${CATEGORY_LABELS[cat]}</h3>
+        <span class="count">${dishes.length}</span>
+      </div>
+      <div class="dish-list" data-category="${cat}">`;
+    
+    if (dishes.length === 0) {
+      html += `<div class="drop-hint">Sin platos — escribe arriba o busca en la biblioteca</div>`;
+    } else {
+      dishes.forEach((dish, i) => {
+        if (dish.id === editingId) {
+          html += `<div class="inline-edit-row" data-id="${dish.id}">
+            <input class="edit-es" value="${esc(dish.spanish)}" placeholder="Español">
+            <input class="edit-ca" value="${esc(dish.catalan)}" placeholder="Català">
+            <select class="edit-category" title="Categoría">
+              <option value="primer" ${cat === 'primer' ? 'selected' : ''}>Primer Plato</option>
+              <option value="segundo" ${cat === 'segundo' ? 'selected' : ''}>Segundo Plato</option>
+              <option value="postre" ${cat === 'postre' ? 'selected' : ''}>Postres</option>
+            </select>
+            <div class="inline-edit-actions">
+              <button class="dish-action-btn" data-action="save-inline" data-id="${dish.id}" data-cat="${cat}" title="Guardar">✓</button>
+              <button class="dish-action-btn" data-action="cancel-inline" title="Cancelar">✕</button>
+            </div>
+          </div>`;
+        } else {
+          html += `<div class="dish-card" data-id="${dish.id}" data-cat="${cat}" draggable="true">
+            <span class="drag-handle">⋮⋮</span>
+            <div class="dish-text">
+              <div class="dish-es">${esc(dish.spanish)}</div>
+              <div class="dish-ca">${esc(dish.catalan)}</div>
+            </div>
+            <div class="dish-actions">
+              <button class="dish-action-btn" data-action="move" data-direction="up" data-id="${dish.id}" data-cat="${cat}" title="Subir">▲</button>
+              <button class="dish-action-btn" data-action="move" data-direction="down" data-id="${dish.id}" data-cat="${cat}" title="Bajar">▼</button>
+              <button class="dish-action-btn" data-action="start-edit" data-id="${dish.id}" data-cat="${cat}" title="Editar">✏️</button>
+              <button class="dish-action-btn delete" data-action="remove" data-id="${dish.id}" data-cat="${cat}" title="Quitar">✕</button>
+            </div>
+          </div>`;
         }
       });
-      menuHtml+='<div class="menu-hours">HORARIO DE MENÚ 13:00 - 16:00</div>';
-      const mp=document.getElementById('menuPreview'); mp.innerHTML=menuHtml; mp.style.display='block';
-      applyPreviewFontSizes(); // 生成后刷新预览字号
+    }
+    html += '</div></div>';
+  }
+  $('menuBuilder').innerHTML = html;
+}
+
+function renderPreview() {
+  const price = $('menuPrice').value || '14.50 €';
+  const dateVal = $('menuDate').value;
+  const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
+  const safePrice = esc(price);
+  const safeDate = esc(dateStr);
+
+  let html = `<div class="mp-header">
+    <div class="mp-title" style="font-size:${printSettings.titleSize}px;text-align:${printSettings.titleAlign}">Menú del día</div>
+    <div class="mp-restaurant">Restaurante Sol</div>
+    <div class="mp-meta" style="font-size:${printSettings.priceSize}px"><span>${safePrice}</span><span>${safeDate}</span></div>
+  </div>`;
+
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    const dishes = todayMenu[cat] || [];
+    if (dishes.length === 0) continue;
+    
+    html += `<div class="mp-section" data-category="${cat}" style="margin-bottom:${printSettings.sectionMargin}px">
+      <div class="mp-section-title" style="font-size:${printSettings.sectionSize}px">${CATEGORY_LABELS[cat]}</div>`;
+    
+    if (cat === 'postre') {
+      const esText = dishes.map(d => d.spanish).join(', ');
+      const caText = dishes.map(d => d.catalan).join(', ');
+      html += `<div class="mp-item" style="margin-bottom:${printSettings.itemMargin}px">
+        <div class="mp-item-es" style="font-size:${printSettings.postreEs}px">${esc(esText)}</div>
+        <div class="mp-item-ca" style="font-size:${printSettings.postreCa}px">${esc(caText)}</div>
+      </div>`;
+    } else {
+      dishes.forEach(d => {
+        html += `<div class="mp-item" style="margin-bottom:${printSettings.itemMargin}px">
+          <div class="mp-item-es" style="font-size:${printSettings.mainEs}px">${esc(d.spanish)}</div>
+          <div class="mp-item-ca" style="font-size:${printSettings.mainCa}px">${esc(d.catalan)}</div>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  }
+  
+  html += '<div class="mp-hours">HORARIO DE MENÚ 13:00 – 16:00</div>';
+  $('menuPreview').innerHTML = html;
+}
+
+function renderLibrary() {
+  const search = ($('librarySearch')?.value || '').toLowerCase();
+  $('libraryCount').textContent = `(${library.length})`;
+  
+  // Identify which dishes are in today's menu
+  const menuNames = new Set();
+  Object.values(todayMenu).forEach(arr => arr.forEach(d => menuNames.add(d.spanish.toLowerCase())));
+  
+  let html = '';
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    let dishes = library.filter(d => d.category === cat);
+    if (search) dishes = dishes.filter(d => d.spanish.toLowerCase().includes(search) || d.catalan.toLowerCase().includes(search));
+    if (dishes.length === 0) continue;
+    
+    html += `<div class="library-category">
+      <div class="library-category-title">${CATEGORY_LABELS[cat]} (${dishes.length})</div>`;
+    dishes.forEach(d => {
+      const inMenu = menuNames.has(d.spanish.toLowerCase());
+      html += `<div class="library-item ${inMenu ? 'in-menu' : ''}" data-action="add-from-library" data-id="${d.id}">
+        <span class="lib-es">${esc(d.spanish)}</span>
+        <span class="lib-ca">${esc(d.catalan)}</span>
+        <span class="lib-add">${inMenu ? '✓' : '+'}</span>
+        <button class="lib-delete" data-action="delete-from-library" data-id="${d.id}" title="Eliminar">🗑️</button>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  
+  if (!html) html = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">No hay platos guardados. Usa "Guardar en biblioteca" para añadir.</p>';
+  $('libraryList').innerHTML = html;
+}
+
+function renderHistory() {
+  const dates = Object.keys(menuHistory).sort().reverse().slice(0, 15);
+  if (dates.length === 0) {
+    $('historyList').innerHTML = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">Sin historial aún. Los menús se guardan automáticamente.</p>';
+    return;
+  }
+  
+  $('historyList').innerHTML = dates.map(dateStr => {
+    const menu = menuHistory[dateStr];
+    const total = Object.values(menu).reduce((sum, arr) => sum + arr.length, 0);
+    const sample = [...(menu.primer || []), ...(menu.segundo || [])].slice(0, 2).map(d => d.spanish).join(', ');
+    const displayDate = new Date(dateStr + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `<div class="history-item" data-date="${esc(dateStr)}">
+      <span class="history-date">${esc(displayDate)}</span>
+      <span class="history-summary">${total} platos · ${esc(sample || '...')}</span>
+      <button class="history-load-btn">Cargar ↗</button>
+    </div>`;
+  }).join('');
+}
+
+// ==================== EVENTS ====================
+function bindEvents() {
+  // Quick input keyboard shortcuts
+  $('inputEs').addEventListener('input', e => showAutocomplete(e.target.value));
+  $('inputEs').addEventListener('keydown', async e => {
+    const dropdown = $('autocompleteDropdown');
+    const items = dropdown.querySelectorAll('.autocomplete-item');
+    
+    if (e.key === 'ArrowDown' && dropdown.classList.contains('visible')) {
+      e.preventDefault();
+      autocompleteHighlight = Math.min(autocompleteHighlight + 1, items.length - 1);
+      items.forEach((it, i) => it.classList.toggle('highlighted', i === autocompleteHighlight));
+    } else if (e.key === 'ArrowUp' && dropdown.classList.contains('visible')) {
+      e.preventDefault();
+      autocompleteHighlight = Math.max(autocompleteHighlight - 1, 0);
+      items.forEach((it, i) => it.classList.toggle('highlighted', i === autocompleteHighlight));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (dropdown.classList.contains('visible') && autocompleteHighlight >= 0 && items[autocompleteHighlight]) {
+        selectAutocomplete(Number(items[autocompleteHighlight].dataset.id));
+      } else {
+        // Translate + add to menu
+        if (!$('inputCa').value.trim()) await doTranslate();
+        if (e.shiftKey) {
+          await addToLibrary();
+        } else {
+          await addToMenu();
+        }
+      }
+      dropdown.classList.remove('visible');
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('visible');
+    }
+  });
+
+  $('inputCa').addEventListener('keydown', async e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) await addToLibrary();
+      else await addToMenu();
+    }
+  });
+
+  // Close autocomplete on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.autocomplete-wrapper')) {
+      $('autocompleteDropdown').classList.remove('visible');
+    }
+  });
+
+  // Autocomplete item click
+  $('autocompleteDropdown').addEventListener('click', e => {
+    const item = e.target.closest('.autocomplete-item');
+    if (item) selectAutocomplete(Number(item.dataset.id));
+  });
+
+  $('historyList').addEventListener('click', e => {
+    const item = e.target.closest('.history-item[data-date]');
+    if (!item) return;
+    loadFromHistory(item.dataset.date);
+  });
+
+  $('menuBuilder').addEventListener('click', async e => {
+    const actionEl = e.target.closest('[data-action]');
+    if (!actionEl) return;
+
+    const action = actionEl.dataset.action;
+    const id = Number(actionEl.dataset.id);
+    const cat = actionEl.dataset.cat;
+
+    if (action === 'save-inline') { await saveInlineEdit(id, cat); return; }
+    if (action === 'cancel-inline') { cancelInlineEdit(); return; }
+    if (action === 'move') { await moveInMenu(id, cat, actionEl.dataset.direction); return; }
+    if (action === 'start-edit') { await startInlineEdit(id, cat); return; }
+    if (action === 'remove') { await removeFromMenu(id, cat); }
+  });
+
+  $('libraryList').addEventListener('click', async e => {
+    const actionEl = e.target.closest('[data-action]');
+    if (!actionEl) return;
+
+    const action = actionEl.dataset.action;
+    const id = Number(actionEl.dataset.id);
+
+    if (action === 'delete-from-library') {
+      e.stopPropagation();
+      await deleteFromLibrary(id);
+      return;
     }
 
-    function printMenu(){
-      if(document.getElementById('menuPreview').style.display==='none'){ generateMenu(); }
-      const w=window.open('','_blank'); const content=document.getElementById('menuPreview').innerHTML;
-      const css = `
-          @page{margin:20mm 22mm;size:A4}
-          html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
-          body{font-family:Arial,"Microsoft YaHei",sans-serif;margin:0;padding:0;color:#333;line-height:1.3}
-          .menu-header{text-align:center;border-bottom:3px solid #333;padding-bottom:15px;margin-bottom:18px}
-          .menu-title{font-size:2.2em;font-style:italic;margin-bottom:6px;color:#333;font-weight:bold}
-          .menu-date-price{display:flex;justify-content:space-between;font-size:1.1em;font-weight:bold;margin-top:8px}
-          .menu-section{margin-bottom:18px}
-          .section-title{font-size:1.2em;font-weight:bold;margin-bottom:10px;color:#333;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #666;padding-bottom:3px}
-          .menu-item{margin-bottom:8px;padding-bottom:4px;padding-left:8px}
-          /* 非 postre 的菜品字号（打印） */
-          .menu-section:not(.postre-section) .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.mainEs}px !important;line-height:1.25}
-          .menu-section:not(.postre-section) .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.mainCa}px !important;line-height:1.25;margin-bottom:2px}
-          /* postre 专用字号（打印） */
-          .menu-section.postre-section .menu-item-spanish{font-weight:normal;color:#333;margin-bottom:2px;font-size:${fontSettings.postreEs}px !important;line-height:1.25}
-          .menu-section.postre-section .menu-item-catalan{font-style:italic;color:#666;font-size:${fontSettings.postreCa}px !important;line-height:1.25;margin-bottom:2px}
-          .menu-item-extra{color:#888;font-size:11px !important;font-weight:500}
-          .menu-hours{text-align:center;margin-top:20px;padding-top:15px;border-top:2px solid #333;font-size:1.1em;font-weight:bold;letter-spacing:1px}
-          .menu-header>div:nth-child(2){font-size:1em;color:#666;margin-bottom:12px;font-style:italic}
-      `;
-      w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del día</title><style>${css}</style></head><body>${content}</body></html>`);
-      w.document.close(); w.focus(); w.print(); w.close();
+    if (action === 'add-from-library') {
+      await addFromLibrary(id);
+    }
+  });
+
+  // Buttons
+  $('btnTranslate').addEventListener('click', doTranslate);
+  $('btnAddMenu').addEventListener('click', addToMenu);
+  $('btnSaveLib').addEventListener('click', addToLibrary);
+  $('btnBoth').addEventListener('click', addBoth);
+  $('btnPrint').addEventListener('click', printMenu);
+  $('btnShare').addEventListener('click', shareMenu);
+  $('btnPDF').addEventListener('click', generatePDF);
+  $('btnClear').addEventListener('click', clearMenu);
+
+  // Date change
+  $('menuDate').addEventListener('change', () => { setDate(); renderPreview(); });
+
+  // Library toggle
+  $('libraryToggle').addEventListener('click', () => {
+    const content = $('libraryContent');
+    const arrow = $('libraryArrow');
+    content.classList.toggle('open');
+    arrow.classList.toggle('open');
+  });
+
+  // History toggle
+  $('historyToggle').addEventListener('click', () => {
+    $('historyContent').classList.toggle('open');
+    $('historyArrow').classList.toggle('open');
+  });
+
+  // Library search
+  $('librarySearch').addEventListener('input', () => renderLibrary());
+
+  // Settings modal
+  $('btnSettings').addEventListener('click', () => {
+    $('settingsModal').classList.add('visible');
+    // Load saved key (show masked)
+    const savedKey = localStorage.getItem('gemini_api_key') || '';
+    $('geminiKeyInput').value = savedKey;
+    $('geminiStatus').textContent = savedKey ? '✅ Key guardada (solo este dispositivo)' : '⚠️ Sin configurar — usa Google Translate como respaldo';
+    refreshAuthUI();
+  });
+  $('closeSettings').addEventListener('click', () => { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); });
+  $('closeSettingsBtn').addEventListener('click', () => { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); });
+  $('settingsModal').addEventListener('click', e => {
+    if (e.target === $('settingsModal')) { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); }
+  });
+
+  $('authSignIn').addEventListener('click', async () => {
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    if (!email || !password) { toast('Completa email y contraseña', 'error'); return; }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { toast('Login falló: ' + error.message, 'error'); return; }
+    toast('Sesión iniciada', 'success');
+  });
+
+  $('authSignUp').addEventListener('click', async () => {
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    if (!email || !password) { toast('Completa email y contraseña', 'error'); return; }
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) { toast('Registro falló: ' + error.message, 'error'); return; }
+    toast('Cuenta creada. Revisa tu email si se requiere confirmación.', 'success');
+  });
+
+  $('authSignOut').addEventListener('click', async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast('Error al cerrar sesión', 'error'); return; }
+    toast('Sesión cerrada', 'info');
+  });
+
+  // Gemini API Key management (local only)
+  $('saveGeminiKey').addEventListener('click', () => {
+    const key = $('geminiKeyInput').value.trim();
+    if (key) {
+      localStorage.setItem('gemini_api_key', key);
+      $('geminiStatus').textContent = '✅ Key guardada (solo este dispositivo)';
+      toast('API Key guardada en este dispositivo', 'success');
+    } else {
+      localStorage.removeItem('gemini_api_key');
+      $('geminiStatus').textContent = '⚠️ Key eliminada';
+      toast('API Key eliminada', 'info');
+    }
+  });
+
+  $('testGeminiKey').addEventListener('click', async () => {
+    const key = $('geminiKeyInput').value.trim();
+    if (!key) { toast('Introduce una API Key primero', 'error'); return; }
+    
+    // Temporarily save for the test
+    const oldKey = localStorage.getItem('gemini_api_key');
+    localStorage.setItem('gemini_api_key', key);
+    
+    $('geminiStatus').textContent = '⏳ Probando...';
+    try {
+      const result = await translateText('Jamon con patats fritas');
+      if (result?.catalan && result.catalan !== 'Jamon con patats fritas') {
+        const corrected = result.correctedSpanish ? `${result.correctedSpanish} → ` : '';
+        $('geminiStatus').textContent = `✅ Funciona: "${corrected}${result.catalan}"`;
+        toast('¡Traducción exitosa!', 'success');
+      } else {
+        $('geminiStatus').textContent = '⚠️ Respuesta vacía — revisa la key';
+        if (oldKey) localStorage.setItem('gemini_api_key', oldKey);
+        else localStorage.removeItem('gemini_api_key');
+      }
+    } catch(e) {
+      $('geminiStatus').textContent = '❌ Error: ' + e.message;
+      if (oldKey) localStorage.setItem('gemini_api_key', oldKey);
+      else localStorage.removeItem('gemini_api_key');
+    }
+  });
+
+  // Settings inputs — listen to both 'input' and 'change' for cross-browser reliability
+  function syncSettingsFromUI() {
+    for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
+      const el = $(inputId);
+      if (!el) continue;
+      printSettings[key] = el.tagName === 'SELECT' ? el.value : parseInt(el.value) || 0;
+    }
+    printSettings = normalizePrintSettings(printSettings);
+    saveLocal();
+    renderPreview();
+    // Sync to Supabase
+    if (isCloud) {
+      if (currentUser) supabase.from('settings').upsert(withOwner({ id: 1, print_settings: printSettings }), { onConflict: 'id' }).then(({ error }) => { if (error) console.warn('Settings sync failed:', error); });
+    }
+  }
+  
+  let settingsSaveTimer = null;
+  for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
+    const handler = e => {
+      printSettings[key] = e.target.tagName === 'SELECT' ? e.target.value : parseInt(e.target.value) || 0;
+      printSettings = normalizePrintSettings(printSettings);
+      saveLocal();
+      renderPreview();
+      // Debounced cloud save
+      clearTimeout(settingsSaveTimer);
+      settingsSaveTimer = setTimeout(() => {
+        if (isCloud) {
+          if (currentUser) supabase.from('settings').upsert(withOwner({ id: 1, print_settings: printSettings }), { onConflict: 'id' }).then(({ error }) => { if (error) console.warn(error); });
+        }
+      }, 1500);
+    };
+    $(inputId)?.addEventListener('input', handler);
+    $(inputId)?.addEventListener('change', handler);
+  }
+
+  // Drag and drop for menu reorder
+  setupDragDrop();
+}
+
+function setupDragDrop() {
+  let dragData = null;
+  
+  document.addEventListener('dragstart', e => {
+    const card = e.target.closest('.dish-card');
+    if (!card) return;
+    card.classList.add('dragging');
+    dragData = { id: Number(card.dataset.id), cat: card.dataset.cat };
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  
+  document.addEventListener('dragend', e => {
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    dragData = null;
+  });
+  
+  document.addEventListener('dragover', e => {
+    if (e.target.closest('.dish-list')) e.preventDefault();
+  });
+  
+  document.addEventListener('drop', async e => {
+    e.preventDefault();
+    if (!dragData) return;
+    const dropZone = e.target.closest('.dish-list');
+    if (!dropZone) return;
+    
+    const targetCat = dropZone.dataset.category;
+    const { id, cat: sourceCat } = dragData;
+    
+    // Remove from source
+    const sourceList = todayMenu[sourceCat];
+    const idx = sourceList.findIndex(d => d.id === id);
+    if (idx === -1) return;
+    const [dish] = sourceList.splice(idx, 1);
+    dish.category = targetCat;
+    
+    // Find drop position
+    const afterCard = e.target.closest('.dish-card');
+    const targetList = todayMenu[targetCat];
+    if (afterCard) {
+      const afterId = Number(afterCard.dataset.id);
+      const afterIdx = targetList.findIndex(d => d.id === afterId);
+      targetList.splice(afterIdx + 1, 0, dish);
+    } else {
+      targetList.push(dish);
+    }
+    
+    await saveMenu();
+    renderMenuBuilder();
+    renderPreview();
+  });
+}
+
+// ==================== UTILITIES ====================
+function setDate() {
+  const input = $('menuDate');
+  if (!input.value) input.valueAsDate = new Date();
+  const d = new Date(input.value);
+  const day = d.getUTCDay();
+  const isWeekend = day === 0 || day === 6;
+  const isHoliday = HOLIDAYS.includes(input.value);
+  
+  if (isWeekend || isHoliday) {
+    $('menuPrice').value = '19.50 €';
+    $('priceInfo').textContent = isHoliday ? '🎉 Festivo' : '📅 Fin de semana';
+  } else {
+    $('menuPrice').value = '14.50 €';
+    $('priceInfo').textContent = '📋 Laborable';
+  }
+}
+
+function clearInputs() {
+  $('inputEs').value = '';
+  $('inputCa').value = '';
+  $('inputEs').focus();
+}
+
+function initSettingsUI() {
+  for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
+    const el = $(inputId);
+    if (el) el.value = printSettings[key];
+  }
+}
+
+function syncUI(status, msg) {
+  const dot = $('syncDot');
+  const text = $('syncText');
+  dot.className = 'sync-dot' + (status === 'error' ? ' error' : status === 'syncing' ? ' syncing' : '');
+  text.textContent = msg;
+}
+
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  $('toastContainer').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function shareMenu() {
+  const price = $('menuPrice').value || '14.50 €';
+  const dateVal = $('menuDate').value;
+  const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Hoy';
+
+  // Build plain text version of the menu
+  let text = `🍽️ MENÚ DEL DÍA\n📍 Restaurante Sol\n📅 ${dateStr} — ${price}\n\n`;
+  
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    const dishes = todayMenu[cat] || [];
+    if (dishes.length === 0) continue;
+    text += `▸ ${CATEGORY_LABELS[cat]}\n`;
+    if (cat === 'postre') {
+      text += dishes.map(d => `  ${d.spanish} / ${d.catalan}`).join(', ') + '\n';
+    } else {
+      dishes.forEach(d => { text += `  ${d.spanish}\n  ${d.catalan}\n`; });
+    }
+    text += '\n';
+  }
+  text += '🕐 HORARIO: 13:00 – 16:00';
+
+  // Try Web Share API (works great on mobile — WhatsApp, Telegram, etc.)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `Menú del Día — ${dateStr}`,
+        text: text
+      });
+      toast('Compartido', 'success');
+      return;
+    } catch(e) {
+      if (e.name === 'AbortError') return; // User cancelled
+    }
+  }
+  
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Menú copiado al portapapeles — pégalo en WhatsApp/Telegram', 'success');
+  } catch(e) {
+    // Last resort: show in a prompt
+    prompt('Copia este menú:', text);
+  }
+}
+
+function printMenu() {
+  const content = $('menuPreview').innerHTML;
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del Día</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <style>
+      @page { size: A4; margin: 20mm; }
+      body { font-family: 'Cormorant Garamond', Georgia, serif; color: #000; margin: 0; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .mp-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
+      .mp-title { font-size: ${printSettings.titleSize}px; font-style: italic; text-align: ${printSettings.titleAlign}; }
+      .mp-restaurant { font-size: 14px; color: #333; font-style: italic; margin-bottom: 12px; }
+      .mp-meta { display: flex; justify-content: space-between; font-weight: 700; font-size: ${printSettings.priceSize}px; }
+      .mp-section { margin-bottom: ${printSettings.sectionMargin}px; break-inside: avoid; }
+      .mp-section-title { font-size: ${printSettings.sectionSize}px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+      .mp-item { margin-bottom: ${printSettings.itemMargin}px; }
+      .mp-item-es { font-size: ${printSettings.mainEs}px; font-weight: 600; color: #000; }
+      .mp-item-ca { font-size: ${printSettings.mainCa}px; font-weight: 500; font-style: italic; color: #333; }
+      [data-category="postre"] .mp-item-es { font-size: ${printSettings.postreEs}px; }
+      [data-category="postre"] .mp-item-ca { font-size: ${printSettings.postreCa}px; }
+      .mp-hours { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #000; font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
+    </style></head><body>${content}</body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => { try { w.print(); w.close(); } catch(e) {} }, 600);
+}
+
+async function generatePDF() {
+  const hasContent = ['primer','segundo','postre'].some(c => (todayMenu[c] || []).length > 0);
+  if (!hasContent) { toast('El menú está vacío', 'error'); return; }
+  if (!window.jspdf) { toast('Error: librería PDF no cargada. Revisa tu conexión.', 'error'); return; }
+
+  try {
+    const dateVal = $('menuDate').value;
+    const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : 'hoy';
+    const filename = 'menu-' + (dateVal || new Date().toISOString().slice(0, 10)) + '.pdf';
+    const price = $('menuPrice').value || '14.50 €';
+
+    toast('Generando PDF…', 'success');
+
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    const margin = 18;
+    const contentW = pw - margin * 2;
+    const bottomY = ph - margin;
+    const availableH = bottomY - margin;
+
+    const renderMenu = (scale, draw) => {
+      let y = margin;
+
+      const titleSize = (printSettings.titleSize * 0.75 || 24) * scale;
+      const metaSize = (printSettings.priceSize * 0.75 || 13) * scale;
+      const baseSecSize = (printSettings.sectionSize * 0.75 || 12) * scale;
+      const baseMainEs = (printSettings.mainEs * 0.75 || 12) * scale;
+      const baseMainCa = (printSettings.mainCa * 0.75 || 10) * scale;
+      const basePostreEs = (printSettings.postreEs * 0.75 || 11) * scale;
+      const basePostreCa = (printSettings.postreCa * 0.75 || 10) * scale;
+
+      const lineGap = 1.2 * scale;
+      const secGap = Math.max(2.5, (printSettings.sectionMargin * 0.28 || 5) * scale);
+      const itemGap = Math.max(1.8, (printSettings.itemMargin * 0.25 || 3) * scale);
+
+      if (draw) {
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setFontSize(titleSize);
+        const titleAlign = printSettings.titleAlign === 'left' ? margin : pw / 2;
+        const titleAlignOpt = printSettings.titleAlign === 'left' ? { align: 'left' } : { align: 'center' };
+        doc.text('Menú del día', titleAlign, y, titleAlignOpt);
+      }
+      y += Math.max(6, titleSize * 0.28);
+
+      if (draw) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(Math.max(8, 11 * scale));
+        doc.setTextColor(100);
+        doc.text('Restaurante Sol', pw / 2, y, { align: 'center' });
+        doc.setTextColor(0);
+      }
+      y += Math.max(5, 7 * scale);
+
+      if (draw) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(metaSize);
+        doc.text(price, margin, y);
+        if (dateStr && dateStr !== 'hoy') doc.text(dateStr, pw - margin, y, { align: 'right' });
+      }
+      y += Math.max(3, 3.5 * scale);
+
+      if (draw) {
+        doc.setLineWidth(0.35);
+        doc.line(margin, y, pw - margin, y);
+      }
+      y += Math.max(4, 7 * scale);
+
+      for (const cat of ['primer', 'segundo', 'postre']) {
+        const dishes = todayMenu[cat] || [];
+        if (dishes.length === 0) continue;
+
+        if (draw) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(baseSecSize);
+          doc.setTextColor(0);
+          doc.text(CATEGORY_LABELS[cat].toUpperCase(), margin, y);
+        }
+        y += Math.max(4, 6 * scale);
+
+        if (cat === 'postre') {
+          const esText = dishes.map(d => d.spanish).join(', ');
+          const caText = dishes.map(d => d.catalan).join(', ');
+
+          if (draw) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(basePostreEs);
+          }
+          const esLines = doc.splitTextToSize(esText, contentW);
+          if (draw) {
+            doc.setTextColor(0);
+            doc.text(esLines, margin, y);
+          }
+          y += esLines.length * basePostreEs * 0.36 + lineGap;
+
+          if (draw) {
+            doc.setFont('helvetica', 'italic');
+            doc.setFontSize(basePostreCa);
+          }
+          const caLines = doc.splitTextToSize(caText, contentW);
+          if (draw) {
+            doc.setTextColor(100);
+            doc.text(caLines, margin, y);
+          }
+          y += caLines.length * basePostreCa * 0.36 + itemGap;
+        } else {
+          for (const d of dishes) {
+            if (draw) {
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(baseMainEs);
+            }
+            const esLines = doc.splitTextToSize(d.spanish, contentW);
+            if (draw) {
+              doc.setTextColor(0);
+              doc.text(esLines, margin, y);
+            }
+            y += esLines.length * baseMainEs * 0.36 + lineGap;
+
+            if (draw) {
+              doc.setFont('helvetica', 'italic');
+              doc.setFontSize(baseMainCa);
+            }
+            const caLines = doc.splitTextToSize(d.catalan, contentW);
+            if (draw) {
+              doc.setTextColor(100);
+              doc.text(caLines, margin, y);
+            }
+            y += caLines.length * baseMainCa * 0.36 + itemGap;
+          }
+        }
+
+        y += secGap;
+      }
+
+      if (draw) {
+        doc.setTextColor(0);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y, pw - margin, y);
+      }
+      y += Math.max(4, 5 * scale);
+
+      if (draw) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(Math.max(8, 10 * scale));
+        doc.text('HORARIO DE MENÚ  13:00 – 16:00', pw / 2, y, { align: 'center' });
+      }
+
+      return y - margin;
+    };
+
+    let scale = 1;
+    for (let i = 0; i < 5; i++) {
+      const needed = renderMenu(scale, false);
+      if (needed <= availableH) break;
+      scale = Math.max(0.5, scale * (availableH / needed) * 0.98);
     }
 
-    async function clearSelectedDishes(){
-      if(!confirm('确定要清空所有已选菜品吗？')) return;
-      selectedDishes={primer:[],segundo:[],postre:[]};
-      await saveCloudData(); renderDishesContainer(); renderSelectedDishes();
-      document.getElementById('menuPreview').style.display='none';
+    renderMenu(scale, true);
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const previewWin = window.open(pdfUrl, '_blank');
+
+    if (previewWin) {
+      toast('PDF预览已打开（新标签页）', 'success');
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
+      return;
     }
 
-    function exportData(){
-      const data={dishes,selectedDishes,exportDate:new Date().toISOString()};
-      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-      const url=URL.createObjectURL(blob); const a=document.createElement('a');
-      a.href=url; a.download=`restaurant_menu_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
-    }
+    doc.save(filename);
+    toast('预览被浏览器拦截，已直接下载 PDF', 'info');
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    toast('Error al generar PDF: ' + err.message, 'error');
+  }
+}
 
-    async function importData(event){
-      const file=event.target.files[0]; if(!file) return;
-      const reader=new FileReader();
-      reader.onload=async e=>{
-        try{
-          const data=JSON.parse(e.target.result);
-          if(data.dishes && Array.isArray(data.dishes)){ dishes=data.dishes; }
-          if(data.selectedDishes){ selectedDishes=data.selectedDishes; }
-          await saveCloudData(); renderDishesContainer(); renderSelectedDishes(); alert('数据导入成功！');
-        }catch(err){ alert('导入失败：文件格式不正确'); }
-      };
-      reader.readAsText(file); event.target.value='';
-    }
+// ==================== PUBLIC API ====================
+window.app = { addFromLibrary, deleteFromLibrary, moveInMenu, startInlineEdit, saveInlineEdit, cancelInlineEdit, removeFromMenu, loadFromHistory, shareMenu };
 
-    async function dedupeDishes(){
-      const before=dishes.length; const map=new Map(); const result=[];
-      for(const d of dishes){ const key=d.category+'|'+normalize(d.spanish); if(!map.has(key)){ map.set(key,true); result.push(d); } }
-      const removed=before-result.length; dishes=result; await saveCloudData(); renderDishesContainer(); alert(removed>0?`已清理 ${removed} 条重复。`:'没有发现重复。');
-    }
-  </script>
+// ==================== START ====================
+init();
+
+})();
+</script>
 </body>
 </html>
