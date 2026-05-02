@@ -97,7 +97,7 @@ body {
 .date-price-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   margin-left: auto;
 }
 
@@ -115,6 +115,26 @@ body {
 
 .date-price-bar input:focus {
   border-color: var(--terracotta);
+}
+
+.price-save-btn {
+  background: white;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  color: var(--ink-faint);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.price-save-btn:hover {
+  background: var(--terracotta-light);
+  border-color: var(--terracotta);
+  color: var(--terracotta-dark);
 }
 
 .price-badge {
@@ -953,6 +973,7 @@ kbd {
       <div class="date-price-bar">
         <input type="date" id="menuDate">
         <input type="text" id="menuPrice" style="width:90px" placeholder="14.50 €">
+        <button class="price-save-btn" id="saveSpecialPrice" title="Guardar precio especial para esta fecha">⭐</button>
         <span class="price-badge" id="priceInfo"></span>
       </div>
     </div>
@@ -1115,6 +1136,7 @@ let supabase, isCloud = false;
 let library = [];     // All saved dishes
 let todayMenu = { primer: [], segundo: [], postre: [] };
 let menuHistory = {};  // { 'YYYY-MM-DD': { primer: [...], segundo: [...], postre: [...] } }
+let specialPrices = {}; // { 'YYYY-MM-DD': '21.50 €' }
 const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18 };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 let editingId = null;
@@ -1239,6 +1261,7 @@ async function loadAll() {
   try { library = JSON.parse(localStorage.getItem('v2_library') || '[]'); } catch(e) { library = []; }
   try { todayMenu = JSON.parse(localStorage.getItem('v2_todayMenu') || '{"primer":[],"segundo":[],"postre":[]}'); } catch(e) { todayMenu = { primer: [], segundo: [], postre: [] }; }
   try { menuHistory = JSON.parse(localStorage.getItem('v2_history') || '{}'); } catch(e) { menuHistory = {}; }
+  try { specialPrices = JSON.parse(localStorage.getItem('v2_specialPrices') || '{}'); } catch(e) { specialPrices = {}; }
   try { printSettings = normalizePrintSettings({ ...printSettings, ...JSON.parse(localStorage.getItem('v2_printSettings') || '{}') }); } catch(e) { printSettings = normalizePrintSettings(printSettings); }
 
   if (!isCloud) { syncUI('ok', 'Local'); return; }
@@ -1298,6 +1321,7 @@ function saveLocal() {
   localStorage.setItem('v2_library', JSON.stringify(library));
   localStorage.setItem('v2_todayMenu', JSON.stringify(todayMenu));
   localStorage.setItem('v2_history', JSON.stringify(menuHistory));
+  localStorage.setItem('v2_specialPrices', JSON.stringify(specialPrices));
   localStorage.setItem('v2_printSettings', JSON.stringify(printSettings));
 }
 
@@ -2012,6 +2036,7 @@ function bindEvents() {
   $('btnAddMenu').addEventListener('click', addToMenu);
   $('btnSaveLib').addEventListener('click', addToLibrary);
   $('btnBoth').addEventListener('click', addBoth);
+  $('saveSpecialPrice').addEventListener('click', saveSpecialPriceForDate);
   $('btnPrint').addEventListener('click', printMenu);
   $('btnShare').addEventListener('click', shareMenu);
   $('btnPDF').addEventListener('click', generatePDF);
@@ -2019,6 +2044,7 @@ function bindEvents() {
 
   // Date change
   $('menuDate').addEventListener('change', () => { setDate(); renderPreview(); });
+  $('menuPrice').addEventListener('input', renderPreview);
 
   // Library toggle
   $('libraryToggle').addEventListener('click', () => {
@@ -2217,6 +2243,13 @@ function setDate() {
   const day = d.getUTCDay();
   const isWeekend = day === 0 || day === 6;
   const isHoliday = HOLIDAYS.includes(input.value);
+  const specialPrice = specialPrices[input.value];
+
+  if (specialPrice) {
+    $('menuPrice').value = specialPrice;
+    $('priceInfo').textContent = '⭐ Precio especial';
+    return;
+  }
   
   if (isWeekend || isHoliday) {
     $('menuPrice').value = '19.50 €';
@@ -2225,6 +2258,29 @@ function setDate() {
     $('menuPrice').value = '14.50 €';
     $('priceInfo').textContent = '📋 Laborable';
   }
+}
+
+function saveSpecialPriceForDate() {
+  const dateStr = $('menuDate').value;
+  const price = $('menuPrice').value.trim();
+  if (!dateStr) {
+    toast('Elige una fecha primero', 'error');
+    return;
+  }
+  if (!price) {
+    delete specialPrices[dateStr];
+    saveLocal();
+    setDate();
+    renderPreview();
+    toast('Precio especial eliminado', 'info');
+    return;
+  }
+
+  specialPrices[dateStr] = price;
+  saveLocal();
+  setDate();
+  renderPreview();
+  toast('Precio especial guardado', 'success');
 }
 
 function clearInputs() {
