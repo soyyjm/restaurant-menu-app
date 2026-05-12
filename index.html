@@ -1419,97 +1419,146 @@ kbd {
 }
 
 /* ==========================================
-   MENÚS CERRADOS — PDF TEMPLATE
+   MENÚS CERRADOS — PDF TEMPLATE (card style)
    ========================================== */
 #mc-pdf-template {
   position: fixed; left: -9999px; top: 0; width: 794px; height: 1123px;
-  overflow: hidden; font-family: 'Cormorant Garamond', Georgia, serif;
+  overflow: hidden; font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
   box-sizing: border-box; pointer-events: none;
 }
 .mcp-page {
-  width: 794px; height: 1123px; display: flex; flex-direction: column;
-  box-sizing: border-box; overflow: hidden;
+  position: relative; width: 794px; height: 1123px; display: flex; flex-direction: column;
+  box-sizing: border-box; overflow: hidden; padding: 44px 60px 36px;
 }
-#mc-pdf-template.mcp-color .mcp-page { background: #faf8f5; }
-#mc-pdf-template.mcp-color .mcp-accent { background: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-restaurant { color: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-title { color: #14110d; }
-#mc-pdf-template.mcp-color .mcp-price { color: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-price-label { color: #9b8d82; }
-#mc-pdf-template.mcp-color .mcp-notes { color: #9b8d82; }
-#mc-pdf-template.mcp-color .mcp-rule { background: #c4652a; opacity: 0.35; }
-#mc-pdf-template.mcp-color .mcp-rule-sep { background: rgba(196,101,42,0.20); }
-#mc-pdf-template.mcp-color .mcp-section-title { color: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-section-mode { color: #9b8d82; }
-#mc-pdf-template.mcp-color .mcp-dish { color: #14110d; }
-#mc-pdf-template.mcp-color .mcp-supp { color: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-drinks-box { border-color: rgba(196,101,42,0.18); background: rgba(196,101,42,0.03); }
-#mc-pdf-template.mcp-color .mcp-drinks-label { color: #c4652a; }
-#mc-pdf-template.mcp-color .mcp-drinks-text { color: #7a6a5d; }
-#mc-pdf-template.mcp-color .mcp-footer-rule { background: rgba(196,101,42,0.20); }
-#mc-pdf-template.mcp-color .mcp-footer-text { color: #b0a096; }
-#mc-pdf-template.mcp-bw .mcp-page { background: #fff; }
-#mc-pdf-template.mcp-bw .mcp-accent { background: #000; height: 4px; }
-#mc-pdf-template.mcp-bw .mcp-restaurant { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-title { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-price { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-price-label { color: #555; }
-#mc-pdf-template.mcp-bw .mcp-notes { color: #555; }
-#mc-pdf-template.mcp-bw .mcp-rule { background: #000; opacity: 0.20; }
-#mc-pdf-template.mcp-bw .mcp-rule-sep { background: rgba(0,0,0,0.12); }
-#mc-pdf-template.mcp-bw .mcp-section-title { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-section-mode { color: #777; }
-#mc-pdf-template.mcp-bw .mcp-dish { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-supp { color: #444; }
-#mc-pdf-template.mcp-bw .mcp-drinks-box { border-color: rgba(0,0,0,0.12); }
-#mc-pdf-template.mcp-bw .mcp-drinks-label { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-drinks-text { color: #444; }
-#mc-pdf-template.mcp-bw .mcp-footer-rule { background: rgba(0,0,0,0.15); }
-#mc-pdf-template.mcp-bw .mcp-footer-text { color: #888; }
-.mcp-accent { height: 7px; flex-shrink: 0; }
-.mcp-content { flex: 1; display: flex; flex-direction: column; padding: 40px 72px 36px; min-height: 0; }
-.mcp-header { text-align: center; flex-shrink: 0; margin-bottom: 16px; }
+/* ── Color theme ── */
+#mc-pdf-template.mcp-color .mcp-page          { background: #f5f0e6; }
+#mc-pdf-template.mcp-color .mcp-corner        { border-color: rgba(180,140,56,0.55); }
+#mc-pdf-template.mcp-color .mcp-header-box    { border-color: rgba(180,140,56,0.30); }
+#mc-pdf-template.mcp-color .mcp-restaurant    { color: #4a3a24; }
+#mc-pdf-template.mcp-color .mcp-ornament-line { background: rgba(180,140,56,0.45); }
+#mc-pdf-template.mcp-color .mcp-ornament-dot  { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-title         { color: #1a1008; }
+#mc-pdf-template.mcp-color .mcp-type-label    { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-price-badge   { background: #1a1008; }
+#mc-pdf-template.mcp-color .mcp-notes         { color: #8a7a62; }
+#mc-pdf-template.mcp-color .mcp-section-title { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-section-rule  { background: rgba(180,140,56,0.35); }
+#mc-pdf-template.mcp-color .mcp-section-mode  { color: #9a8a72; }
+#mc-pdf-template.mcp-color .mcp-bullet-dot    { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-dish          { color: #1a1008; }
+#mc-pdf-template.mcp-color .mcp-dish-ca       { color: #5a4a32; }
+#mc-pdf-template.mcp-color .mcp-dish-en       { color: #8a7a62; }
+#mc-pdf-template.mcp-color .mcp-supp          { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-drinks-box    { border-color: rgba(180,140,56,0.28); background: rgba(255,255,255,0.18); }
+#mc-pdf-template.mcp-color .mcp-drinks-label  { color: #b89040; }
+#mc-pdf-template.mcp-color .mcp-drinks-text   { color: #5a4a32; }
+#mc-pdf-template.mcp-color .mcp-footer-rule   { background: rgba(180,140,56,0.22); }
+#mc-pdf-template.mcp-color .mcp-footer-text   { color: #c0a878; }
+/* ── B&W theme ── */
+#mc-pdf-template.mcp-bw .mcp-page          { background: #ffffff; }
+#mc-pdf-template.mcp-bw .mcp-corner        { border-color: rgba(0,0,0,0.28); }
+#mc-pdf-template.mcp-bw .mcp-header-box    { border-color: rgba(0,0,0,0.18); }
+#mc-pdf-template.mcp-bw .mcp-restaurant    { color: #1a1a1a; }
+#mc-pdf-template.mcp-bw .mcp-ornament-line { background: rgba(0,0,0,0.28); }
+#mc-pdf-template.mcp-bw .mcp-ornament-dot  { color: #333; }
+#mc-pdf-template.mcp-bw .mcp-title         { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-type-label    { color: #555; }
+#mc-pdf-template.mcp-bw .mcp-price-badge   { background: #000; }
+#mc-pdf-template.mcp-bw .mcp-notes         { color: #666; }
+#mc-pdf-template.mcp-bw .mcp-section-title { color: #1a1a1a; }
+#mc-pdf-template.mcp-bw .mcp-section-rule  { background: rgba(0,0,0,0.20); }
+#mc-pdf-template.mcp-bw .mcp-section-mode  { color: #888; }
+#mc-pdf-template.mcp-bw .mcp-bullet-dot    { color: #999; }
+#mc-pdf-template.mcp-bw .mcp-dish          { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-dish-ca       { color: #444; }
+#mc-pdf-template.mcp-bw .mcp-dish-en       { color: #888; }
+#mc-pdf-template.mcp-bw .mcp-supp          { color: #444; }
+#mc-pdf-template.mcp-bw .mcp-drinks-box    { border-color: rgba(0,0,0,0.15); background: transparent; }
+#mc-pdf-template.mcp-bw .mcp-drinks-label  { color: #1a1a1a; }
+#mc-pdf-template.mcp-bw .mcp-drinks-text   { color: #333; }
+#mc-pdf-template.mcp-bw .mcp-footer-rule   { background: rgba(0,0,0,0.14); }
+#mc-pdf-template.mcp-bw .mcp-footer-text   { color: #999; }
+/* ── Corner brackets ── */
+.mcp-corner {
+  position: absolute; width: 22px; height: 22px; border-style: solid;
+}
+.mcp-corner-tl { top: 18px; left: 18px; border-width: 2px 0 0 2px; }
+.mcp-corner-tr { top: 18px; right: 18px; border-width: 2px 2px 0 0; }
+.mcp-corner-bl { bottom: 18px; left: 18px; border-width: 0 0 2px 2px; }
+.mcp-corner-br { bottom: 18px; right: 18px; border-width: 0 2px 2px 0; }
+/* ── Header box ── */
+.mcp-header-box {
+  text-align: center; padding: 22px 28px 18px; margin-bottom: 26px; flex-shrink: 0;
+  border: 1px solid;
+}
 .mcp-restaurant {
-  font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.28em;
-  text-transform: uppercase; font-weight: 700; margin-bottom: 10px; font-style: normal;
+  font-size: 9px; letter-spacing: 0.30em; text-transform: uppercase; font-weight: 700; margin-bottom: 9px;
 }
+.mcp-ornament-row {
+  display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;
+}
+.mcp-ornament-line { flex: 1; max-width: 72px; height: 1px; }
+.mcp-ornament-dot  { font-size: 8px; line-height: 1; }
 .mcp-title {
-  font-size: 58px; font-weight: 400; font-style: italic;
-  line-height: 1.0; letter-spacing: 0.01em; margin-bottom: 14px;
+  font-size: 50px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.0;
+  margin-bottom: 6px; text-transform: uppercase;
 }
-.mcp-price-row {
-  display: flex; justify-content: center; align-items: baseline; gap: 7px; margin-bottom: 5px;
+.mcp-type-label {
+  font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px;
 }
-.mcp-price { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
-.mcp-price-label { font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.06em; }
-.mcp-notes { font-family: 'DM Sans', sans-serif; font-size: 9.5px; letter-spacing: 0.03em; font-style: italic; margin-bottom: 3px; }
-.mcp-rule { height: 1px; border: none; margin: 0; flex: 1; }
-.mcp-rule-sep { height: 1px; border: none; margin: 14px 0; }
-.mcp-body { flex: 1; display: flex; flex-direction: column; padding: 4px 0; min-height: 0; }
-.mcp-section { margin-bottom: 16px; }
-.mcp-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+.mcp-price-row { display: flex; justify-content: center; margin-bottom: 4px; }
+.mcp-price-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 24px; border-radius: 50px;
+}
+.mcp-price       { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: 0.03em; }
+.mcp-price-label { font-size: 9px;  font-weight: 400; color: rgba(255,255,255,0.72); letter-spacing: 0.05em; }
+.mcp-notes {
+  font-family: 'DM Sans', sans-serif; font-size: 9px; font-style: italic; margin-top: 6px; letter-spacing: 0.02em;
+}
+/* ── Body ── */
+.mcp-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.mcp-section { margin-bottom: 20px; }
+.mcp-section-header { text-align: center; margin-bottom: 8px; }
 .mcp-section-title {
-  font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.26em;
-  text-transform: uppercase; font-weight: 700; white-space: nowrap; font-style: normal;
+  font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700; margin-bottom: 5px;
 }
-.mcp-section-mode { font-family: 'DM Sans', sans-serif; font-size: 8.5px; letter-spacing: 0.05em; white-space: nowrap; }
+.mcp-section-rule { height: 1px; border: none; margin: 0 auto; width: 160px; }
+.mcp-section-mode {
+  font-size: 9px; font-style: italic; font-weight: 400; margin-top: 4px;
+}
 .mcp-dish-row {
-  display: flex; align-items: baseline; justify-content: space-between;
-  padding: 5px 8px; border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 4px 16px; text-align: center;
 }
-.mcp-dish { font-size: 17px; font-weight: 500; line-height: 1.25; flex: 1; }
+.mcp-bullet-dot { font-size: 7px; flex-shrink: 0; line-height: 1; }
+.mcp-dish-cell  { flex: 1; text-align: center; }
+.mcp-dish {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 16.5px; font-weight: 500; line-height: 1.25; display: block;
+}
+.mcp-dish-ca {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 13px; font-style: italic; line-height: 1.2; display: block; margin-top: 1px;
+}
+.mcp-dish-en {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10.5px; font-style: italic; line-height: 1.2; display: block; margin-top: 1px;
+}
 .mcp-supp {
-  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700;
-  letter-spacing: 0.04em; margin-left: 12px; flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.04em; flex-shrink: 0;
 }
-.mcp-drinks-box { margin-top: 10px; padding: 10px 14px; border: 1px solid; border-radius: 4px; }
+/* ── Drinks box ── */
+.mcp-drinks-box { margin-top: 14px; text-align: center; padding: 11px 24px; border: 1px solid; }
 .mcp-drinks-label {
-  font-family: 'DM Sans', sans-serif; font-size: 8.5px; font-weight: 700;
-  letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 5px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 4px;
 }
-.mcp-drinks-text { font-size: 13.5px; font-style: italic; line-height: 1.45; }
-.mcp-footer { flex-shrink: 0; text-align: center; padding-top: 10px; }
-.mcp-footer-rule { height: 1px; border: none; margin-bottom: 10px; }
+.mcp-drinks-text {
+  font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; font-style: italic; line-height: 1.5;
+}
+/* ── Footer ── */
+.mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
+.mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
 </style>
 </head>
@@ -1685,25 +1734,32 @@ kbd {
 <!-- MC PDF TEMPLATE (off-screen, populated by JS before capture) -->
 <div id="mc-pdf-template">
   <div class="mcp-page">
-    <div class="mcp-accent"></div>
-    <div class="mcp-content">
-      <div class="mcp-header">
-        <div class="mcp-restaurant" id="mcp-restaurant">RESTAURANTE SOL</div>
-        <div class="mcp-title" id="mcp-title"></div>
-        <div class="mcp-price-row" id="mcp-price-row">
+    <div class="mcp-corner mcp-corner-tl"></div>
+    <div class="mcp-corner mcp-corner-tr"></div>
+    <div class="mcp-corner mcp-corner-bl"></div>
+    <div class="mcp-corner mcp-corner-br"></div>
+    <div class="mcp-header-box">
+      <div class="mcp-restaurant" id="mcp-restaurant">RESTAURANTE SOL</div>
+      <div class="mcp-ornament-row">
+        <div class="mcp-ornament-line"></div>
+        <div class="mcp-ornament-dot">●</div>
+        <div class="mcp-ornament-line"></div>
+      </div>
+      <div class="mcp-title" id="mcp-title"></div>
+      <div class="mcp-type-label" id="mcp-type-label"></div>
+      <div class="mcp-price-row" id="mcp-price-row">
+        <div class="mcp-price-badge">
           <span class="mcp-price" id="mcp-price"></span>
           <span class="mcp-price-label" id="mcp-price-label"></span>
         </div>
-        <div class="mcp-notes" id="mcp-notes"></div>
-        <div class="mcp-rule-sep"></div>
       </div>
-      <div class="mcp-body" id="mcp-body"></div>
+      <div class="mcp-notes" id="mcp-notes"></div>
     </div>
+    <div class="mcp-body" id="mcp-body"></div>
     <div class="mcp-footer">
       <div class="mcp-footer-rule"></div>
       <div class="mcp-footer-text" id="mcp-footer-text">Restaurante Sol · Barcelona</div>
     </div>
-    <div class="mcp-accent"></div>
   </div>
 </div>
 
@@ -3607,8 +3663,23 @@ function mcRenderEditor() {
       <textarea class="mc-drinks-input" id="mc-drinks-input" rows="2" placeholder="Ej: Una botella de vino por cada 4 personas · Agua y refrescos">${esc(m.drinks||'')}</textarea>
     </div>
     <div class="mc-pdf-row">
-      <button class="btn btn-pdf-color" id="mc-pdf-color-btn">🎨 PDF Color</button>
-      <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:0.04em;">IDIOMA:</span>
+          <select id="mc-pdf-lang" style="font-family:var(--font-body);font-size:12px;padding:5px 8px;border:1px solid var(--cream);border-radius:var(--radius);background:var(--paper);cursor:pointer;">
+            <option value="es">🇪🇸 Español</option>
+            <option value="ca">🏴 Català</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="multi">🌐 Multilingüe</option>
+          </select>
+        </div>
+        <button class="btn btn-pdf-color" id="mc-pdf-color-btn">🎨 PDF Color</button>
+        <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-secondary" id="mc-translate-ca-btn" style="font-size:12px;padding:6px 10px;" title="Traducir todos los platos al catalán">CA ✦ Traducir</button>
+        <button class="btn btn-secondary" id="mc-translate-en-btn" style="font-size:12px;padding:6px 10px;" title="Traducir todos los platos al inglés">EN ✦ Traducir</button>
+      </div>
     </div>`;
 
   $('mc-save-btn').addEventListener('click', mcSaveMenu);
@@ -3620,8 +3691,10 @@ function mcRenderEditor() {
     mcCurrentMenu.sections.push({ id: mcUUID(), title: 'Nueva sección', subtitle: '', mode: 'choose_one', dishes: [{ id: mcUUID(), name: '', supplement: null }] });
     mcRefreshSections();
   });
-  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color'));
-  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw'));
+  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color', $('mc-pdf-lang')?.value || 'es'));
+  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw', $('mc-pdf-lang')?.value || 'es'));
+  $('mc-translate-ca-btn').addEventListener('click', () => mcTranslateAll('ca'));
+  $('mc-translate-en-btn').addEventListener('click', () => mcTranslateAll('en'));
   area.querySelectorAll('.mc-version-sibling').forEach(el => {
     el.addEventListener('click', () => {
       const m2 = mcMenus.find(x => x.id === el.dataset.id);
@@ -3650,9 +3723,14 @@ function mcRenderSection(sec, si) {
 
 function mcRenderDish(d, si, di) {
   const suppVal = d.supplement ? `+${d.supplement}€` : '';
+  const hasTranslations = d.name_ca || d.name_en;
   return `<div class="mc-dish-row" data-si="${si}" data-di="${di}">
-    <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato..." data-si="${si}" data-di="${di}">
-    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl.€" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50€)">
+    <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+      <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato (ES)..." data-si="${si}" data-di="${di}">
+      <input class="mc-dish-ca-input" value="${esc(d.name_ca||'')}" placeholder="Traducción al català..." data-si="${si}" data-di="${di}" style="font-size:11px;color:#6a5a42;font-style:italic;${hasTranslations ? '' : 'display:none;'}">
+      <input class="mc-dish-en-input" value="${esc(d.name_en||'')}" placeholder="English translation..." data-si="${si}" data-di="${di}" style="font-size:11px;color:#888;font-style:italic;${hasTranslations ? '' : 'display:none;'}">
+    </div>
+    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl.€" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50€)" style="width:64px;flex-shrink:0;">
     <button class="mc-dish-remove" data-si="${si}" data-di="${di}">×</button>
   </div>`;
 }
@@ -3668,9 +3746,11 @@ function mcGatherSections() {
   if (!c || !mcCurrentMenu) return mcCurrentMenu?.sections || [];
   return Array.from(c.querySelectorAll('.mc-section-block')).map((block, si) => {
     const dishes = Array.from(block.querySelectorAll('.mc-dish-row')).map((row, di) => {
-      const name = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
+      const name    = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
+      const name_ca = row.querySelector('.mc-dish-ca-input')?.value.trim() || null;
+      const name_en = row.querySelector('.mc-dish-en-input')?.value.trim() || null;
       const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
-      return { id: (mcCurrentMenu.sections?.[si]?.dishes?.[di]?.id || mcUUID()), name, supplement: parseFloat(suppRaw) || null };
+      return { id: (mcCurrentMenu.sections?.[si]?.dishes?.[di]?.id || mcUUID()), name, name_ca: name_ca||null, name_en: name_en||null, supplement: parseFloat(suppRaw) || null };
     }).filter(d => d.name);
     return {
       id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
@@ -3726,7 +3806,7 @@ function mcGatherFromEditor() {
   };
 }
 
-async function mcGeneratePDF(mode) {
+async function mcGeneratePDF(colorMode, lang = 'es') {
   if (!mcCurrentMenu) return;
   if (!window.html2canvas || !window.jspdf) { toast('Error: librerías PDF no cargadas', 'error'); return; }
   const m = mcGatherFromEditor();
@@ -3734,13 +3814,21 @@ async function mcGeneratePDF(mode) {
     toast('Generando PDF…', 'info');
     const tpl = $('mc-pdf-template');
     const pageEl = tpl.querySelector('.mcp-page');
-    tpl.className = mode === 'color' ? 'mcp-color' : 'mcp-bw';
+    tpl.className = colorMode === 'color' ? 'mcp-color' : 'mcp-bw';
+
+    // Header
     $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
     $('mcp-title').textContent = m.name || '';
+    const typeLabels = { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil',
+                         tapas:'Tapas', degustacion:'Degustación', otro:'' };
+    const typeEl = $('mcp-type-label');
+    typeEl.textContent = typeLabels[m.type] || '';
+    typeEl.style.display = (m.type && m.type !== 'otro') ? 'block' : 'none';
+
     const priceRow = $('mcp-price-row');
     if (m.price) {
       $('mcp-price').textContent = parseFloat(m.price).toFixed(2) + '€';
-      $('mcp-price-label').textContent = m.price_label || '';
+      $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
       priceRow.style.display = 'flex';
     } else {
       priceRow.style.display = 'none';
@@ -3749,41 +3837,111 @@ async function mcGeneratePDF(mode) {
     notesEl.textContent = m.notes || '';
     notesEl.style.display = m.notes ? 'block' : 'none';
 
+    // Body sections
+    const isMulti = lang === 'multi';
     let bodyHtml = '';
+    const modeLabelEs = { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' };
     for (const sec of (m.sections || [])) {
-      const modeLabel = { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' }[sec.mode] || '';
-      const sub = sec.subtitle || modeLabel;
+      const sub = sec.subtitle || modeLabelEs[sec.mode] || '';
       bodyHtml += `<div class="mcp-section">
         <div class="mcp-section-header">
-          <div class="mcp-rule"></div>
           <div class="mcp-section-title">${esc(sec.title)}</div>
+          <div class="mcp-section-rule"></div>
           ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
-          <div class="mcp-rule"></div>
         </div>`;
       for (const d of (sec.dishes || [])) {
-        bodyHtml += `<div class="mcp-dish-row">
-          <span class="mcp-dish">${esc(d.name)}</span>
-          ${d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : ''}
-        </div>`;
+        const nameEs = d.name || '';
+        const nameCa = d.name_ca || '';
+        const nameEn = d.name_en || '';
+        const displayName = lang === 'ca' ? (nameCa || nameEs)
+                          : lang === 'en' ? (nameEn || nameEs)
+                          : nameEs;
+        const suppHtml = d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
+        if (isMulti) {
+          bodyHtml += `<div class="mcp-dish-row">
+            <span class="mcp-bullet-dot">●</span>
+            <div class="mcp-dish-cell">
+              <span class="mcp-dish">${esc(nameEs)}</span>
+              ${nameCa ? `<span class="mcp-dish-ca">${esc(nameCa)}</span>` : ''}
+              ${nameEn ? `<span class="mcp-dish-en">${esc(nameEn)}</span>` : ''}
+            </div>
+            ${suppHtml}
+            <span class="mcp-bullet-dot">●</span>
+          </div>`;
+        } else {
+          bodyHtml += `<div class="mcp-dish-row">
+            <span class="mcp-bullet-dot">●</span>
+            <div class="mcp-dish-cell">
+              <span class="mcp-dish">${esc(displayName)}</span>
+            </div>
+            ${suppHtml}
+            <span class="mcp-bullet-dot">●</span>
+          </div>`;
+        }
       }
       bodyHtml += '</div>';
     }
     if (m.drinks) {
+      const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
       bodyHtml += `<div class="mcp-drinks-box">
-        <div class="mcp-drinks-label">Bebidas incluidas</div>
+        <div class="mcp-drinks-label">${drinksLabelMap[isMulti ? 'es' : lang] || 'Bebidas incluidas'}</div>
         <div class="mcp-drinks-text">${esc(m.drinks)}</div>
       </div>`;
     }
     $('mcp-body').innerHTML = bodyHtml;
+
+    // Footer note
+    $('mcp-footer-text').textContent = m.min_people
+      ? `Mínimo ${m.min_people} personas · Restaurante Sol`
+      : 'Restaurante Sol · Barcelona';
+
     await document.fonts.ready;
+
+    // Reset any previous smart-fill spacing
+    Array.from($('mcp-body').querySelectorAll('.mcp-dish-row')).forEach(el => el.style.marginBottom = '');
+    Array.from($('mcp-body').querySelectorAll('.mcp-section')).forEach(el => el.style.marginBottom = '');
+    $('mcp-body').style.transform = '';
+
     await new Promise(r => setTimeout(r, 90));
+
+    // === Smart fill: distribute surplus space to fill the page ===
+    const bodyEl = $('mcp-body');
+    const bodyH  = bodyEl.offsetHeight;
+    const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
+    const allDishEls = Array.from(bodyEl.querySelectorAll('.mcp-dish-row'));
+
+    if (bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
+      let occupiedH = 0;
+      allSecEls.forEach((sec, i) => {
+        occupiedH += sec.offsetHeight;
+        if (i < allSecEls.length - 1)
+          occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
+      });
+      const drinksBox = bodyEl.querySelector('.mcp-drinks-box');
+      if (drinksBox)
+        occupiedH += (parseFloat(getComputedStyle(drinksBox).marginTop) || 0) + drinksBox.offsetHeight;
+
+      const surplus = bodyH - occupiedH;
+      if (surplus > 4) {
+        const extra = surplus / allDishEls.length;
+        allDishEls.forEach(el => {
+          const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
+          el.style.marginBottom = `${base + extra}px`;
+        });
+      } else if (surplus < -20) {
+        const scaleRatio = bodyH / (bodyH - surplus);
+        bodyEl.style.transform      = `scale(${Math.max(scaleRatio, 0.65)})`;
+        bodyEl.style.transformOrigin = 'top center';
+      }
+    }
+
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    const scale = mode === 'bw' ? 3 : 2.5;
-    const bg = mode === 'color' ? '#faf8f5' : '#ffffff';
+    const scale = colorMode === 'bw' ? 3 : 2.5;
+    const bg = colorMode === 'color' ? '#f5f0e6' : '#ffffff';
     const canvas = await html2canvas(pageEl, { width: 794, height: 1123, scale, useCORS: true, allowTaint: true, backgroundColor: bg, logging: false, imageTimeout: 0 });
-    const imgData = mode === 'bw' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.97);
-    const imgType = mode === 'bw' ? 'PNG' : 'JPEG';
+    const imgData = colorMode === 'bw' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.97);
+    const imgType = colorMode === 'bw' ? 'PNG' : 'JPEG';
     const jsPDF = window.jspdf.jsPDF;
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     doc.addImage(imgData, imgType, 0, 0, 210, 297);
@@ -3792,11 +3950,92 @@ async function mcGeneratePDF(mode) {
     const pdfUrl = URL.createObjectURL(pdfBlob);
     const w = window.open(pdfUrl, '_blank');
     if (w) { toast('PDF abierto en nueva pestaña', 'success'); setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000); }
-    else { doc.save(`${slug}-${mode}.pdf`); toast('PDF descargado', 'success'); }
+    else { doc.save(`${slug}-${colorMode}-${lang}.pdf`); toast('PDF descargado', 'success'); }
   } catch (err) {
     console.error('mcGeneratePDF:', err);
     toast('Error al generar PDF: ' + err.message, 'error');
   }
+}
+
+async function mcTranslateAll(targetLang) {
+  if (!mcCurrentMenu) return;
+  const sections = mcGatherSections();
+  const totalDishes = sections.reduce((n, s) => n + s.dishes.length, 0);
+  if (!totalDishes) { toast('No hay platos para traducir', 'info'); return; }
+
+  const caBtn = $('mc-translate-ca-btn');
+  const enBtn = $('mc-translate-en-btn');
+  if (caBtn) caBtn.disabled = true;
+  if (enBtn) enBtn.disabled = true;
+  toast(`Traduciendo ${totalDishes} platos al ${targetLang === 'ca' ? 'catalán' : 'inglés'}…`, 'info');
+
+  let done = 0;
+  for (const sec of sections) {
+    for (const d of sec.dishes) {
+      if (!d.name) continue;
+      try {
+        const result = await mcTranslateOneDish(d.name, targetLang);
+        if (targetLang === 'ca') d.name_ca = result;
+        else d.name_en = result;
+      } catch (e) {
+        console.warn('Translation failed for', d.name, e);
+      }
+      done++;
+      if (done % 3 === 0) toast(`Traduciendo… ${done}/${totalDishes}`, 'info');
+    }
+  }
+
+  // Update DOM inputs
+  const container = $('mc-sections-container');
+  if (container) {
+    container.innerHTML = sections.map((s, i) => mcRenderSection(s, i)).join('');
+    mcBindSectionEvents();
+  }
+  mcCurrentMenu.sections = sections;
+
+  // Save to DB
+  await mcSaveMenu();
+  if (caBtn) caBtn.disabled = false;
+  if (enBtn) enBtn.disabled = false;
+  toast(`Traducción completada (${done} platos)`, 'success');
+}
+
+async function mcTranslateOneDish(text, targetLang) {
+  const geminiKey = localStorage.getItem('gemini_api_key') || '';
+  if (geminiKey) {
+    const langName = targetLang === 'ca' ? 'Catalan' : 'English';
+    const langCode = targetLang;
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text:
+              `Translate this Spanish restaurant dish name to ${langName}. Return only the translated name, no explanation.\n\nDish: ${JSON.stringify(text)}`
+            }] }],
+            generationConfig: { temperature: 0, maxOutputTokens: 128, thinkingConfig: { thinkingBudget: 0 } }
+          })
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const raw = data.candidates?.[0]?.content?.parts?.filter(p => p.text).map(p => p.text.trim()).join('').trim();
+        if (raw && raw.length >= 2) return raw.replace(/^["']|["']$/g, '');
+      }
+    } catch(e) { /* fall through */ }
+  }
+  // Google Translate fallback
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.[0]?.[0]?.[0]) return data[0].map(s => s[0]).join('').trim();
+    }
+  } catch(e) { /* fall through */ }
+  return text;
 }
 
 function mcInitTabs() {
