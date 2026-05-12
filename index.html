@@ -1001,111 +1001,120 @@ kbd {
   height: 1123px;
   display: flex;
   flex-direction: column;
+  position: relative;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-/* Color mode */
-#pdf-template.pt-color .pt-page { background: #faf8f5; }
-#pdf-template.pt-color .pt-accent-bar { background: #c4652a; }
-#pdf-template.pt-color .pt-restaurant-name { color: #c4652a; }
-#pdf-template.pt-color .pt-ornament { color: #c4652a; }
-#pdf-template.pt-color .pt-title { color: #14110d; }
-#pdf-template.pt-color .pt-rule { background: #c4652a; }
-#pdf-template.pt-color .pt-rule-double { border-color: #c4652a; }
-#pdf-template.pt-color .pt-meta { color: #14110d; }
-#pdf-template.pt-color .pt-section-line { background: #c4652a; opacity: 0.35; }
-#pdf-template.pt-color .pt-section-title { color: #c4652a; }
-#pdf-template.pt-color .pt-dish-es { color: #14110d; }
-#pdf-template.pt-color .pt-dish-ca { color: #7a6a5d; }
-#pdf-template.pt-color .pt-hours { color: #14110d; }
+/* Grid backgrounds */
+#pdf-template.pt-color .pt-page {
+  background-color: #eeebe3;
+  background-image:
+    linear-gradient(rgba(100,85,65,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,85,65,0.10) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+#pdf-template.pt-bw .pt-page {
+  background-color: #f4f3ef;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.07) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
 
-/* B&W mode */
-#pdf-template.pt-bw .pt-page { background: #fff; }
-#pdf-template.pt-bw .pt-accent-bar { background: #000; height: 4px; }
-#pdf-template.pt-bw .pt-restaurant-name { color: #000; }
-#pdf-template.pt-bw .pt-ornament { color: #000; }
-#pdf-template.pt-bw .pt-title { color: #000; }
-#pdf-template.pt-bw .pt-rule { background: #000; }
-#pdf-template.pt-bw .pt-rule-double { border-color: #000; }
-#pdf-template.pt-bw .pt-meta { color: #000; }
-#pdf-template.pt-bw .pt-section-line { background: #000; opacity: 0.25; }
-#pdf-template.pt-bw .pt-section-title { color: #000; }
-#pdf-template.pt-bw .pt-dish-es { color: #000; }
-#pdf-template.pt-bw .pt-dish-ca { color: #444; }
-#pdf-template.pt-bw .pt-hours { color: #000; }
+/* Corner registration marks */
+.pt-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+}
+.pt-corner--tl { top: 16px; left: 16px; border-top: 1.5px solid; border-left: 1.5px solid; }
+.pt-corner--tr { top: 16px; right: 16px; border-top: 1.5px solid; border-right: 1.5px solid; }
+.pt-corner--bl { bottom: 16px; left: 16px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
+.pt-corner--br { bottom: 16px; right: 16px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
+#pdf-template.pt-color .pt-corner { border-color: rgba(110,90,70,0.45); }
+#pdf-template.pt-bw .pt-corner { border-color: rgba(0,0,0,0.30); }
 
-/* Shared layout */
-.pt-accent-bar { height: 7px; flex-shrink: 0; }
-
+/* Main content area */
 .pt-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 38px 62px 34px;
+  padding: 42px 64px 28px;
   min-height: 0;
 }
 
+/* Header */
 .pt-header {
   text-align: center;
   flex-shrink: 0;
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
 .pt-restaurant-name {
-  font-size: 11.5px;
-  letter-spacing: 0.24em;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.30em;
   text-transform: uppercase;
-  font-weight: 500;
-  margin-bottom: 7px;
+  font-weight: 700;
+  margin-bottom: 14px;
   font-style: normal;
 }
 
-.pt-ornament {
-  font-size: 17px;
-  line-height: 1;
-  margin-bottom: 7px;
-  font-style: normal;
+.pt-title-box {
+  display: inline-block;
+  border: 1px solid;
+  padding: 8px 28px;
+  margin-bottom: 16px;
 }
 
 .pt-title {
-  font-size: 72px;
+  font-size: 48px;
   font-weight: 400;
   font-style: italic;
   line-height: 1.0;
-  letter-spacing: 0.01em;
-  margin-bottom: 20px;
-}
-
-.pt-rule {
-  height: 1px;
-  margin: 0 0 13px;
-  border: none;
-}
-
-.pt-rule-double {
-  border-top: 1px solid;
-  border-bottom: 1px solid;
-  height: 5px;
-  box-sizing: border-box;
+  letter-spacing: 0.02em;
 }
 
 .pt-meta {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 13px;
-  letter-spacing: 0.02em;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
+/* Color mode colors */
+#pdf-template.pt-color .pt-restaurant-name { color: #1a1410; }
+#pdf-template.pt-color .pt-title-box { border-color: rgba(100,80,60,0.50); }
+#pdf-template.pt-color .pt-title { color: #1a1410; }
+#pdf-template.pt-color .pt-meta { color: #3a2e24; }
+#pdf-template.pt-color .pt-section-line { background: rgba(100,80,60,0.25); }
+#pdf-template.pt-color .pt-section-title { color: #6b4c2a; }
+#pdf-template.pt-color .pt-dish-es { color: #14110d; }
+#pdf-template.pt-color .pt-dish-ca { color: #7a6a5d; }
+
+/* B&W mode colors */
+#pdf-template.pt-bw .pt-restaurant-name { color: #000; }
+#pdf-template.pt-bw .pt-title-box { border-color: rgba(0,0,0,0.50); }
+#pdf-template.pt-bw .pt-title { color: #000; }
+#pdf-template.pt-bw .pt-meta { color: #000; }
+#pdf-template.pt-bw .pt-section-line { background: rgba(0,0,0,0.20); }
+#pdf-template.pt-bw .pt-section-title { color: #000; }
+#pdf-template.pt-bw .pt-dish-es { color: #000; }
+#pdf-template.pt-bw .pt-dish-ca { color: #444; }
+
+/* Menu body */
 .pt-body {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 16px 0 8px;
+  padding: 10px 0 6px;
   min-height: 0;
 }
 
@@ -1121,8 +1130,9 @@ kbd {
 .pt-section-line { flex: 1; height: 1px; }
 
 .pt-section-title {
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   font-weight: 700;
   white-space: nowrap;
@@ -1137,37 +1147,6 @@ kbd {
   line-height: 1.2;
 }
 
-.pt-section--postre .pt-dish-es { font-size: 15px; }
-.pt-section--postre .pt-dish-ca { font-size: 13px; }
-
-/* Compact layout — 7+ dishes */
-.pt-compact .pt-title { font-size: 60px; margin-bottom: 14px; }
-.pt-compact .pt-header { margin-bottom: 12px; }
-.pt-compact .pt-body { padding: 10px 0 4px; }
-.pt-compact .pt-section { margin-bottom: 14px; }
-.pt-compact .pt-dish { margin-bottom: 8px; }
-
-/* Tight layout — 10+ dishes */
-.pt-tight .pt-title { font-size: 50px; margin-bottom: 10px; }
-.pt-tight .pt-ornament { display: none; }
-.pt-tight .pt-header { margin-bottom: 8px; }
-.pt-tight .pt-body { padding: 6px 0 2px; }
-.pt-tight .pt-section { margin-bottom: 10px; }
-.pt-tight .pt-dish { margin-bottom: 6px; }
-.pt-tight .pt-dish-es { font-size: 17px; }
-.pt-tight .pt-dish-ca { font-size: 13px; }
-.pt-tight .pt-section--postre .pt-dish-es { font-size: 14px; }
-
-/* Contact info (color version only) */
-.pt-contact {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  margin-top: 7px;
-  font-style: normal;
-  display: none;
-}
-#pdf-template.pt-color .pt-contact { color: #9b8d82; }
-
 .pt-dish-ca {
   font-size: 14.5px;
   font-style: italic;
@@ -1176,20 +1155,70 @@ kbd {
   margin-top: 2px;
 }
 
-.pt-footer {
-  text-align: center;
+.pt-section--postre .pt-dish-es { font-size: 15px; }
+.pt-section--postre .pt-dish-ca { font-size: 13px; }
+
+/* Compact layout — 7-9 dishes */
+.pt-compact .pt-title { font-size: 40px; }
+.pt-compact .pt-title-box { padding: 6px 24px; margin-bottom: 12px; }
+.pt-compact .pt-header { margin-bottom: 16px; }
+.pt-compact .pt-body { padding: 6px 0 4px; }
+.pt-compact .pt-section { margin-bottom: 14px; }
+.pt-compact .pt-dish { margin-bottom: 8px; }
+
+/* Tight layout — 10+ dishes */
+.pt-tight .pt-title { font-size: 32px; }
+.pt-tight .pt-title-box { padding: 5px 18px; margin-bottom: 10px; }
+.pt-tight .pt-header { margin-bottom: 10px; }
+.pt-tight .pt-body { padding: 4px 0 2px; }
+.pt-tight .pt-section { margin-bottom: 10px; }
+.pt-tight .pt-dish { margin-bottom: 6px; }
+.pt-tight .pt-dish-es { font-size: 17px; }
+.pt-tight .pt-dish-ca { font-size: 13px; }
+.pt-tight .pt-section--postre .pt-dish-es { font-size: 14px; }
+
+/* Bottom info bar */
+.pt-info-bar {
   flex-shrink: 0;
+  height: 38px;
+  position: relative;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
 }
 
-.pt-footer .pt-rule { margin-bottom: 11px; }
+.pt-info-bar-sep {
+  position: absolute;
+  top: 0;
+  left: 64px;
+  right: 64px;
+  height: 1px;
+}
 
-.pt-hours {
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
+.pt-info-bar-inner {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pt-info-left, .pt-info-right {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-weight: 600;
   font-style: normal;
 }
+
+#pdf-template.pt-color .pt-info-bar-sep { background: rgba(100,80,60,0.30); }
+#pdf-template.pt-color .pt-info-left { color: #8a7a6d; }
+#pdf-template.pt-color .pt-info-right { color: #8a7a6d; }
+
+#pdf-template.pt-bw .pt-info-bar-sep { background: rgba(0,0,0,0.20); }
+#pdf-template.pt-bw .pt-info-left { color: #666; }
+#pdf-template.pt-bw .pt-info-right { color: #666; }
+
+.pt-info-right { display: none; }
 </style>
 </head>
 <body>
@@ -1298,27 +1327,30 @@ kbd {
 <!-- BEAUTIFUL PDF TEMPLATE (off-screen, populated by JS before capture) -->
 <div id="pdf-template">
   <div class="pt-page">
-    <div class="pt-accent-bar"></div>
+    <div class="pt-corner pt-corner--tl"></div>
+    <div class="pt-corner pt-corner--tr"></div>
+    <div class="pt-corner pt-corner--bl"></div>
+    <div class="pt-corner pt-corner--br"></div>
     <div class="pt-content">
       <div class="pt-header">
         <div class="pt-restaurant-name" id="pt-restaurant">RESTAURANTE SOL</div>
-        <div class="pt-ornament">✦</div>
-        <div class="pt-title">Menú del Día</div>
-        <div class="pt-rule"></div>
+        <div class="pt-title-box">
+          <div class="pt-title">Menú del Día</div>
+        </div>
         <div class="pt-meta">
           <span id="pt-price"></span>
           <span id="pt-date"></span>
         </div>
-        <div class="pt-rule-double"></div>
       </div>
       <div class="pt-body" id="pt-body"></div>
-      <div class="pt-footer">
-        <div class="pt-rule"></div>
-        <div class="pt-hours">Horario de Menú &nbsp;·&nbsp; 13:00 – 16:00</div>
-        <div class="pt-contact" id="pt-contact"></div>
+    </div>
+    <div class="pt-info-bar">
+      <div class="pt-info-bar-sep"></div>
+      <div class="pt-info-bar-inner">
+        <span class="pt-info-left">Horario de Menú · 13:00 – 16:00</span>
+        <span class="pt-info-right" id="pt-contact"></span>
       </div>
     </div>
-    <div class="pt-accent-bar"></div>
   </div>
 </div>
 
@@ -2673,7 +2705,7 @@ async function generateDesignPDF(mode) {
     const address = localStorage.getItem('v2_restaurantAddress') || '';
     if (mode === 'color' && (phone || address)) {
       ptContact.textContent = [phone, address].filter(Boolean).join('  ·  ');
-      ptContact.style.display = 'block';
+      ptContact.style.display = 'inline';
     } else {
       ptContact.style.display = 'none';
     }
@@ -2760,8 +2792,8 @@ async function generateDesignPDF(mode) {
         contentEl.style.position = savedPos;
         contentEl.style.height = savedH;
         contentEl.style.flex = savedFlex;
-        if (naturalH > 1109) {
-          contentEl.style.transform = `scale(${1109 / naturalH})`;
+        if (naturalH > 1085) {
+          contentEl.style.transform = `scale(${1085 / naturalH})`;
           contentEl.style.transformOrigin = 'top center';
         }
       }
@@ -2771,7 +2803,7 @@ async function generateDesignPDF(mode) {
 
     // Capture: B&W at 3×, color at 2.5×
     const renderScale = mode === 'bw' ? 3 : 2.5;
-    const bg = mode === 'color' ? '#faf8f5' : '#ffffff';
+    const bg = mode === 'color' ? '#eeebe3' : '#f4f3ef';
 
     const canvas = await html2canvas(pageEl, {
       width: 794,
