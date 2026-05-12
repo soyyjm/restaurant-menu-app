@@ -1137,13 +1137,36 @@ kbd {
   line-height: 1.2;
 }
 
-.pt-section--postre .pt-dish-es {
-  font-size: 15px;
-}
+.pt-section--postre .pt-dish-es { font-size: 15px; }
+.pt-section--postre .pt-dish-ca { font-size: 13px; }
 
-.pt-section--postre .pt-dish-ca {
-  font-size: 13px;
+/* Compact layout — 7+ dishes */
+.pt-compact .pt-title { font-size: 60px; margin-bottom: 14px; }
+.pt-compact .pt-header { margin-bottom: 12px; }
+.pt-compact .pt-body { padding: 10px 0 4px; }
+.pt-compact .pt-section { margin-bottom: 14px; }
+.pt-compact .pt-dish { margin-bottom: 8px; }
+
+/* Tight layout — 10+ dishes */
+.pt-tight .pt-title { font-size: 50px; margin-bottom: 10px; }
+.pt-tight .pt-ornament { display: none; }
+.pt-tight .pt-header { margin-bottom: 8px; }
+.pt-tight .pt-body { padding: 6px 0 2px; }
+.pt-tight .pt-section { margin-bottom: 10px; }
+.pt-tight .pt-dish { margin-bottom: 6px; }
+.pt-tight .pt-dish-es { font-size: 17px; }
+.pt-tight .pt-dish-ca { font-size: 13px; }
+.pt-tight .pt-section--postre .pt-dish-es { font-size: 14px; }
+
+/* Contact info (color version only) */
+.pt-contact {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-top: 7px;
+  font-style: normal;
+  display: none;
 }
+#pdf-template.pt-color .pt-contact { color: #9b8d82; }
 
 .pt-dish-ca {
   font-size: 14.5px;
@@ -1292,6 +1315,7 @@ kbd {
       <div class="pt-footer">
         <div class="pt-rule"></div>
         <div class="pt-hours">Horario de Menú &nbsp;·&nbsp; 13:00 – 16:00</div>
+        <div class="pt-contact" id="pt-contact"></div>
       </div>
     </div>
     <div class="pt-accent-bar"></div>
@@ -1330,6 +1354,15 @@ kbd {
         <button class="btn btn-primary btn-small" id="saveGeminiKey" style="font-size:12px;padding:6px 12px;">Guardar</button>
         <button class="btn btn-secondary btn-small" id="testGeminiKey" style="font-size:12px;padding:6px 12px;">🧪 Probar traducción</button>
         <span id="geminiStatus" style="font-size:12px;color:var(--ink-faint);align-self:center;"></span>
+      </div>
+    </div>
+
+    <div style="background:var(--paper-warm);padding:14px;border-radius:var(--radius);margin-bottom:20px;border:1px solid var(--cream);">
+      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🎨 PDF Color — Información del restaurante</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Aparece en el pie del PDF a color. Déjalo vacío para no mostrarlo.</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="restaurantPhone" placeholder="Teléfono (ej: 93 123 45 67)" style="flex:1;font-family:var(--font-body);font-size:13px;padding:7px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+        <input type="text" id="restaurantAddress" placeholder="Dirección (ej: Carrer Major 12)" style="flex:2;font-family:var(--font-body);font-size:13px;padding:7px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
       </div>
     </div>
 
@@ -2306,16 +2339,23 @@ function bindEvents() {
   // Settings modal
   $('btnSettings').addEventListener('click', () => {
     $('settingsModal').classList.add('visible');
-    // Load saved key (show masked)
     const savedKey = localStorage.getItem('gemini_api_key') || '';
     $('geminiKeyInput').value = savedKey;
     $('geminiStatus').textContent = savedKey ? '✅ Key guardada (solo este dispositivo)' : '⚠️ Sin configurar — usa Google Translate como respaldo';
+    $('restaurantPhone').value = localStorage.getItem('v2_restaurantPhone') || '';
+    $('restaurantAddress').value = localStorage.getItem('v2_restaurantAddress') || '';
     refreshAuthUI();
   });
-  $('closeSettings').addEventListener('click', () => { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); });
-  $('closeSettingsBtn').addEventListener('click', () => { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); });
+
+  function saveRestaurantInfo() {
+    localStorage.setItem('v2_restaurantPhone', $('restaurantPhone').value.trim());
+    localStorage.setItem('v2_restaurantAddress', $('restaurantAddress').value.trim());
+  }
+
+  $('closeSettings').addEventListener('click', () => { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); });
+  $('closeSettingsBtn').addEventListener('click', () => { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); });
   $('settingsModal').addEventListener('click', e => {
-    if (e.target === $('settingsModal')) { syncSettingsFromUI(); $('settingsModal').classList.remove('visible'); }
+    if (e.target === $('settingsModal')) { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); }
   });
 
   $('authSignIn').addEventListener('click', async () => {
@@ -2609,7 +2649,7 @@ async function generateDesignPDF(mode) {
   const LABELS = { primer: 'Primer Plato', segundo: 'Segundo Plato', postre: 'Postres' };
 
   try {
-    toast('Generando PDF de diseño…', 'info');
+    toast('Generando PDF…', 'info');
 
     const dateVal = $('menuDate').value;
     const dateStr = dateVal
@@ -2618,31 +2658,46 @@ async function generateDesignPDF(mode) {
     const price = $('menuPrice').value || '14.50 €';
     const filename = `menu-${mode}-${dateVal || new Date().toISOString().slice(0,10)}.pdf`;
 
-    // Populate template fields
     const tpl = $('pdf-template');
+    const pageEl = tpl.querySelector('.pt-page');
+    const contentEl = tpl.querySelector('.pt-content');
+
+    // Mode class
     tpl.className = mode === 'color' ? 'pt-color' : 'pt-bw';
     $('pt-price').textContent = price;
     $('pt-date').textContent = dateStr;
 
-    // Build body sections
+    // Contact info — color version only
+    const ptContact = $('pt-contact');
+    const phone = localStorage.getItem('v2_restaurantPhone') || '';
+    const address = localStorage.getItem('v2_restaurantAddress') || '';
+    if (mode === 'color' && (phone || address)) {
+      ptContact.textContent = [phone, address].filter(Boolean).join('  ·  ');
+      ptContact.style.display = 'block';
+    } else {
+      ptContact.style.display = 'none';
+    }
+
+    // Auto compact/tight class based on total dishes
+    const totalDishes = ['primer','segundo','postre'].reduce((n, c) => n + (todayMenu[c]||[]).length, 0);
+    pageEl.classList.toggle('pt-compact', totalDishes >= 7 && totalDishes < 10);
+    pageEl.classList.toggle('pt-tight', totalDishes >= 10);
+
+    // Build menu body
     let bodyHtml = '';
     for (const cat of ['primer', 'segundo', 'postre']) {
       const dishes = todayMenu[cat] || [];
       if (dishes.length === 0) continue;
-
       bodyHtml += `<div class="pt-section${cat === 'postre' ? ' pt-section--postre' : ''}">
         <div class="pt-section-header">
           <div class="pt-section-line"></div>
           <div class="pt-section-title">${LABELS[cat]}</div>
           <div class="pt-section-line"></div>
         </div>`;
-
       if (cat === 'postre') {
-        const esText = dishes.map(d => d.spanish).join(', ');
-        const caText = dishes.map(d => d.catalan).join(', ');
         bodyHtml += `<div class="pt-dish">
-          <div class="pt-dish-es">${esc(esText)}</div>
-          <div class="pt-dish-ca">${esc(caText)}</div>
+          <div class="pt-dish-es">${esc(dishes.map(d => d.spanish).join(', '))}</div>
+          <div class="pt-dish-ca">${esc(dishes.map(d => d.catalan).join(', '))}</div>
         </div>`;
       } else {
         dishes.forEach(d => {
@@ -2656,16 +2711,43 @@ async function generateDesignPDF(mode) {
     }
     $('pt-body').innerHTML = bodyHtml;
 
-    // Ensure fonts are loaded
+    // Fonts ready
     await document.fonts.ready;
 
-    const pageEl = tpl.querySelector('.pt-page');
+    // Auto-scale safety net: measure natural content height
+    contentEl.style.transform = '';
+    const savedPos = contentEl.style.position;
+    const savedH = contentEl.style.height;
+    const savedFlex = contentEl.style.flex;
+    contentEl.style.position = 'absolute';
+    contentEl.style.height = 'auto';
+    contentEl.style.flex = 'none';
+
+    await new Promise(r => setTimeout(r, 80));
+
+    const naturalContentH = contentEl.scrollHeight;
+    const availableH = 1109; // 1123 − 7 − 7 accent bars
+
+    contentEl.style.position = savedPos;
+    contentEl.style.height = savedH;
+    contentEl.style.flex = savedFlex;
+
+    if (naturalContentH > availableH) {
+      const sf = availableH / naturalContentH;
+      contentEl.style.transform = `scale(${sf})`;
+      contentEl.style.transformOrigin = 'top center';
+    }
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    // Capture: B&W at 3×, color at 2.5×
+    const renderScale = mode === 'bw' ? 3 : 2.5;
     const bg = mode === 'color' ? '#faf8f5' : '#ffffff';
 
     const canvas = await html2canvas(pageEl, {
       width: 794,
       height: 1123,
-      scale: 2,
+      scale: renderScale,
       useCORS: true,
       allowTaint: true,
       backgroundColor: bg,
@@ -2673,10 +2755,15 @@ async function generateDesignPDF(mode) {
       imageTimeout: 0
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.97);
+    // B&W → PNG (lossless, sharp lines); color → JPEG (smaller, good enough for screens)
+    const imgData = mode === 'bw'
+      ? canvas.toDataURL('image/png')
+      : canvas.toDataURL('image/jpeg', 0.97);
+    const imgType = mode === 'bw' ? 'PNG' : 'JPEG';
+
     const jsPDF = window.jspdf.jsPDF;
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    doc.addImage(imgData, imgType, 0, 0, 210, 297);
 
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
