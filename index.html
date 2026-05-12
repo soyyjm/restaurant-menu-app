@@ -1104,7 +1104,7 @@ kbd {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   padding: 16px 0 8px;
   min-height: 0;
 }
@@ -2714,28 +2714,57 @@ async function generateDesignPDF(mode) {
     // Fonts ready
     await document.fonts.ready;
 
-    // Auto-scale safety net: measure natural content height
+    // Reset any previous transforms and dish spacing
     contentEl.style.transform = '';
-    const savedPos = contentEl.style.position;
-    const savedH = contentEl.style.height;
-    const savedFlex = contentEl.style.flex;
-    contentEl.style.position = 'absolute';
-    contentEl.style.height = 'auto';
-    contentEl.style.flex = 'none';
+    Array.from($('pt-body').querySelectorAll('.pt-dish')).forEach(el => el.style.marginBottom = '');
 
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise(r => setTimeout(r, 90));
 
-    const naturalContentH = contentEl.scrollHeight;
-    const availableH = 1109; // 1123 − 7 − 7 accent bars
+    // === Smart fill: distribute surplus space at dish level ===
+    const bodyEl = $('pt-body');
+    const bodyH = bodyEl.offsetHeight;
+    const bodyStyle = getComputedStyle(bodyEl);
+    const bodyPad = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
+    const allSecEls = Array.from(bodyEl.querySelectorAll('.pt-section'));
+    const allDishEls = Array.from(bodyEl.querySelectorAll('.pt-dish'));
 
-    contentEl.style.position = savedPos;
-    contentEl.style.height = savedH;
-    contentEl.style.flex = savedFlex;
+    if (bodyH > 100 && allDishEls.length > 0 && allSecEls.length > 0) {
+      // Measure total occupied height (sections + inter-section margins + body padding)
+      let occupiedH = bodyPad;
+      allSecEls.forEach((sec, i) => {
+        occupiedH += sec.offsetHeight;
+        if (i < allSecEls.length - 1) {
+          occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
+        }
+      });
 
-    if (naturalContentH > availableH) {
-      const sf = availableH / naturalContentH;
-      contentEl.style.transform = `scale(${sf})`;
-      contentEl.style.transformOrigin = 'top center';
+      const surplus = bodyH - occupiedH;
+
+      if (surplus > 0) {
+        // Spread surplus evenly as extra margin-bottom on every dish
+        const extra = surplus / allDishEls.length;
+        allDishEls.forEach(el => {
+          const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
+          el.style.marginBottom = `${base + extra}px`;
+        });
+      } else if (surplus < -20) {
+        // Content overflows: scale down to fit
+        const savedPos = contentEl.style.position;
+        const savedH = contentEl.style.height;
+        const savedFlex = contentEl.style.flex;
+        contentEl.style.position = 'absolute';
+        contentEl.style.height = 'auto';
+        contentEl.style.flex = 'none';
+        await new Promise(r => setTimeout(r, 80));
+        const naturalH = contentEl.scrollHeight;
+        contentEl.style.position = savedPos;
+        contentEl.style.height = savedH;
+        contentEl.style.flex = savedFlex;
+        if (naturalH > 1109) {
+          contentEl.style.transform = `scale(${1109 / naturalH})`;
+          contentEl.style.transformOrigin = 'top center';
+        }
+      }
     }
 
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
