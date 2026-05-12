@@ -1137,6 +1137,14 @@ kbd {
   line-height: 1.2;
 }
 
+.pt-section--postre .pt-dish-es {
+  font-size: 15px;
+}
+
+.pt-section--postre .pt-dish-ca {
+  font-size: 13px;
+}
+
 .pt-dish-ca {
   font-size: 14.5px;
   font-style: italic;
@@ -2622,7 +2630,7 @@ async function generateDesignPDF(mode) {
       const dishes = todayMenu[cat] || [];
       if (dishes.length === 0) continue;
 
-      bodyHtml += `<div class="pt-section">
+      bodyHtml += `<div class="pt-section${cat === 'postre' ? ' pt-section--postre' : ''}">
         <div class="pt-section-header">
           <div class="pt-section-line"></div>
           <div class="pt-section-title">${LABELS[cat]}</div>
