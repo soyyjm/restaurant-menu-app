@@ -1167,6 +1167,92 @@ kbd {
   font-weight: 600;
   font-style: normal;
 }
+
+#pdf-template.pt-dense .pt-content {
+  padding: 34px 58px 30px;
+}
+
+#pdf-template.pt-dense .pt-header {
+  margin-bottom: 13px;
+}
+
+#pdf-template.pt-dense .pt-title {
+  font-size: 62px;
+  margin-bottom: 15px;
+}
+
+#pdf-template.pt-dense .pt-body {
+  padding-top: 10px;
+}
+
+#pdf-template.pt-dense .pt-section {
+  margin-bottom: 14px;
+}
+
+#pdf-template.pt-dense .pt-section-header {
+  margin-bottom: 8px;
+}
+
+#pdf-template.pt-dense .pt-dish {
+  margin-bottom: 7px;
+}
+
+#pdf-template.pt-dense .pt-dish-es {
+  font-size: 17.5px;
+}
+
+#pdf-template.pt-dense .pt-dish-ca {
+  font-size: 13.5px;
+}
+
+#pdf-template.pt-ultra-dense .pt-content {
+  padding: 30px 54px 28px;
+}
+
+#pdf-template.pt-ultra-dense .pt-title {
+  font-size: 54px;
+  margin-bottom: 12px;
+}
+
+#pdf-template.pt-ultra-dense .pt-restaurant-name,
+#pdf-template.pt-ultra-dense .pt-ornament {
+  margin-bottom: 5px;
+}
+
+#pdf-template.pt-ultra-dense .pt-rule {
+  margin-bottom: 9px;
+}
+
+#pdf-template.pt-ultra-dense .pt-meta {
+  margin-bottom: 9px;
+}
+
+#pdf-template.pt-ultra-dense .pt-body {
+  justify-content: flex-start;
+  padding-top: 10px;
+}
+
+#pdf-template.pt-ultra-dense .pt-section {
+  margin-bottom: 11px;
+}
+
+#pdf-template.pt-ultra-dense .pt-section-header {
+  margin-bottom: 7px;
+}
+
+#pdf-template.pt-ultra-dense .pt-dish {
+  margin-bottom: 6px;
+}
+
+#pdf-template.pt-ultra-dense .pt-dish-es {
+  font-size: 16px;
+  line-height: 1.16;
+}
+
+#pdf-template.pt-ultra-dense .pt-dish-ca {
+  font-size: 12.5px;
+  line-height: 1.16;
+}
 </style>
 </head>
 <body>
@@ -2618,9 +2704,13 @@ async function generateDesignPDF(mode) {
     const price = $('menuPrice').value || '14.50 €';
     const filename = `menu-${mode}-${dateVal || new Date().toISOString().slice(0,10)}.pdf`;
 
+    const totalDishes = ['primer', 'segundo', 'postre']
+      .reduce((sum, cat) => sum + (todayMenu[cat] || []).length, 0);
+    const densityClass = totalDishes >= 13 ? ' pt-ultra-dense' : totalDishes >= 9 ? ' pt-dense' : '';
+
     // Populate template fields
     const tpl = $('pdf-template');
-    tpl.className = mode === 'color' ? 'pt-color' : 'pt-bw';
+    tpl.className = `${mode === 'color' ? 'pt-color' : 'pt-bw'}${densityClass}`;
     $('pt-price').textContent = price;
     $('pt-date').textContent = dateStr;
 
@@ -2665,7 +2755,7 @@ async function generateDesignPDF(mode) {
     const canvas = await html2canvas(pageEl, {
       width: 794,
       height: 1123,
-      scale: 2,
+      scale: mode === 'bw' ? 3 : 2.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: bg,
@@ -2673,10 +2763,13 @@ async function generateDesignPDF(mode) {
       imageTimeout: 0
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.97);
+    const imageFormat = mode === 'bw' ? 'PNG' : 'JPEG';
+    const imgData = mode === 'bw'
+      ? canvas.toDataURL('image/png')
+      : canvas.toDataURL('image/jpeg', 0.97);
     const jsPDF = window.jspdf.jsPDF;
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    doc.addImage(imgData, imageFormat, 0, 0, 210, 297);
 
     const pdfBlob = doc.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
