@@ -3514,6 +3514,12 @@ async function mcLoadMenus() {
 async function mcSaveMenu() {
   if (!mcCurrentMenu) return;
   const gathered = mcGatherFromEditor();
+  if (gathered.sections) {
+    gathered.sections = gathered.sections.map(sec => ({
+      ...sec,
+      dishes: (sec.dishes || []).filter(d => d.name)
+    }));
+  }
   Object.assign(mcCurrentMenu, gathered);
   mcCurrentMenu.updated_at = new Date().toISOString();
   try {
@@ -3753,11 +3759,15 @@ function mcGatherSections() {
       const name_en = row.querySelector('.mc-dish-en-input')?.value.trim() || null;
       const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
       return { id: (mcCurrentMenu.sections?.[si]?.dishes?.[di]?.id || mcUUID()), name, name_ca: name_ca||null, name_en: name_en||null, supplement: parseFloat(suppRaw) || null };
-    }).filter(d => d.name);
+    });
     return {
       id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
       title: block.querySelector('.mc-section-title-input')?.value.trim() || '',
       subtitle: block.querySelector('.mc-section-subtitle-input')?.value.trim() || '',
+      title_ca: mcCurrentMenu.sections?.[si]?.title_ca || null,
+      title_en: mcCurrentMenu.sections?.[si]?.title_en || null,
+      subtitle_ca: mcCurrentMenu.sections?.[si]?.subtitle_ca || null,
+      subtitle_en: mcCurrentMenu.sections?.[si]?.subtitle_en || null,
       mode: block.querySelector('.mc-section-mode-select')?.value || 'choose_one',
       dishes
     };
@@ -3821,10 +3831,15 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
     // Header
     $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
     $('mcp-title').textContent = m.name || '';
-    const typeLabels = { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil',
-                         tapas:'Tapas', degustacion:'Degustación', otro:'' };
+    const isMulti = lang === 'multi';
+    const tlLang = isMulti ? 'es' : lang;
+    const typeLabelsMap = {
+      es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
+      ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
+      en: { grupos:'For Groups', festivo:'Festive Menu', infantil:"Children's Menu", tapas:'Tapas', degustacion:'Tasting Menu', otro:'' }
+    };
     const typeEl = $('mcp-type-label');
-    typeEl.textContent = typeLabels[m.type] || '';
+    typeEl.textContent = (typeLabelsMap[tlLang] || typeLabelsMap.es)[m.type] || '';
     typeEl.style.display = (m.type && m.type !== 'otro') ? 'block' : 'none';
 
     const priceRow = $('mcp-price-row');
@@ -3840,18 +3855,28 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
     notesEl.style.display = m.notes ? 'block' : 'none';
 
     // Body sections
-    const isMulti = lang === 'multi';
     let bodyHtml = '';
-    const modeLabelEs = { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' };
+    const modeLabels = {
+      es: { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' },
+      ca: { shared:'(per compartir)', choose_one:'(a triar un)', choose_many:'(a triar diversos)', fixed:'' },
+      en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
+    };
     for (const sec of (m.sections || [])) {
-      const sub = sec.subtitle || modeLabelEs[sec.mode] || '';
+      const secTitle = tlLang === 'ca' ? (sec.title_ca || sec.title)
+                     : tlLang === 'en' ? (sec.title_en || sec.title)
+                     : sec.title;
+      const secSubBase = tlLang === 'ca' ? (sec.subtitle_ca || sec.subtitle)
+                       : tlLang === 'en' ? (sec.subtitle_en || sec.subtitle)
+                       : sec.subtitle;
+      const sub = secSubBase || (modeLabels[tlLang] || modeLabels.es)[sec.mode] || '';
       bodyHtml += `<div class="mcp-section">
         <div class="mcp-section-header">
-          <div class="mcp-section-title">${esc(sec.title)}</div>
+          <div class="mcp-section-title">${esc(secTitle)}</div>
           <div class="mcp-section-rule"></div>
           ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
         </div>`;
       for (const d of (sec.dishes || [])) {
+        if (!d.name) continue;
         const nameEs = d.name || '';
         const nameCa = d.name_ca || '';
         const nameEn = d.name_en || '';
@@ -3973,6 +3998,18 @@ async function mcTranslateAll(targetLang) {
 
   let done = 0;
   for (const sec of sections) {
+    if (sec.title) {
+      try {
+        const r = await mcTranslateOneDish(sec.title, targetLang);
+        if (targetLang === 'ca') sec.title_ca = r; else sec.title_en = r;
+      } catch (e) {}
+    }
+    if (sec.subtitle) {
+      try {
+        const r = await mcTranslateOneDish(sec.subtitle, targetLang);
+        if (targetLang === 'ca') sec.subtitle_ca = r; else sec.subtitle_en = r;
+      } catch (e) {}
+    }
     for (const d of sec.dishes) {
       if (!d.name) continue;
       try {
