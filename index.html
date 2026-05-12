@@ -1190,11 +1190,340 @@ kbd {
   font-weight: 600;
   font-style: normal;
 }
+
+/* ==========================================
+   APP SHELL — Tab navigation
+   ========================================== */
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-tabs {
+  display: flex; align-items: center;
+  background: var(--paper); border-bottom: 2px solid var(--cream);
+  padding: 0 28px; flex-shrink: 0; z-index: 10;
+}
+.app-tabs-brand {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  color: var(--ink-faint); letter-spacing: 0.05em;
+  margin-right: 20px; padding: 11px 0;
+}
+.app-tab {
+  padding: 12px 18px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  color: var(--ink-faint); background: none; border: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  cursor: pointer; transition: color var(--transition), border-color var(--transition);
+}
+.app-tab:hover { color: var(--ink); }
+.app-tab.active { color: var(--terracotta); border-bottom-color: var(--terracotta); }
+.tab-panel { display: none; flex: 1; overflow: hidden; }
+.tab-panel.active { display: flex; flex-direction: column; }
+#panelDia .app-layout { height: calc(100vh - 45px); }
+#panelDia .workspace { max-height: calc(100vh - 45px); }
+#panelDia .preview-sidebar { max-height: calc(100vh - 45px); }
+
+/* ==========================================
+   MENÚS CERRADOS — Layout
+   ========================================== */
+.mc-layout {
+  display: grid; grid-template-columns: 300px 1fr;
+  height: calc(100vh - 45px); overflow: hidden; background: var(--paper);
+}
+.mc-library {
+  border-right: 1px solid var(--cream); display: flex;
+  flex-direction: column; overflow: hidden; background: white;
+}
+.mc-library-top {
+  padding: 18px 16px 12px; border-bottom: 1px solid var(--cream); flex-shrink: 0;
+}
+.mc-library-title {
+  font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  margin-bottom: 10px; color: var(--ink);
+}
+.mc-library-search {
+  width: 100%; padding: 7px 10px; font-family: var(--font-body); font-size: 13px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: var(--paper); outline: none; margin-bottom: 8px; color: var(--ink);
+}
+.mc-library-search:focus { border-color: var(--terracotta); }
+.mc-type-filters { display: flex; flex-wrap: wrap; gap: 4px; }
+.mc-type-chip {
+  padding: 3px 9px; font-size: 11px; font-weight: 600; border-radius: 20px;
+  border: 1px solid var(--cream); background: var(--paper); color: var(--ink-faint);
+  cursor: pointer; transition: all var(--transition); font-family: var(--font-body);
+}
+.mc-type-chip.active { background: var(--terracotta); border-color: var(--terracotta); color: white; }
+.mc-library-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.mc-library-new-btn {
+  margin: 10px 12px; padding: 9px 0; font-family: var(--font-body); font-size: 13px;
+  font-weight: 600; background: var(--terracotta); color: white; border: none;
+  border-radius: var(--radius); cursor: pointer; transition: background var(--transition);
+  width: calc(100% - 24px); flex-shrink: 0;
+}
+.mc-library-new-btn:hover { background: var(--terracotta-dark); }
+.mc-list-item {
+  padding: 11px 16px; cursor: pointer; border-left: 3px solid transparent;
+  transition: background var(--transition), border-color var(--transition);
+}
+.mc-list-item:hover { background: var(--paper-warm); }
+.mc-list-item.active { background: var(--terracotta-light); border-left-color: var(--terracotta); }
+.mc-list-item-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
+.mc-list-item-meta { font-size: 11px; color: var(--ink-faint); display: flex; gap: 8px; align-items: center; }
+.mc-type-badge {
+  padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+}
+.mc-type-badge.grupos { background: var(--olive-light); color: var(--olive-dark); }
+.mc-type-badge.festivo { background: var(--wine-light); color: var(--wine); }
+.mc-type-badge.infantil { background: #e8f4fd; color: #1a6894; }
+.mc-type-badge.tapas { background: var(--terracotta-light); color: var(--terracotta-dark); }
+.mc-type-badge.degustacion { background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream); }
+.mc-type-badge.otro { background: var(--cream); color: var(--ink-faint); }
+.mc-version-tag {
+  font-size: 10px; font-weight: 600; padding: 1px 6px;
+  background: var(--paper-warm); border: 1px solid var(--cream);
+  border-radius: 10px; color: var(--ink-faint);
+}
+.mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 28px 36px 50px; }
+.mc-editor-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; color: var(--ink-faint);
+  font-size: 14px; gap: 12px; text-align: center;
+}
+.mc-editor-empty-icon { font-size: 40px; opacity: 0.35; }
+.mc-editor-header {
+  display: flex; align-items: flex-start; gap: 16px;
+  margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--cream);
+}
+.mc-editor-header-main { flex: 1; min-width: 0; }
+.mc-editor-title-input {
+  width: 100%; font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  color: var(--ink); background: none; border: none; border-bottom: 2px solid transparent;
+  padding: 2px 0; outline: none; transition: border-color var(--transition); margin-bottom: 12px;
+}
+.mc-editor-title-input:focus { border-bottom-color: var(--terracotta); }
+.mc-editor-meta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.mc-meta-field { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
+.mc-meta-field label { font-weight: 600; white-space: nowrap; }
+.mc-meta-input {
+  font-family: var(--font-body); font-size: 13px; padding: 5px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink); outline: none;
+}
+.mc-meta-input:focus { border-color: var(--terracotta); }
+.mc-meta-select {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  padding: 5px 8px; border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink); outline: none; cursor: pointer;
+}
+.mc-editor-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.mc-btn {
+  padding: 8px 14px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  border-radius: var(--radius); border: none; cursor: pointer; transition: background var(--transition);
+}
+.mc-btn-save { background: var(--olive); color: white; }
+.mc-btn-save:hover { background: var(--olive-dark); }
+.mc-btn-dup { background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream) !important; }
+.mc-btn-dup:hover { background: var(--cream); }
+.mc-btn-del { background: var(--wine-light); color: var(--wine); }
+.mc-btn-del:hover { background: #ecd0d5; }
+.mc-version-family {
+  margin-top: 10px; font-size: 11px; color: var(--ink-faint);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.mc-version-sibling {
+  padding: 2px 8px; border-radius: 10px; border: 1px solid var(--cream);
+  background: white; font-size: 11px; cursor: pointer;
+  color: var(--ink-soft); transition: all var(--transition); font-family: var(--font-body);
+}
+.mc-version-sibling:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.mc-version-sibling.current { background: var(--terracotta-light); border-color: var(--terracotta); color: var(--terracotta-dark); font-weight: 600; }
+.mc-field-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 6px;
+}
+.mc-notes-row { margin-bottom: 18px; }
+.mc-notes-input {
+  width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink-soft); resize: vertical; outline: none;
+}
+.mc-notes-input:focus { border-color: var(--terracotta); }
+.mc-sections-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.mc-sections-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+.mc-add-section-btn {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px;
+  background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream);
+  border-radius: var(--radius); cursor: pointer;
+}
+.mc-add-section-btn:hover { background: var(--cream); }
+.mc-section-block {
+  border: 1px solid var(--cream); border-radius: var(--radius-lg);
+  margin-bottom: 10px; background: white; overflow: hidden;
+}
+.mc-section-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; background: var(--paper-warm); border-bottom: 1px solid var(--cream);
+}
+.mc-section-title-input {
+  flex: 1; font-family: var(--font-body); font-size: 13px; font-weight: 700;
+  background: none; border: none; color: var(--ink); outline: none; min-width: 0;
+}
+.mc-section-subtitle-input {
+  flex: 1; font-family: var(--font-body); font-size: 12px; font-style: italic;
+  background: none; border: none; color: var(--ink-faint); outline: none; min-width: 0;
+}
+.mc-section-mode-select {
+  font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 3px 6px;
+  border: 1px solid var(--cream); border-radius: 4px; background: white;
+  color: var(--ink-soft); outline: none; cursor: pointer; flex-shrink: 0;
+}
+.mc-section-remove {
+  background: none; border: none; color: var(--ink-faint); cursor: pointer;
+  font-size: 17px; line-height: 1; padding: 2px; flex-shrink: 0;
+}
+.mc-section-remove:hover { color: var(--wine); }
+.mc-section-dishes { padding: 8px 12px 10px; }
+.mc-dish-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.mc-dish-name-input {
+  flex: 1; font-family: var(--font-body); font-size: 13px; padding: 6px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: var(--paper); color: var(--ink); outline: none; min-width: 0;
+}
+.mc-dish-name-input:focus { border-color: var(--terracotta); background: white; }
+.mc-dish-supp-input {
+  width: 78px; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: var(--paper); color: var(--ink-soft); outline: none; text-align: center; flex-shrink: 0;
+}
+.mc-dish-supp-input:focus { border-color: var(--terracotta); }
+.mc-dish-remove {
+  background: none; border: none; color: var(--ink-faint); cursor: pointer;
+  font-size: 14px; padding: 4px; flex-shrink: 0;
+}
+.mc-dish-remove:hover { color: var(--wine); }
+.mc-add-dish-btn {
+  font-family: var(--font-body); font-size: 12px; padding: 5px 10px; background: none;
+  border: 1px dashed var(--cream); border-radius: var(--radius); color: var(--ink-faint);
+  cursor: pointer; width: 100%; margin-top: 3px; transition: all var(--transition);
+}
+.mc-add-dish-btn:hover { border-color: var(--terracotta); color: var(--terracotta); background: var(--terracotta-light); }
+.mc-drinks-row { margin-top: 6px; margin-bottom: 20px; }
+.mc-drinks-input {
+  width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink); resize: vertical; outline: none;
+}
+.mc-drinks-input:focus { border-color: var(--terracotta); }
+.mc-pdf-row {
+  display: flex; gap: 8px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--cream);
+}
+
+/* ==========================================
+   MENÚS CERRADOS — PDF TEMPLATE
+   ========================================== */
+#mc-pdf-template {
+  position: fixed; left: -9999px; top: 0; width: 794px; height: 1123px;
+  overflow: hidden; font-family: 'Cormorant Garamond', Georgia, serif;
+  box-sizing: border-box; pointer-events: none;
+}
+.mcp-page {
+  width: 794px; height: 1123px; display: flex; flex-direction: column;
+  box-sizing: border-box; overflow: hidden;
+}
+#mc-pdf-template.mcp-color .mcp-page { background: #faf8f5; }
+#mc-pdf-template.mcp-color .mcp-accent { background: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-restaurant { color: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-title { color: #14110d; }
+#mc-pdf-template.mcp-color .mcp-price { color: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-price-label { color: #9b8d82; }
+#mc-pdf-template.mcp-color .mcp-notes { color: #9b8d82; }
+#mc-pdf-template.mcp-color .mcp-rule { background: #c4652a; opacity: 0.35; }
+#mc-pdf-template.mcp-color .mcp-rule-sep { background: rgba(196,101,42,0.20); }
+#mc-pdf-template.mcp-color .mcp-section-title { color: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-section-mode { color: #9b8d82; }
+#mc-pdf-template.mcp-color .mcp-dish { color: #14110d; }
+#mc-pdf-template.mcp-color .mcp-supp { color: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-drinks-box { border-color: rgba(196,101,42,0.18); background: rgba(196,101,42,0.03); }
+#mc-pdf-template.mcp-color .mcp-drinks-label { color: #c4652a; }
+#mc-pdf-template.mcp-color .mcp-drinks-text { color: #7a6a5d; }
+#mc-pdf-template.mcp-color .mcp-footer-rule { background: rgba(196,101,42,0.20); }
+#mc-pdf-template.mcp-color .mcp-footer-text { color: #b0a096; }
+#mc-pdf-template.mcp-bw .mcp-page { background: #fff; }
+#mc-pdf-template.mcp-bw .mcp-accent { background: #000; height: 4px; }
+#mc-pdf-template.mcp-bw .mcp-restaurant { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-title { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-price { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-price-label { color: #555; }
+#mc-pdf-template.mcp-bw .mcp-notes { color: #555; }
+#mc-pdf-template.mcp-bw .mcp-rule { background: #000; opacity: 0.20; }
+#mc-pdf-template.mcp-bw .mcp-rule-sep { background: rgba(0,0,0,0.12); }
+#mc-pdf-template.mcp-bw .mcp-section-title { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-section-mode { color: #777; }
+#mc-pdf-template.mcp-bw .mcp-dish { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-supp { color: #444; }
+#mc-pdf-template.mcp-bw .mcp-drinks-box { border-color: rgba(0,0,0,0.12); }
+#mc-pdf-template.mcp-bw .mcp-drinks-label { color: #000; }
+#mc-pdf-template.mcp-bw .mcp-drinks-text { color: #444; }
+#mc-pdf-template.mcp-bw .mcp-footer-rule { background: rgba(0,0,0,0.15); }
+#mc-pdf-template.mcp-bw .mcp-footer-text { color: #888; }
+.mcp-accent { height: 7px; flex-shrink: 0; }
+.mcp-content { flex: 1; display: flex; flex-direction: column; padding: 40px 72px 36px; min-height: 0; }
+.mcp-header { text-align: center; flex-shrink: 0; margin-bottom: 16px; }
+.mcp-restaurant {
+  font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.28em;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 10px; font-style: normal;
+}
+.mcp-title {
+  font-size: 58px; font-weight: 400; font-style: italic;
+  line-height: 1.0; letter-spacing: 0.01em; margin-bottom: 14px;
+}
+.mcp-price-row {
+  display: flex; justify-content: center; align-items: baseline; gap: 7px; margin-bottom: 5px;
+}
+.mcp-price { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.02em; }
+.mcp-price-label { font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.06em; }
+.mcp-notes { font-family: 'DM Sans', sans-serif; font-size: 9.5px; letter-spacing: 0.03em; font-style: italic; margin-bottom: 3px; }
+.mcp-rule { height: 1px; border: none; margin: 0; flex: 1; }
+.mcp-rule-sep { height: 1px; border: none; margin: 14px 0; }
+.mcp-body { flex: 1; display: flex; flex-direction: column; padding: 4px 0; min-height: 0; }
+.mcp-section { margin-bottom: 16px; }
+.mcp-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+.mcp-section-title {
+  font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.26em;
+  text-transform: uppercase; font-weight: 700; white-space: nowrap; font-style: normal;
+}
+.mcp-section-mode { font-family: 'DM Sans', sans-serif; font-size: 8.5px; letter-spacing: 0.05em; white-space: nowrap; }
+.mcp-dish-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 5px 8px; border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.mcp-dish { font-size: 17px; font-weight: 500; line-height: 1.25; flex: 1; }
+.mcp-supp {
+  font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.04em; margin-left: 12px; flex-shrink: 0;
+}
+.mcp-drinks-box { margin-top: 10px; padding: 10px 14px; border: 1px solid; border-radius: 4px; }
+.mcp-drinks-label {
+  font-family: 'DM Sans', sans-serif; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 5px;
+}
+.mcp-drinks-text { font-size: 13.5px; font-style: italic; line-height: 1.45; }
+.mcp-footer { flex-shrink: 0; text-align: center; padding-top: 10px; }
+.mcp-footer-rule { height: 1px; border: none; margin-bottom: 10px; }
+.mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
 </style>
 </head>
 <body>
 
-<div class="app-layout">
+<div class="app-shell">
+  <div class="app-tabs">
+    <div class="app-tabs-brand">Restaurante Sol</div>
+    <button class="app-tab active" id="tabDia">Menú del Día</button>
+    <button class="app-tab" id="tabCerrado">Menús Cerrados</button>
+  </div>
+
+  <div class="tab-panel active" id="panelDia">
+  <div class="app-layout">
   <!-- ========== LEFT: WORKSPACE ========== -->
   <div class="workspace">
     <div class="app-header">
@@ -1293,7 +1622,37 @@ kbd {
       <button class="btn btn-pdf-bw" id="btnPDFBW">◑ PDF B&amp;N</button>
     </div>
   </div>
-</div>
+  </div><!-- /panelDia -->
+
+  <div class="tab-panel" id="panelCerrado">
+    <div class="mc-layout">
+      <div class="mc-library">
+        <div class="mc-library-top">
+          <div class="mc-library-title">Menús Cerrados</div>
+          <input class="mc-library-search" id="mc-search" type="text" placeholder="Buscar menús...">
+          <div class="mc-type-filters" id="mc-type-filters">
+            <button class="mc-type-chip active" data-type="all">Todos</button>
+            <button class="mc-type-chip" data-type="grupos">Grupos</button>
+            <button class="mc-type-chip" data-type="festivo">Festivo</button>
+            <button class="mc-type-chip" data-type="infantil">Infantil</button>
+            <button class="mc-type-chip" data-type="tapas">Tapas</button>
+            <button class="mc-type-chip" data-type="degustacion">Degust.</button>
+            <button class="mc-type-chip" data-type="otro">Otro</button>
+          </div>
+        </div>
+        <div class="mc-library-list" id="mc-library-list"></div>
+        <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
+      </div>
+      <div class="mc-editor" id="mc-editor-area">
+        <div class="mc-editor-empty">
+          <div class="mc-editor-empty-icon">📋</div>
+          <div>Selecciona un menú o crea uno nuevo</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /panelCerrado -->
+
+</div><!-- /app-shell -->
 
 <!-- BEAUTIFUL PDF TEMPLATE (off-screen, populated by JS before capture) -->
 <div id="pdf-template">
@@ -1319,6 +1678,31 @@ kbd {
       </div>
     </div>
     <div class="pt-accent-bar"></div>
+  </div>
+</div>
+
+<!-- MC PDF TEMPLATE (off-screen, populated by JS before capture) -->
+<div id="mc-pdf-template">
+  <div class="mcp-page">
+    <div class="mcp-accent"></div>
+    <div class="mcp-content">
+      <div class="mcp-header">
+        <div class="mcp-restaurant" id="mcp-restaurant">RESTAURANTE SOL</div>
+        <div class="mcp-title" id="mcp-title"></div>
+        <div class="mcp-price-row" id="mcp-price-row">
+          <span class="mcp-price" id="mcp-price"></span>
+          <span class="mcp-price-label" id="mcp-price-label"></span>
+        </div>
+        <div class="mcp-notes" id="mcp-notes"></div>
+        <div class="mcp-rule-sep"></div>
+      </div>
+      <div class="mcp-body" id="mcp-body"></div>
+    </div>
+    <div class="mcp-footer">
+      <div class="mcp-footer-rule"></div>
+      <div class="mcp-footer-text" id="mcp-footer-text">Restaurante Sol · Barcelona</div>
+    </div>
+    <div class="mcp-accent"></div>
   </div>
 </div>
 
@@ -3015,11 +3399,441 @@ async function generatePDF() {
   }
 }
 
+// ==================== MENÚS CERRADOS ====================
+// Supabase table (run once in Supabase SQL editor):
+// CREATE TABLE menus_cerrados (
+//   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+//   name TEXT NOT NULL,
+//   type TEXT NOT NULL DEFAULT 'grupos',
+//   occasion TEXT,
+//   price NUMERIC(6,2),
+//   price_label TEXT DEFAULT 'por persona (IVA incluido)',
+//   min_people INTEGER,
+//   notes TEXT,
+//   sections JSONB NOT NULL DEFAULT '[]',
+//   drinks TEXT,
+//   language TEXT DEFAULT 'es',
+//   parent_id UUID,
+//   version INTEGER DEFAULT 1,
+//   tags TEXT[],
+//   created_at TIMESTAMPTZ DEFAULT NOW(),
+//   updated_at TIMESTAMPTZ DEFAULT NOW()
+// );
+// ALTER TABLE menus_cerrados ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "Allow all" ON menus_cerrados FOR ALL USING (true);
+
+const MC_TYPES = { grupos:'Grupos', festivo:'Festivo', infantil:'Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'Otro' };
+const MC_MODES = { shared:'Para compartir', choose_one:'A elegir 1', choose_many:'A elegir varios', fixed:'Lista fija' };
+
+let mcMenus = [];
+let mcCurrentId = null;
+let mcCurrentMenu = null;
+let mcFilterType = 'all';
+let mcLoaded = false;
+
+function mcUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+async function mcLoadMenus() {
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase.from('menus_cerrados').select('*').order('updated_at', { ascending: false });
+    if (error) throw error;
+    mcMenus = data || [];
+    mcLoaded = true;
+    mcRenderLibrary();
+  } catch (e) {
+    console.error('mcLoadMenus:', e);
+    toast('Error cargando menús cerrados: ' + e.message, 'error');
+  }
+}
+
+async function mcSaveMenu() {
+  if (!mcCurrentMenu) return;
+  const gathered = mcGatherFromEditor();
+  Object.assign(mcCurrentMenu, gathered);
+  mcCurrentMenu.updated_at = new Date().toISOString();
+  try {
+    if (mcCurrentMenu._isNew) {
+      const toInsert = { ...mcCurrentMenu };
+      delete toInsert._isNew;
+      const { data, error } = await supabase.from('menus_cerrados').insert([toInsert]).select().single();
+      if (error) throw error;
+      mcCurrentMenu = data;
+      mcCurrentId = data.id;
+      mcMenus.unshift(data);
+    } else {
+      const { error } = await supabase.from('menus_cerrados').update(mcCurrentMenu).eq('id', mcCurrentMenu.id);
+      if (error) throw error;
+      const idx = mcMenus.findIndex(m => m.id === mcCurrentMenu.id);
+      if (idx >= 0) mcMenus[idx] = { ...mcCurrentMenu };
+    }
+    toast('Menú guardado', 'success');
+    mcRenderLibrary();
+    mcRenderEditor();
+  } catch (e) {
+    console.error('mcSaveMenu:', e);
+    toast('Error al guardar: ' + e.message, 'error');
+  }
+}
+
+async function mcDeleteMenu() {
+  if (!mcCurrentMenu || mcCurrentMenu._isNew) return;
+  if (!confirm(`¿Eliminar "${mcCurrentMenu.name}"?`)) return;
+  try {
+    const { error } = await supabase.from('menus_cerrados').delete().eq('id', mcCurrentMenu.id);
+    if (error) throw error;
+    mcMenus = mcMenus.filter(m => m.id !== mcCurrentMenu.id);
+    mcCurrentMenu = null; mcCurrentId = null;
+    mcRenderLibrary(); mcRenderEditor();
+    toast('Menú eliminado', 'success');
+  } catch (e) {
+    toast('Error al eliminar', 'error');
+  }
+}
+
+function mcDuplicateMenu() {
+  if (!mcCurrentMenu) return;
+  const base = mcCurrentMenu._isNew ? mcCurrentMenu : (mcMenus.find(m => m.id === mcCurrentMenu.id) || mcCurrentMenu);
+  const parentId = base.parent_id || base.id;
+  const family = mcMenus.filter(m => m.id === parentId || m.parent_id === parentId);
+  const maxVer = Math.max(...family.map(m => m.version || 1), base.version || 1);
+  const newMenu = {
+    id: mcUUID(),
+    name: base.name,
+    type: base.type,
+    occasion: base.occasion,
+    price: base.price,
+    price_label: base.price_label,
+    min_people: base.min_people,
+    notes: base.notes,
+    sections: JSON.parse(JSON.stringify(base.sections || [])),
+    drinks: base.drinks,
+    language: base.language || 'es',
+    parent_id: parentId,
+    version: maxVer + 1,
+    tags: [...(base.tags || [])],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    _isNew: true
+  };
+  mcCurrentMenu = newMenu; mcCurrentId = newMenu.id;
+  mcRenderEditor();
+  toast(`Duplicado como v${newMenu.version} — edita y guarda para confirmar`, 'info');
+}
+
+function mcRenderLibrary() {
+  const list = $('mc-library-list');
+  if (!list) return;
+  let filtered = mcMenus;
+  if (mcFilterType !== 'all') filtered = filtered.filter(m => m.type === mcFilterType);
+  const q = $('mc-search')?.value.trim().toLowerCase();
+  if (q) filtered = filtered.filter(m => m.name.toLowerCase().includes(q));
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--ink-faint);text-align:center">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
+    return;
+  }
+  list.innerHTML = filtered.map(m => {
+    const vTag = (m.version || 1) > 1 ? ` <span class="mc-version-tag">v${m.version}</span>` : '';
+    const badge = `<span class="mc-type-badge ${m.type}">${MC_TYPES[m.type] || m.type}</span>`;
+    const price = m.price ? `${parseFloat(m.price).toFixed(2)}€` : '';
+    return `<div class="mc-list-item${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}">
+      <div class="mc-list-item-name">${esc(m.name)}${vTag}</div>
+      <div class="mc-list-item-meta">${badge}${price ? `<span>${price}</span>` : ''}</div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.mc-list-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const m = mcMenus.find(x => x.id === el.dataset.id);
+      if (m) { mcCurrentMenu = { ...m }; mcCurrentId = m.id; mcRenderEditor(); mcRenderLibrary(); }
+    });
+  });
+}
+
+function mcRenderEditor() {
+  const area = $('mc-editor-area');
+  if (!area) return;
+  if (!mcCurrentMenu) {
+    area.innerHTML = `<div class="mc-editor-empty"><div class="mc-editor-empty-icon">📋</div><div>Selecciona un menú o crea uno nuevo</div></div>`;
+    return;
+  }
+  const m = mcCurrentMenu;
+  const parentId = m.parent_id || m.id;
+  const siblings = !m._isNew ? mcMenus.filter(s => s.id === parentId || s.parent_id === parentId) : [];
+  const vFamily = siblings.length > 1
+    ? `<div class="mc-version-family">Versiones: ${siblings.map(s =>
+        `<span class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">v${s.version || 1}</span>`).join('')}</div>` : '';
+
+  area.innerHTML = `
+    <div class="mc-editor-header">
+      <div class="mc-editor-header-main">
+        <input class="mc-editor-title-input" id="mc-name-input" value="${esc(m.name || '')}" placeholder="Nombre del menú...">
+        <div class="mc-editor-meta-row">
+          <div class="mc-meta-field"><label>Tipo</label>
+            <select class="mc-meta-select" id="mc-type-select">
+              ${Object.entries(MC_TYPES).map(([k,v]) => `<option value="${k}"${m.type===k?' selected':''}>${v}</option>`).join('')}
+            </select></div>
+          <div class="mc-meta-field"><label>Precio</label>
+            <input class="mc-meta-input" id="mc-price-input" type="number" step="0.5" min="0" value="${m.price||''}" style="width:72px" placeholder="€"></div>
+          <div class="mc-meta-field"><label>Etiqueta precio</label>
+            <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label||'por persona (IVA incluido)')}" style="width:210px"></div>
+          <div class="mc-meta-field"><label>Mín. personas</label>
+            <input class="mc-meta-input" id="mc-min-people-input" type="number" min="1" value="${m.min_people||''}" style="width:58px"></div>
+        </div>
+        ${vFamily}
+      </div>
+      <div class="mc-editor-actions">
+        <button class="mc-btn mc-btn-save" id="mc-save-btn">💾 Guardar</button>
+        <button class="mc-btn mc-btn-dup" id="mc-dup-btn" title="Crear nueva versión">⊕ Versión</button>
+        ${!m._isNew ? `<button class="mc-btn mc-btn-del" id="mc-del-btn" title="Eliminar">🗑</button>` : ''}
+      </div>
+    </div>
+    <div class="mc-notes-row">
+      <div class="mc-field-label">Condiciones / Notas</div>
+      <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
+    </div>
+    <div class="mc-sections-header">
+      <div class="mc-sections-title">Secciones del menú</div>
+      <button class="mc-add-section-btn" id="mc-add-section-btn">+ Añadir sección</button>
+    </div>
+    <div id="mc-sections-container">${(m.sections||[]).map((s,i) => mcRenderSection(s,i)).join('')}</div>
+    <div class="mc-drinks-row">
+      <div class="mc-field-label">Bebidas incluidas</div>
+      <textarea class="mc-drinks-input" id="mc-drinks-input" rows="2" placeholder="Ej: Una botella de vino por cada 4 personas · Agua y refrescos">${esc(m.drinks||'')}</textarea>
+    </div>
+    <div class="mc-pdf-row">
+      <button class="btn btn-pdf-color" id="mc-pdf-color-btn">🎨 PDF Color</button>
+      <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
+    </div>`;
+
+  $('mc-save-btn').addEventListener('click', mcSaveMenu);
+  $('mc-dup-btn').addEventListener('click', mcDuplicateMenu);
+  const delBtn = $('mc-del-btn');
+  if (delBtn) delBtn.addEventListener('click', mcDeleteMenu);
+  $('mc-add-section-btn').addEventListener('click', () => {
+    mcCurrentMenu.sections = mcGatherSections();
+    mcCurrentMenu.sections.push({ id: mcUUID(), title: 'Nueva sección', subtitle: '', mode: 'choose_one', dishes: [{ id: mcUUID(), name: '', supplement: null }] });
+    mcRefreshSections();
+  });
+  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color'));
+  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw'));
+  area.querySelectorAll('.mc-version-sibling').forEach(el => {
+    el.addEventListener('click', () => {
+      const m2 = mcMenus.find(x => x.id === el.dataset.id);
+      if (m2) { mcCurrentMenu = { ...m2 }; mcCurrentId = m2.id; mcRenderEditor(); mcRenderLibrary(); }
+    });
+  });
+  mcBindSectionEvents();
+}
+
+function mcRenderSection(sec, si) {
+  return `<div class="mc-section-block" data-si="${si}">
+    <div class="mc-section-head">
+      <input class="mc-section-title-input" value="${esc(sec.title||'')}" placeholder="Nombre de la sección..." data-si="${si}">
+      <input class="mc-section-subtitle-input" value="${esc(sec.subtitle||'')}" placeholder="(subtítulo)" data-si="${si}">
+      <select class="mc-section-mode-select" data-si="${si}">
+        ${Object.entries(MC_MODES).map(([k,v]) => `<option value="${k}"${sec.mode===k?' selected':''}>${v}</option>`).join('')}
+      </select>
+      <button class="mc-section-remove" data-si="${si}">×</button>
+    </div>
+    <div class="mc-section-dishes">
+      ${(sec.dishes||[]).map((d,di) => mcRenderDish(d,si,di)).join('')}
+      <button class="mc-add-dish-btn" data-si="${si}">+ Añadir plato</button>
+    </div>
+  </div>`;
+}
+
+function mcRenderDish(d, si, di) {
+  const suppVal = d.supplement ? `+${d.supplement}€` : '';
+  return `<div class="mc-dish-row" data-si="${si}" data-di="${di}">
+    <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato..." data-si="${si}" data-di="${di}">
+    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl.€" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50€)">
+    <button class="mc-dish-remove" data-si="${si}" data-di="${di}">×</button>
+  </div>`;
+}
+
+function mcRefreshSections() {
+  mcCurrentMenu.sections = mcGatherSections();
+  const c = $('mc-sections-container');
+  if (c) { c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join(''); mcBindSectionEvents(); }
+}
+
+function mcGatherSections() {
+  const c = $('mc-sections-container');
+  if (!c || !mcCurrentMenu) return mcCurrentMenu?.sections || [];
+  return Array.from(c.querySelectorAll('.mc-section-block')).map((block, si) => {
+    const dishes = Array.from(block.querySelectorAll('.mc-dish-row')).map((row, di) => {
+      const name = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
+      const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
+      return { id: (mcCurrentMenu.sections?.[si]?.dishes?.[di]?.id || mcUUID()), name, supplement: parseFloat(suppRaw) || null };
+    }).filter(d => d.name);
+    return {
+      id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
+      title: block.querySelector('.mc-section-title-input')?.value.trim() || '',
+      subtitle: block.querySelector('.mc-section-subtitle-input')?.value.trim() || '',
+      mode: block.querySelector('.mc-section-mode-select')?.value || 'choose_one',
+      dishes
+    };
+  });
+}
+
+function mcBindSectionEvents() {
+  const c = $('mc-sections-container');
+  if (!c) return;
+  c.querySelectorAll('.mc-section-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mcCurrentMenu.sections = mcGatherSections();
+      mcCurrentMenu.sections.splice(parseInt(btn.dataset.si), 1);
+      mcRefreshSections();
+    });
+  });
+  c.querySelectorAll('.mc-add-dish-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const si = parseInt(btn.dataset.si);
+      mcCurrentMenu.sections = mcGatherSections();
+      mcCurrentMenu.sections[si].dishes.push({ id: mcUUID(), name: '', supplement: null });
+      mcRefreshSections();
+      setTimeout(() => {
+        const inputs = c.querySelectorAll(`.mc-section-block[data-si="${si}"] .mc-dish-name-input`);
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }, 40);
+    });
+  });
+  c.querySelectorAll('.mc-dish-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mcCurrentMenu.sections = mcGatherSections();
+      mcCurrentMenu.sections[parseInt(btn.dataset.si)].dishes.splice(parseInt(btn.dataset.di), 1);
+      mcRefreshSections();
+    });
+  });
+}
+
+function mcGatherFromEditor() {
+  return {
+    name: $('mc-name-input')?.value.trim() || mcCurrentMenu.name,
+    type: $('mc-type-select')?.value || mcCurrentMenu.type,
+    price: parseFloat($('mc-price-input')?.value) || null,
+    price_label: $('mc-price-label-input')?.value.trim() || 'por persona (IVA incluido)',
+    min_people: parseInt($('mc-min-people-input')?.value) || null,
+    notes: $('mc-notes-input')?.value.trim() || '',
+    drinks: $('mc-drinks-input')?.value.trim() || '',
+    sections: mcGatherSections()
+  };
+}
+
+async function mcGeneratePDF(mode) {
+  if (!mcCurrentMenu) return;
+  if (!window.html2canvas || !window.jspdf) { toast('Error: librerías PDF no cargadas', 'error'); return; }
+  const m = mcGatherFromEditor();
+  try {
+    toast('Generando PDF…', 'info');
+    const tpl = $('mc-pdf-template');
+    const pageEl = tpl.querySelector('.mcp-page');
+    tpl.className = mode === 'color' ? 'mcp-color' : 'mcp-bw';
+    $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
+    $('mcp-title').textContent = m.name || '';
+    const priceRow = $('mcp-price-row');
+    if (m.price) {
+      $('mcp-price').textContent = parseFloat(m.price).toFixed(2) + '€';
+      $('mcp-price-label').textContent = m.price_label || '';
+      priceRow.style.display = 'flex';
+    } else {
+      priceRow.style.display = 'none';
+    }
+    const notesEl = $('mcp-notes');
+    notesEl.textContent = m.notes || '';
+    notesEl.style.display = m.notes ? 'block' : 'none';
+
+    let bodyHtml = '';
+    for (const sec of (m.sections || [])) {
+      const modeLabel = { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' }[sec.mode] || '';
+      const sub = sec.subtitle || modeLabel;
+      bodyHtml += `<div class="mcp-section">
+        <div class="mcp-section-header">
+          <div class="mcp-rule"></div>
+          <div class="mcp-section-title">${esc(sec.title)}</div>
+          ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
+          <div class="mcp-rule"></div>
+        </div>`;
+      for (const d of (sec.dishes || [])) {
+        bodyHtml += `<div class="mcp-dish-row">
+          <span class="mcp-dish">${esc(d.name)}</span>
+          ${d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : ''}
+        </div>`;
+      }
+      bodyHtml += '</div>';
+    }
+    if (m.drinks) {
+      bodyHtml += `<div class="mcp-drinks-box">
+        <div class="mcp-drinks-label">Bebidas incluidas</div>
+        <div class="mcp-drinks-text">${esc(m.drinks)}</div>
+      </div>`;
+    }
+    $('mcp-body').innerHTML = bodyHtml;
+    await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 90));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const scale = mode === 'bw' ? 3 : 2.5;
+    const bg = mode === 'color' ? '#faf8f5' : '#ffffff';
+    const canvas = await html2canvas(pageEl, { width: 794, height: 1123, scale, useCORS: true, allowTaint: true, backgroundColor: bg, logging: false, imageTimeout: 0 });
+    const imgData = mode === 'bw' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.97);
+    const imgType = mode === 'bw' ? 'PNG' : 'JPEG';
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    doc.addImage(imgData, imgType, 0, 0, 210, 297);
+    const slug = (m.name || 'menu').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const w = window.open(pdfUrl, '_blank');
+    if (w) { toast('PDF abierto en nueva pestaña', 'success'); setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000); }
+    else { doc.save(`${slug}-${mode}.pdf`); toast('PDF descargado', 'success'); }
+  } catch (err) {
+    console.error('mcGeneratePDF:', err);
+    toast('Error al generar PDF: ' + err.message, 'error');
+  }
+}
+
+function mcInitTabs() {
+  document.getElementById('tabDia').addEventListener('click', () => {
+    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tabDia').classList.add('active');
+    document.getElementById('panelDia').classList.add('active');
+  });
+  document.getElementById('tabCerrado').addEventListener('click', () => {
+    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tabCerrado').classList.add('active');
+    document.getElementById('panelCerrado').classList.add('active');
+    if (!mcLoaded) mcLoadMenus();
+  });
+  $('mc-new-btn').addEventListener('click', () => {
+    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: [], drinks: '', language: 'es', parent_id: null, version: 1, tags: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
+    mcCurrentId = mcCurrentMenu.id;
+    mcRenderLibrary(); mcRenderEditor();
+  });
+  $('mc-search').addEventListener('input', () => mcRenderLibrary());
+  $('mc-type-filters').addEventListener('click', e => {
+    const chip = e.target.closest('.mc-type-chip');
+    if (!chip) return;
+    mcFilterType = chip.dataset.type;
+    document.querySelectorAll('.mc-type-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    mcRenderLibrary();
+  });
+}
+
 // ==================== PUBLIC API ====================
 window.app = { addFromLibrary, deleteFromLibrary, moveInMenu, startInlineEdit, saveInlineEdit, cancelInlineEdit, removeFromMenu, loadFromHistory, shareMenu };
 
 // ==================== START ====================
 init();
+mcInitTabs();
 
 })();
 </script>
