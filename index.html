@@ -1243,6 +1243,17 @@ kbd {
   background: var(--paper); outline: none; margin-bottom: 8px; color: var(--ink);
 }
 .mc-library-search:focus { border-color: var(--terracotta); }
+.mc-library-tools {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;
+}
+.mc-library-select {
+  min-width: 0; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink-soft); outline: none;
+}
+.mc-library-count {
+  margin-top: 8px; font-size: 11px; color: var(--ink-faint);
+}
 .mc-type-filters { display: flex; flex-wrap: wrap; gap: 4px; }
 .mc-type-chip {
   padding: 3px 9px; font-size: 11px; font-weight: 600; border-radius: 20px;
@@ -1281,7 +1292,99 @@ kbd {
   background: var(--paper-warm); border: 1px solid var(--cream);
   border-radius: 10px; color: var(--ink-faint);
 }
-.mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 28px 36px 50px; }
+.mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 24px 30px 46px; }
+.mc-editor-shell {
+  display: grid; grid-template-columns: minmax(520px, 1fr) 360px; gap: 28px; align-items: start;
+}
+.mc-form-pane { min-width: 0; }
+.mc-preview-pane {
+  position: sticky; top: 24px; align-self: start;
+}
+.mc-preview-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; gap: 10px;
+}
+.mc-preview-title {
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--ink-faint);
+}
+.mc-preview-card {
+  background: #f5f0e6; border: 1px solid rgba(180,140,56,0.28);
+  box-shadow: var(--shadow-md); min-height: 510px; padding: 28px 30px;
+  color: var(--ink); overflow: hidden;
+}
+.mc-preview-card.template-grupo { background: #f7f4ef; border-color: #d8cfc1; }
+.mc-preview-card.template-fiesta { background: #f5efe3; border-color: rgba(122,46,59,0.25); }
+.mc-preview-card.template-tapas { background: #fffaf4; border-color: rgba(196,101,42,0.30); }
+.mc-preview-card.template-minimal { background: white; border-color: #ddd; }
+.mc-preview-restaurant {
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  font-weight: 800; text-align: center; color: var(--ink-faint); margin-bottom: 10px;
+}
+.mc-preview-name {
+  font-family: var(--font-display); font-size: 32px; line-height: 1.05;
+  font-weight: 800; text-align: center; color: var(--ink); margin-bottom: 8px;
+}
+.template-tapas .mc-preview-name { font-size: 28px; text-align: left; }
+.template-minimal .mc-preview-name { font-size: 26px; text-align: left; font-family: var(--font-body); }
+.mc-preview-meta {
+  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+  font-size: 12px; color: var(--ink-soft); margin-bottom: 16px;
+}
+.template-tapas .mc-preview-meta,
+.template-minimal .mc-preview-meta { justify-content: flex-start; }
+.mc-preview-pill {
+  border: 1px solid rgba(20,17,13,0.16); border-radius: 999px;
+  padding: 4px 10px; background: rgba(255,255,255,0.45);
+}
+.mc-preview-notes {
+  font-size: 13px; line-height: 1.45; color: var(--ink-faint);
+  text-align: center; margin-bottom: 18px; font-style: italic;
+}
+.template-tapas .mc-preview-notes,
+.template-minimal .mc-preview-notes { text-align: left; }
+.mc-preview-section { margin: 18px 0; }
+.mc-preview-section-title {
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--terracotta-dark); text-align: center;
+  margin-bottom: 4px;
+}
+.template-grupo .mc-preview-section-title { color: var(--olive-dark); }
+.template-fiesta .mc-preview-section-title { color: var(--wine); }
+.template-tapas .mc-preview-section-title,
+.template-minimal .mc-preview-section-title { text-align: left; }
+.mc-preview-section-sub {
+  font-size: 12px; font-style: italic; color: var(--ink-faint);
+  text-align: center; margin-bottom: 9px;
+}
+.template-tapas .mc-preview-section-sub,
+.template-minimal .mc-preview-section-sub { text-align: left; }
+.mc-preview-dish {
+  font-family: var(--font-display); font-size: 19px; line-height: 1.25;
+  text-align: center; margin: 8px 0; color: var(--ink);
+}
+.template-grupo .mc-preview-dish { font-size: 18px; }
+.template-tapas .mc-preview-dish,
+.template-minimal .mc-preview-dish {
+  font-family: var(--font-body); font-size: 14px; line-height: 1.4; text-align: left;
+  padding-left: 14px; position: relative;
+}
+.template-tapas .mc-preview-dish::before,
+.template-minimal .mc-preview-dish::before {
+  content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor;
+  position: absolute; left: 0; top: 0.75em;
+}
+.mc-preview-dish small {
+  display: block; font-family: var(--font-body); font-size: 12px; line-height: 1.35;
+  color: var(--ink-faint); margin-top: 2px;
+}
+.mc-preview-supp { font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--terracotta-dark); }
+.mc-preview-drinks {
+  margin-top: 18px; border: 1px solid rgba(20,17,13,0.14);
+  padding: 12px 14px; font-size: 13px; line-height: 1.45; text-align: center;
+}
+.template-tapas .mc-preview-drinks,
+.template-minimal .mc-preview-drinks { text-align: left; }
 .mc-editor-empty {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; height: 100%; color: var(--ink-faint);
@@ -1289,10 +1392,10 @@ kbd {
 }
 .mc-editor-empty-icon { font-size: 40px; opacity: 0.35; }
 .mc-editor-header {
-  display: flex; align-items: flex-start; gap: 16px;
+  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
   margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--cream);
 }
-.mc-editor-header-main { flex: 1; min-width: 0; }
+.mc-editor-header-main { flex: 1 1 100%; min-width: 0; order: 2; }
 .mc-editor-title-input {
   width: 100%; font-family: var(--font-display); font-size: 26px; font-weight: 700;
   color: var(--ink); background: none; border: none; border-bottom: 2px solid transparent;
@@ -1313,7 +1416,7 @@ kbd {
   padding: 5px 8px; border: 1px solid var(--cream); border-radius: var(--radius);
   background: white; color: var(--ink); outline: none; cursor: pointer;
 }
-.mc-editor-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.mc-editor-actions { display: flex; gap: 8px; flex-shrink: 0; justify-content: flex-end; width: 100%; order: 1; }
 .mc-btn {
   padding: 8px 14px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
   border-radius: var(--radius); border: none; cursor: pointer; transition: background var(--transition);
@@ -1335,6 +1438,20 @@ kbd {
 }
 .mc-version-sibling:hover { border-color: var(--terracotta); color: var(--terracotta); }
 .mc-version-sibling.current { background: var(--terracotta-light); border-color: var(--terracotta); color: var(--terracotta-dark); font-weight: 600; }
+.mc-control-panel {
+  display: grid; grid-template-columns: minmax(170px, 0.7fr) 1fr;
+  gap: 14px; align-items: start; margin: 0 0 18px; padding: 14px;
+  background: white; border: 1px solid var(--cream); border-radius: var(--radius-lg);
+}
+.mc-language-toggles { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.mc-check-pill {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 700; color: var(--ink-soft);
+  padding: 6px 9px; border: 1px solid var(--cream); border-radius: 999px;
+  background: var(--paper);
+}
+.mc-check-pill input { accent-color: var(--terracotta); }
+.mc-help-text { font-size: 11px; color: var(--ink-faint); margin-top: 7px; line-height: 1.35; }
 .mc-field-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 6px;
@@ -1430,6 +1547,10 @@ kbd {
   position: relative; width: 794px; height: 1123px; display: flex; flex-direction: column;
   box-sizing: border-box; overflow: hidden; padding: 44px 60px 36px;
 }
+.mcp-template-grupo .mcp-page { padding: 46px 58px 36px; }
+.mcp-template-fiesta .mcp-page { padding: 50px 62px 38px; }
+.mcp-template-tapas .mcp-page { padding: 42px 56px 34px; }
+.mcp-template-minimal .mcp-page { padding: 46px 54px 34px; }
 /* ── Color theme ── */
 #mc-pdf-template.mcp-color .mcp-page          { background: #f5f0e6; }
 #mc-pdf-template.mcp-color .mcp-corner        { border-color: rgba(180,140,56,0.55); }
@@ -1505,6 +1626,12 @@ kbd {
   font-size: 50px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.0;
   margin-bottom: 6px; text-transform: uppercase;
 }
+.mcp-template-grupo .mcp-title { font-size: 44px; }
+.mcp-template-fiesta .mcp-title { font-size: 52px; color: #210d12; }
+.mcp-template-tapas .mcp-title { font-size: 42px; text-align: left; }
+.mcp-template-minimal .mcp-title {
+  font-family: 'DM Sans', sans-serif; font-size: 34px; letter-spacing: 0.01em; text-align: left;
+}
 .mcp-type-label {
   font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px;
 }
@@ -1536,16 +1663,30 @@ kbd {
 .mcp-dish-cell  { flex: 1; text-align: center; }
 .mcp-dish {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 16.5px; font-weight: 500; line-height: 1.25; display: block;
+  font-size: 18px; font-weight: 500; line-height: 1.25; display: block;
 }
 .mcp-dish-ca {
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 13px; font-style: italic; line-height: 1.2; display: block; margin-top: 1px;
+  font-size: 14px; font-style: italic; line-height: 1.24; display: block; margin-top: 2px;
 }
 .mcp-dish-en {
   font-family: 'DM Sans', sans-serif;
-  font-size: 10.5px; font-style: italic; line-height: 1.2; display: block; margin-top: 1px;
+  font-size: 12px; font-style: italic; line-height: 1.28; display: block; margin-top: 2px;
 }
+.mcp-template-tapas .mcp-dish,
+.mcp-template-minimal .mcp-dish {
+  font-family: 'DM Sans', sans-serif; font-size: 15.5px; line-height: 1.38; font-weight: 500;
+}
+.mcp-template-tapas .mcp-dish-row,
+.mcp-template-minimal .mcp-dish-row {
+  justify-content: flex-start; text-align: left; padding: 3px 8px;
+}
+.mcp-template-tapas .mcp-dish-cell,
+.mcp-template-minimal .mcp-dish-cell { text-align: left; }
+.mcp-template-tapas .mcp-section-header,
+.mcp-template-minimal .mcp-section-header { text-align: left; }
+.mcp-template-tapas .mcp-section-rule,
+.mcp-template-minimal .mcp-section-rule { margin-left: 0; }
 .mcp-supp {
   font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
   letter-spacing: 0.04em; flex-shrink: 0;
@@ -1562,6 +1703,11 @@ kbd {
 .mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
 .mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+@media (max-width: 1120px) {
+  .mc-editor-shell { grid-template-columns: 1fr; }
+  .mc-preview-pane { position: static; }
+  .mc-preview-card { min-height: 0; }
+}
 </style>
 </head>
 <body>
@@ -1682,6 +1828,22 @@ kbd {
         <div class="mc-library-top">
           <div class="mc-library-title">Menús Cerrados</div>
           <input class="mc-library-search" id="mc-search" type="text" placeholder="Buscar menús...">
+          <div class="mc-library-tools">
+            <select class="mc-library-select" id="mc-price-filter">
+              <option value="all">Todos los precios</option>
+              <option value="under20">Hasta 20€</option>
+              <option value="20-30">20€ - 30€</option>
+              <option value="30-45">30€ - 45€</option>
+              <option value="over45">Más de 45€</option>
+              <option value="noprice">Sin precio</option>
+            </select>
+            <select class="mc-library-select" id="mc-lang-filter">
+              <option value="all">Todos idiomas</option>
+              <option value="es">Español</option>
+              <option value="ca">Català</option>
+              <option value="en">English</option>
+            </select>
+          </div>
           <div class="mc-type-filters" id="mc-type-filters">
             <button class="mc-type-chip active" data-type="all">Todos</button>
             <button class="mc-type-chip" data-type="grupos">Grupos</button>
@@ -1691,6 +1853,7 @@ kbd {
             <button class="mc-type-chip" data-type="degustacion">Degust.</button>
             <button class="mc-type-chip" data-type="otro">Otro</button>
           </div>
+          <div class="mc-library-count" id="mc-library-count"></div>
         </div>
         <div class="mc-library-list" id="mc-library-list"></div>
         <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
@@ -3483,11 +3646,21 @@ async function generatePDF() {
 
 const MC_TYPES = { grupos:'Grupos', festivo:'Festivo', infantil:'Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'Otro' };
 const MC_MODES = { shared:'Para compartir', choose_one:'A elegir 1', choose_many:'A elegir varios', fixed:'Lista fija' };
+const MC_TEMPLATES = {
+  editorial: 'Editorial clásico',
+  grupo: 'Grupo claro',
+  fiesta: 'Fiesta elegante',
+  tapas: 'Tapas informal',
+  minimal: 'B&N minimal'
+};
+const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 
 let mcMenus = [];
 let mcCurrentId = null;
 let mcCurrentMenu = null;
 let mcFilterType = 'all';
+let mcFilterPrice = 'all';
+let mcFilterLang = 'all';
 let mcLoaded = false;
 
 function mcUUID() {
@@ -3495,6 +3668,84 @@ function mcUUID() {
     const r = Math.random() * 16 | 0;
     return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
   });
+}
+
+function mcTagValue(menu, prefix, fallback = '') {
+  const tag = (menu?.tags || []).find(t => typeof t === 'string' && t.startsWith(prefix));
+  return tag ? tag.slice(prefix.length) : fallback;
+}
+
+function mcSetTagValue(menu, prefix, value) {
+  const tags = (menu.tags || []).filter(t => !(typeof t === 'string' && t.startsWith(prefix)));
+  if (value) tags.push(prefix + value);
+  menu.tags = tags;
+}
+
+function mcGetTemplate(menu) {
+  const saved = mcTagValue(menu, 'template:', '');
+  if (saved && MC_TEMPLATES[saved]) return saved;
+  if (menu?.type === 'festivo') return 'fiesta';
+  if (menu?.type === 'tapas') return 'tapas';
+  if (menu?.type === 'grupos') return 'grupo';
+  return 'editorial';
+}
+
+function mcGetDisplayLangs(menu) {
+  const saved = mcTagValue(menu, 'langs:', '');
+  if (saved) return saved.split('-').filter(l => MC_LANG_LABELS[l]);
+  return [menu?.language || 'es'];
+}
+
+function mcPriceMatches(menu, filter) {
+  const price = Number.parseFloat(menu.price);
+  if (filter === 'all') return true;
+  if (filter === 'noprice') return !price;
+  if (!price) return false;
+  if (filter === 'under20') return price <= 20;
+  if (filter === '20-30') return price > 20 && price <= 30;
+  if (filter === '30-45') return price > 30 && price <= 45;
+  if (filter === 'over45') return price > 45;
+  return true;
+}
+
+function mcMenuSearchText(menu) {
+  const sectionText = (menu.sections || []).map(sec => [
+    sec.title, sec.subtitle,
+    ...(sec.dishes || []).map(d => d.name)
+  ].join(' ')).join(' ');
+  return [menu.name, menu.type, menu.occasion, menu.notes, menu.drinks, sectionText, ...(menu.tags || [])].join(' ').toLowerCase();
+}
+
+function mcFindFamilyMenu(menu, lang) {
+  const pid = menu?.parent_id || menu?.id;
+  if (!pid) return null;
+  return (mcMenus || []).find(x => (x.id === pid || x.parent_id === pid) && (x.language || 'es') === lang) || null;
+}
+
+function mcLangDishName(menu, lang, si, di, fallback = '') {
+  const menuLang = menu?.language || 'es';
+  if (lang === menuLang) return fallback;
+  const sibling = mcFindFamilyMenu(menu, lang);
+  const siblingName = sibling?.sections?.[si]?.dishes?.[di]?.name;
+  if (siblingName) return siblingName;
+  const dish = menu?.sections?.[si]?.dishes?.[di];
+  if (lang === 'ca') return dish?.name_ca || '';
+  if (lang === 'en') return dish?.name_en || '';
+  const esMenu = mcFindFamilyMenu(menu, 'es');
+  return esMenu?.sections?.[si]?.dishes?.[di]?.name || fallback;
+}
+
+function mcLangSectionText(menu, lang, si, field, fallback = '') {
+  const menuLang = menu?.language || 'es';
+  if (lang === menuLang) return fallback;
+  const sibling = mcFindFamilyMenu(menu, lang);
+  const siblingText = sibling?.sections?.[si]?.[field];
+  if (siblingText) return siblingText;
+  const sec = menu?.sections?.[si];
+  if (lang === 'ca') return sec?.[field + '_ca'] || '';
+  if (lang === 'en') return sec?.[field + '_en'] || '';
+  const esMenu = mcFindFamilyMenu(menu, 'es');
+  return esMenu?.sections?.[si]?.[field] || fallback;
 }
 
 async function mcLoadMenus() {
@@ -3596,8 +3847,12 @@ function mcRenderLibrary() {
   if (!list) return;
   let filtered = mcMenus;
   if (mcFilterType !== 'all') filtered = filtered.filter(m => m.type === mcFilterType);
+  if (mcFilterPrice !== 'all') filtered = filtered.filter(m => mcPriceMatches(m, mcFilterPrice));
+  if (mcFilterLang !== 'all') filtered = filtered.filter(m => (m.language || 'es') === mcFilterLang);
   const q = $('mc-search')?.value.trim().toLowerCase();
-  if (q) filtered = filtered.filter(m => m.name.toLowerCase().includes(q));
+  if (q) filtered = filtered.filter(m => mcMenuSearchText(m).includes(q));
+  const countEl = $('mc-library-count');
+  if (countEl) countEl.textContent = `${filtered.length} de ${mcMenus.length} menús`;
   if (filtered.length === 0) {
     list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--ink-faint);text-align:center">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
     return;
@@ -3605,10 +3860,11 @@ function mcRenderLibrary() {
   list.innerHTML = filtered.map(m => {
     const vTag = (m.language && m.language !== 'es') ? ` <span class="mc-version-tag">${m.language.toUpperCase()}</span>` : ((m.version||1) > 1 ? ` <span class="mc-version-tag">v${m.version}</span>` : '');
     const badge = `<span class="mc-type-badge ${m.type}">${MC_TYPES[m.type] || m.type}</span>`;
-    const price = m.price ? `${parseFloat(m.price).toFixed(2)}€` : '';
+    const price = m.price ? `${parseFloat(m.price).toFixed(2)}€` : 'Sin precio';
+    const tmpl = MC_TEMPLATES[mcGetTemplate(m)] || '';
     return `<div class="mc-list-item${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}">
       <div class="mc-list-item-name">${esc(m.name)}${vTag}</div>
-      <div class="mc-list-item-meta">${badge}${price ? `<span>${price}</span>` : ''}</div>
+      <div class="mc-list-item-meta">${badge}<span>${price}</span>${tmpl ? `<span>${esc(tmpl)}</span>` : ''}</div>
     </div>`;
   }).join('');
   list.querySelectorAll('.mc-list-item').forEach(el => {
@@ -3635,7 +3891,12 @@ function mcRenderEditor() {
         return `<span class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">${lbl}</span>`;
       }).join('')}</div>` : '';
 
+  const selectedTemplate = mcGetTemplate(m);
+  const selectedLangs = mcGetDisplayLangs(m);
+
   area.innerHTML = `
+    <div class="mc-editor-shell">
+    <div class="mc-form-pane">
     <div class="mc-editor-header">
       <div class="mc-editor-header-main">
         <input class="mc-editor-title-input" id="mc-name-input" value="${esc(m.name || '')}" placeholder="Nombre del menú...">
@@ -3663,6 +3924,22 @@ function mcRenderEditor() {
       <div class="mc-field-label">Condiciones / Notas</div>
       <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
     </div>
+    <div class="mc-control-panel">
+      <div>
+        <div class="mc-field-label">Plantilla de impresión</div>
+        <select class="mc-meta-select" id="mc-template-select" style="width:100%">
+          ${Object.entries(MC_TEMPLATES).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
+        </select>
+        <div class="mc-help-text">Cada tipo de menú puede tener una voz visual distinta sin mezclarlo con el Menú del Día.</div>
+      </div>
+      <div>
+        <div class="mc-field-label">Idiomas visibles</div>
+        <div class="mc-language-toggles">
+          ${Object.entries(MC_LANG_LABELS).map(([k,v]) => `<label class="mc-check-pill"><input class="mc-lang-check" type="checkbox" value="${k}"${selectedLangs.includes(k)?' checked':''}>${v}</label>`).join('')}
+        </div>
+        <div class="mc-help-text">Por defecto se imprime un solo idioma. Marca varios para una versión bilingüe o trilingüe.</div>
+      </div>
+    </div>
     <div class="mc-sections-header">
       <div class="mc-sections-title">Secciones del menú</div>
       <button class="mc-add-section-btn" id="mc-add-section-btn">+ Añadir sección</button>
@@ -3674,15 +3951,6 @@ function mcRenderEditor() {
     </div>
     <div class="mc-pdf-row">
       <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:0.04em;">IDIOMA:</span>
-          <select id="mc-pdf-lang" style="font-family:var(--font-body);font-size:12px;padding:5px 8px;border:1px solid var(--cream);border-radius:var(--radius);background:var(--paper);cursor:pointer;">
-            <option value="es">🇪🇸 Español</option>
-            <option value="ca">🏴 Català</option>
-            <option value="en">🇬🇧 English</option>
-            <option value="multi">🌐 Multilingüe</option>
-          </select>
-        </div>
         <button class="btn btn-pdf-color" id="mc-pdf-color-btn">🎨 PDF Color</button>
         <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
       </div>
@@ -3690,6 +3958,15 @@ function mcRenderEditor() {
         <button class="btn btn-secondary" id="mc-translate-ca-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al catalán">+ Versión CA</button>
         <button class="btn btn-secondary" id="mc-translate-en-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al inglés">+ Versión EN</button>
       </div>
+    </div>
+    </div>
+    <aside class="mc-preview-pane">
+      <div class="mc-preview-toolbar">
+        <div class="mc-preview-title">Vista previa</div>
+        <button class="btn btn-secondary" id="mc-preview-refresh" style="font-size:12px;padding:6px 10px;">Actualizar</button>
+      </div>
+      <div id="mc-live-preview"></div>
+    </aside>
     </div>`;
 
   $('mc-save-btn').addEventListener('click', mcSaveMenu);
@@ -3701,8 +3978,13 @@ function mcRenderEditor() {
     mcCurrentMenu.sections.push({ id: mcUUID(), title: 'Nueva sección', subtitle: '', mode: 'choose_one', dishes: [{ id: mcUUID(), name: '', supplement: null }] });
     mcRefreshSections();
   });
-  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color', $('mc-pdf-lang')?.value || 'es'));
-  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw', $('mc-pdf-lang')?.value || 'es'));
+  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color'));
+  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw'));
+  $('mc-preview-refresh').addEventListener('click', mcUpdatePreview);
+  area.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', mcUpdatePreview);
+    el.addEventListener('change', mcUpdatePreview);
+  });
   $('mc-translate-ca-btn').addEventListener('click', () => mcTranslateAll('ca'));
   $('mc-translate-en-btn').addEventListener('click', () => mcTranslateAll('en'));
   area.querySelectorAll('.mc-version-sibling').forEach(el => {
@@ -3712,6 +3994,7 @@ function mcRenderEditor() {
     });
   });
   mcBindSectionEvents();
+  mcUpdatePreview();
 }
 
 function mcRenderSection(sec, si) {
@@ -3742,7 +4025,14 @@ function mcRenderDish(d, si, di) {
 
 function mcRefreshSections() {
   const c = $('mc-sections-container');
-  if (c) { c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join(''); mcBindSectionEvents(); }
+  if (c) {
+    c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join('');
+    mcBindSectionEvents();
+    c.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('input', mcUpdatePreview);
+      el.addEventListener('change', mcUpdatePreview);
+    });
+  }
 }
 
 function mcGatherSections() {
@@ -3777,6 +4067,7 @@ function mcBindSectionEvents() {
       mcCurrentMenu.sections = mcGatherSections();
       mcCurrentMenu.sections.splice(parseInt(btn.dataset.si), 1);
       mcRefreshSections();
+      mcUpdatePreview();
     });
   });
   c.querySelectorAll('.mc-add-dish-btn').forEach(btn => {
@@ -3789,6 +4080,7 @@ function mcBindSectionEvents() {
         const inputs = c.querySelectorAll(`.mc-section-block[data-si="${si}"] .mc-dish-name-input`);
         if (inputs.length) inputs[inputs.length - 1].focus();
       }, 40);
+      mcUpdatePreview();
     });
   });
   c.querySelectorAll('.mc-dish-remove').forEach(btn => {
@@ -3796,12 +4088,22 @@ function mcBindSectionEvents() {
       mcCurrentMenu.sections = mcGatherSections();
       mcCurrentMenu.sections[parseInt(btn.dataset.si)].dishes.splice(parseInt(btn.dataset.di), 1);
       mcRefreshSections();
+      mcUpdatePreview();
     });
   });
 }
 
+function mcActiveDisplayLangs() {
+  const checked = Array.from(document.querySelectorAll('.mc-lang-check:checked')).map(el => el.value);
+  if (checked.length) return checked;
+  const base = mcCurrentMenu?.language || 'es';
+  const fallback = document.querySelector(`.mc-lang-check[value="${base}"]`) || document.querySelector('.mc-lang-check[value="es"]');
+  if (fallback) fallback.checked = true;
+  return [base];
+}
+
 function mcGatherFromEditor() {
-  return {
+  const gathered = {
     name: $('mc-name-input')?.value.trim() || mcCurrentMenu.name,
     type: $('mc-type-select')?.value || mcCurrentMenu.type,
     price: parseFloat($('mc-price-input')?.value) || null,
@@ -3809,32 +4111,83 @@ function mcGatherFromEditor() {
     min_people: parseInt($('mc-min-people-input')?.value) || null,
     notes: $('mc-notes-input')?.value.trim() || '',
     drinks: $('mc-drinks-input')?.value.trim() || '',
-    sections: mcGatherSections()
+    sections: mcGatherSections(),
+    tags: [...(mcCurrentMenu.tags || [])]
   };
+  mcSetTagValue(gathered, 'template:', $('mc-template-select')?.value || mcGetTemplate(mcCurrentMenu));
+  mcSetTagValue(gathered, 'langs:', mcActiveDisplayLangs().join('-'));
+  return gathered;
 }
 
-async function mcGeneratePDF(colorMode, lang = 'es') {
+function mcRenderPreview(menu, langs, template) {
+  const typeLabel = MC_TYPES[menu.type] || menu.type || '';
+  const price = menu.price ? `${parseFloat(menu.price).toFixed(2)}€` : '';
+  const langNames = langs.map(l => MC_LANG_LABELS[l]).join(' · ');
+  const sections = (menu.sections || []).map((sec, si) => {
+    const title = mcLangSectionText(menu, langs[0], si, 'title', sec.title) || sec.title;
+    const subtitle = mcLangSectionText(menu, langs[0], si, 'subtitle', sec.subtitle) || sec.subtitle || MC_MODES[sec.mode] || '';
+    const dishes = (sec.dishes || []).filter(d => d.name).map((d, di) => {
+      const lines = langs.map((lang, li) => {
+        const name = mcLangDishName(menu, lang, si, di, d.name) || (li === 0 ? d.name : '');
+        return name ? `${li === 0 ? esc(name) : `<small>${esc(name)}</small>`}` : '';
+      }).join('');
+      const supp = d.supplement ? ` <span class="mc-preview-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
+      return `<div class="mc-preview-dish">${lines}${supp}</div>`;
+    }).join('');
+    if (!title && !dishes) return '';
+    return `<div class="mc-preview-section">
+      ${title ? `<div class="mc-preview-section-title">${esc(title)}</div>` : ''}
+      ${subtitle ? `<div class="mc-preview-section-sub">${esc(subtitle)}</div>` : ''}
+      ${dishes}
+    </div>`;
+  }).join('');
+  return `<div class="mc-preview-card template-${template}">
+    <div class="mc-preview-restaurant">Restaurante Sol</div>
+    <div class="mc-preview-name">${esc(menu.name || 'Nuevo menú')}</div>
+    <div class="mc-preview-meta">
+      ${typeLabel ? `<span class="mc-preview-pill">${esc(typeLabel)}</span>` : ''}
+      ${price ? `<span class="mc-preview-pill">${price}</span>` : ''}
+      ${menu.min_people ? `<span class="mc-preview-pill">Mín. ${menu.min_people} personas</span>` : ''}
+      <span class="mc-preview-pill">${esc(langNames)}</span>
+    </div>
+    ${menu.notes ? `<div class="mc-preview-notes">${esc(menu.notes)}</div>` : ''}
+    ${sections || '<div class="mc-preview-notes">Añade secciones y platos para ver la composición.</div>'}
+    ${menu.drinks ? `<div class="mc-preview-drinks"><strong>Bebidas incluidas</strong><br>${esc(menu.drinks)}</div>` : ''}
+  </div>`;
+}
+
+function mcUpdatePreview() {
+  const preview = $('mc-live-preview');
+  if (!preview || !mcCurrentMenu) return;
+  const menu = { ...mcCurrentMenu, ...mcGatherFromEditor() };
+  const template = $('mc-template-select')?.value || mcGetTemplate(menu);
+  const langs = mcActiveDisplayLangs();
+  preview.innerHTML = mcRenderPreview(menu, langs, template);
+}
+
+async function mcGeneratePDF(colorMode) {
   if (!mcCurrentMenu) return;
   if (!window.html2canvas || !window.jspdf) { toast('Error: librerías PDF no cargadas', 'error'); return; }
-  const m = mcGatherFromEditor();
+  const m = { ...mcCurrentMenu, ...mcGatherFromEditor() };
+  const langs = mcActiveDisplayLangs();
+  const primaryLang = langs[0] || (m.language || 'es');
+  const template = $('mc-template-select')?.value || mcGetTemplate(m);
   try {
     toast('Generando PDF…', 'info');
     const tpl = $('mc-pdf-template');
     const pageEl = tpl.querySelector('.mcp-page');
-    tpl.className = colorMode === 'color' ? 'mcp-color' : 'mcp-bw';
+    tpl.className = `${colorMode === 'color' ? 'mcp-color' : 'mcp-bw'} mcp-template-${template}`;
 
     // Header
     $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
     $('mcp-title').textContent = m.name || '';
-    const isMulti = lang === 'multi';
-    const tlLang = isMulti ? 'es' : lang;
     const typeLabelsMap = {
       es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
       ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
       en: { grupos:'For Groups', festivo:'Festive Menu', infantil:"Children's Menu", tapas:'Tapas', degustacion:'Tasting Menu', otro:'' }
     };
     const typeEl = $('mcp-type-label');
-    typeEl.textContent = (typeLabelsMap[tlLang] || typeLabelsMap.es)[m.type] || '';
+    typeEl.textContent = (typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '';
     typeEl.style.display = (m.type && m.type !== 'otro') ? 'block' : 'none';
 
     const priceRow = $('mcp-price-row');
@@ -3857,25 +4210,11 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
       en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
     };
 
-    // For multi mode, look up sibling menus by language
-    let caMenuSections = null, enMenuSections = null;
-    if (isMulti) {
-      const pid = mcCurrentMenu?.parent_id || mcCurrentMenu?.id;
-      const caM = (mcMenus||[]).find(x => (x.id === pid || x.parent_id === pid) && x.language === 'ca');
-      const enM = (mcMenus||[]).find(x => (x.id === pid || x.parent_id === pid) && x.language === 'en');
-      caMenuSections = caM?.sections || null;
-      enMenuSections = enM?.sections || null;
-    }
-
     for (let si = 0; si < (m.sections || []).length; si++) {
       const sec = m.sections[si];
-      const secTitle = tlLang === 'ca' ? (sec.title_ca || sec.title)
-                     : tlLang === 'en' ? (sec.title_en || sec.title)
-                     : sec.title;
-      const secSubBase = tlLang === 'ca' ? (sec.subtitle_ca || sec.subtitle)
-                       : tlLang === 'en' ? (sec.subtitle_en || sec.subtitle)
-                       : sec.subtitle;
-      const sub = secSubBase || (modeLabels[tlLang] || modeLabels.es)[sec.mode] || '';
+      const secTitle = mcLangSectionText(m, primaryLang, si, 'title', sec.title) || sec.title;
+      const secSubBase = mcLangSectionText(m, primaryLang, si, 'subtitle', sec.subtitle) || sec.subtitle;
+      const sub = secSubBase || (modeLabels[primaryLang] || modeLabels.es)[sec.mode] || '';
       bodyHtml += `<div class="mcp-section">
         <div class="mcp-section-header">
           <div class="mcp-section-title">${esc(secTitle)}</div>
@@ -3885,36 +4224,19 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
       let di = 0;
       for (const d of (sec.dishes || [])) {
         if (!d.name) continue;
-        const nameEs = d.name || '';
-        // CA: from sibling menu by position, or inline fallback
-        const nameCa = (caMenuSections?.[si]?.dishes?.[di]?.name) || d.name_ca || '';
-        // EN: from sibling menu by position, or inline fallback
-        const nameEn = (enMenuSections?.[si]?.dishes?.[di]?.name) || d.name_en || '';
-        const displayName = lang === 'ca' ? (nameCa || nameEs)
-                          : lang === 'en' ? (nameEn || nameEs)
-                          : nameEs;
+        const lineHtml = langs.map((displayLang, li) => {
+          const text = mcLangDishName(m, displayLang, si, di, d.name) || (li === 0 ? d.name : '');
+          if (!text) return '';
+          const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
+          return `<span class="${cls}">${esc(text)}</span>`;
+        }).join('');
         const suppHtml = d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
-        if (isMulti) {
-          bodyHtml += `<div class="mcp-dish-row">
-            <span class="mcp-bullet-dot">●</span>
-            <div class="mcp-dish-cell">
-              <span class="mcp-dish">${esc(nameEs)}</span>
-              ${nameCa ? `<span class="mcp-dish-ca">${esc(nameCa)}</span>` : ''}
-              ${nameEn ? `<span class="mcp-dish-en">${esc(nameEn)}</span>` : ''}
-            </div>
-            ${suppHtml}
-            <span class="mcp-bullet-dot">●</span>
-          </div>`;
-        } else {
-          bodyHtml += `<div class="mcp-dish-row">
-            <span class="mcp-bullet-dot">●</span>
-            <div class="mcp-dish-cell">
-              <span class="mcp-dish">${esc(displayName)}</span>
-            </div>
-            ${suppHtml}
-            <span class="mcp-bullet-dot">●</span>
-          </div>`;
-        }
+        bodyHtml += `<div class="mcp-dish-row">
+          <span class="mcp-bullet-dot">●</span>
+          <div class="mcp-dish-cell">${lineHtml}</div>
+          ${suppHtml}
+          <span class="mcp-bullet-dot">●</span>
+        </div>`;
         di++;
       }
       bodyHtml += '</div>';
@@ -3922,7 +4244,7 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
     if (m.drinks) {
       const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
       bodyHtml += `<div class="mcp-drinks-box">
-        <div class="mcp-drinks-label">${drinksLabelMap[isMulti ? 'es' : lang] || 'Bebidas incluidas'}</div>
+        <div class="mcp-drinks-label">${drinksLabelMap[primaryLang] || 'Bebidas incluidas'}</div>
         <div class="mcp-drinks-text">${esc(m.drinks)}</div>
       </div>`;
     }
@@ -3988,7 +4310,7 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
     const pdfUrl = URL.createObjectURL(pdfBlob);
     const w = window.open(pdfUrl, '_blank');
     if (w) { toast('PDF abierto en nueva pestaña', 'success'); setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000); }
-    else { doc.save(`${slug}-${colorMode}-${lang}.pdf`); toast('PDF descargado', 'success'); }
+    else { doc.save(`${slug}-${template}-${colorMode}-${langs.join('-')}.pdf`); toast('PDF descargado', 'success'); }
   } catch (err) {
     console.error('mcGeneratePDF:', err);
     toast('Error al generar PDF: ' + err.message, 'error');
@@ -4114,6 +4436,14 @@ function mcInitTabs() {
     mcRenderLibrary(); mcRenderEditor();
   });
   $('mc-search').addEventListener('input', () => mcRenderLibrary());
+  $('mc-price-filter').addEventListener('change', e => {
+    mcFilterPrice = e.target.value;
+    mcRenderLibrary();
+  });
+  $('mc-lang-filter').addEventListener('change', e => {
+    mcFilterLang = e.target.value;
+    mcRenderLibrary();
+  });
   $('mc-type-filters').addEventListener('click', e => {
     const chip = e.target.closest('.mc-type-chip');
     if (!chip) return;
