@@ -1397,10 +1397,10 @@ kbd {
 }
 .mc-dish-supp-input:focus { border-color: var(--terracotta); }
 .mc-dish-remove {
-  background: none; border: none; color: var(--ink-faint); cursor: pointer;
-  font-size: 14px; padding: 4px; flex-shrink: 0;
+  background: none; border: none; color: #aaa; cursor: pointer;
+  font-size: 15px; padding: 3px 6px; flex-shrink: 0; line-height: 1; border-radius: 3px;
 }
-.mc-dish-remove:hover { color: var(--wine); }
+.mc-dish-remove:hover { color: var(--wine); background: var(--terracotta-light); }
 .mc-add-dish-btn {
   font-family: var(--font-body); font-size: 12px; padding: 5px 10px; background: none;
   border: 1px dashed var(--cream); border-radius: var(--radius); color: var(--ink-faint);
@@ -3603,7 +3603,7 @@ function mcRenderLibrary() {
     return;
   }
   list.innerHTML = filtered.map(m => {
-    const vTag = (m.version || 1) > 1 ? ` <span class="mc-version-tag">v${m.version}</span>` : '';
+    const vTag = (m.language && m.language !== 'es') ? ` <span class="mc-version-tag">${m.language.toUpperCase()}</span>` : ((m.version||1) > 1 ? ` <span class="mc-version-tag">v${m.version}</span>` : '');
     const badge = `<span class="mc-type-badge ${m.type}">${MC_TYPES[m.type] || m.type}</span>`;
     const price = m.price ? `${parseFloat(m.price).toFixed(2)}€` : '';
     return `<div class="mc-list-item${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}">
@@ -3630,8 +3630,10 @@ function mcRenderEditor() {
   const parentId = m.parent_id || m.id;
   const siblings = !m._isNew ? mcMenus.filter(s => s.id === parentId || s.parent_id === parentId) : [];
   const vFamily = siblings.length > 1
-    ? `<div class="mc-version-family">Versiones: ${siblings.map(s =>
-        `<span class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">v${s.version || 1}</span>`).join('')}</div>` : '';
+    ? `<div class="mc-version-family">Versiones: ${siblings.map(s => {
+        const lbl = (s.language && s.language !== 'es') ? s.language.toUpperCase() : (s.language === 'es' ? 'ES' : `v${s.version||1}`);
+        return `<span class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">${lbl}</span>`;
+      }).join('')}</div>` : '';
 
   area.innerHTML = `
     <div class="mc-editor-header">
@@ -3685,8 +3687,8 @@ function mcRenderEditor() {
         <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button class="btn btn-secondary" id="mc-translate-ca-btn" style="font-size:12px;padding:6px 10px;" title="Traducir todos los platos al catalán">CA ✦ Traducir</button>
-        <button class="btn btn-secondary" id="mc-translate-en-btn" style="font-size:12px;padding:6px 10px;" title="Traducir todos los platos al inglés">EN ✦ Traducir</button>
+        <button class="btn btn-secondary" id="mc-translate-ca-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al catalán">+ Versión CA</button>
+        <button class="btn btn-secondary" id="mc-translate-en-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al inglés">+ Versión EN</button>
       </div>
     </div>`;
 
@@ -3731,20 +3733,14 @@ function mcRenderSection(sec, si) {
 
 function mcRenderDish(d, si, di) {
   const suppVal = d.supplement ? `+${d.supplement}€` : '';
-  const hasTranslations = d.name_ca || d.name_en;
   return `<div class="mc-dish-row" data-si="${si}" data-di="${di}">
-    <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-      <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato (ES)..." data-si="${si}" data-di="${di}">
-      <input class="mc-dish-ca-input" value="${esc(d.name_ca||'')}" placeholder="Traducción al català..." data-si="${si}" data-di="${di}" style="font-size:11px;color:#6a5a42;font-style:italic;${hasTranslations ? '' : 'display:none;'}">
-      <input class="mc-dish-en-input" value="${esc(d.name_en||'')}" placeholder="English translation..." data-si="${si}" data-di="${di}" style="font-size:11px;color:#888;font-style:italic;${hasTranslations ? '' : 'display:none;'}">
-    </div>
+    <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato..." data-si="${si}" data-di="${di}" style="flex:1;">
     <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl.€" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50€)" style="width:64px;flex-shrink:0;">
-    <button class="mc-dish-remove" data-si="${si}" data-di="${di}">×</button>
+    <button class="mc-dish-remove" data-si="${si}" data-di="${di}">✕</button>
   </div>`;
 }
 
 function mcRefreshSections() {
-  mcCurrentMenu.sections = mcGatherSections();
   const c = $('mc-sections-container');
   if (c) { c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join(''); mcBindSectionEvents(); }
 }
@@ -3755,10 +3751,9 @@ function mcGatherSections() {
   return Array.from(c.querySelectorAll('.mc-section-block')).map((block, si) => {
     const dishes = Array.from(block.querySelectorAll('.mc-dish-row')).map((row, di) => {
       const name    = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
-      const name_ca = row.querySelector('.mc-dish-ca-input')?.value.trim() || null;
-      const name_en = row.querySelector('.mc-dish-en-input')?.value.trim() || null;
       const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
-      return { id: (mcCurrentMenu.sections?.[si]?.dishes?.[di]?.id || mcUUID()), name, name_ca: name_ca||null, name_en: name_en||null, supplement: parseFloat(suppRaw) || null };
+      const prev = mcCurrentMenu.sections?.[si]?.dishes?.[di];
+      return { id: (prev?.id || mcUUID()), name, name_ca: prev?.name_ca || null, name_en: prev?.name_en || null, supplement: parseFloat(suppRaw) || null };
     });
     return {
       id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
@@ -3861,7 +3856,19 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
       ca: { shared:'(per compartir)', choose_one:'(a triar un)', choose_many:'(a triar diversos)', fixed:'' },
       en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
     };
-    for (const sec of (m.sections || [])) {
+
+    // For multi mode, look up sibling menus by language
+    let caMenuSections = null, enMenuSections = null;
+    if (isMulti) {
+      const pid = mcCurrentMenu?.parent_id || mcCurrentMenu?.id;
+      const caM = (mcMenus||[]).find(x => (x.id === pid || x.parent_id === pid) && x.language === 'ca');
+      const enM = (mcMenus||[]).find(x => (x.id === pid || x.parent_id === pid) && x.language === 'en');
+      caMenuSections = caM?.sections || null;
+      enMenuSections = enM?.sections || null;
+    }
+
+    for (let si = 0; si < (m.sections || []).length; si++) {
+      const sec = m.sections[si];
       const secTitle = tlLang === 'ca' ? (sec.title_ca || sec.title)
                      : tlLang === 'en' ? (sec.title_en || sec.title)
                      : sec.title;
@@ -3875,11 +3882,14 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
           <div class="mcp-section-rule"></div>
           ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
         </div>`;
+      let di = 0;
       for (const d of (sec.dishes || [])) {
         if (!d.name) continue;
         const nameEs = d.name || '';
-        const nameCa = d.name_ca || '';
-        const nameEn = d.name_en || '';
+        // CA: from sibling menu by position, or inline fallback
+        const nameCa = (caMenuSections?.[si]?.dishes?.[di]?.name) || d.name_ca || '';
+        // EN: from sibling menu by position, or inline fallback
+        const nameEn = (enMenuSections?.[si]?.dishes?.[di]?.name) || d.name_en || '';
         const displayName = lang === 'ca' ? (nameCa || nameEs)
                           : lang === 'en' ? (nameEn || nameEs)
                           : nameEs;
@@ -3905,6 +3915,7 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
             <span class="mcp-bullet-dot">●</span>
           </div>`;
         }
+        di++;
       }
       bodyHtml += '</div>';
     }
@@ -3986,57 +3997,63 @@ async function mcGeneratePDF(colorMode, lang = 'es') {
 
 async function mcTranslateAll(targetLang) {
   if (!mcCurrentMenu) return;
-  const sections = mcGatherSections();
-  const totalDishes = sections.reduce((n, s) => n + s.dishes.length, 0);
-  if (!totalDishes) { toast('No hay platos para traducir', 'info'); return; }
+  if (mcCurrentMenu._isNew) { toast('Guarda el menú primero antes de crear una traducción', 'info'); return; }
+
+  const langName = targetLang === 'ca' ? 'catalán' : 'inglés';
+  const parentId = mcCurrentMenu.parent_id || mcCurrentMenu.id;
+  const existing = mcMenus.find(m => (m.id === parentId || m.parent_id === parentId) && m.language === targetLang && m.id !== mcCurrentMenu.id);
+  if (existing && !confirm(`Ya existe una versión en ${langName} ("${existing.name}"). ¿Crear de todas formas una nueva?`)) return;
 
   const caBtn = $('mc-translate-ca-btn');
   const enBtn = $('mc-translate-en-btn');
   if (caBtn) caBtn.disabled = true;
   if (enBtn) enBtn.disabled = true;
-  toast(`Traduciendo ${totalDishes} platos al ${targetLang === 'ca' ? 'catalán' : 'inglés'}…`, 'info');
+  toast(`Creando versión en ${langName}…`, 'info');
 
+  const sections = mcGatherSections();
+  const tr = async (text) => text ? mcTranslateOneDish(text, targetLang).catch(() => text) : text;
+
+  const translatedName       = await tr(mcCurrentMenu.name);
+  const translatedPriceLabel = await tr(mcCurrentMenu.price_label);
+  const translatedNotes      = await tr(mcCurrentMenu.notes);
+  const translatedDrinks     = await tr(mcCurrentMenu.drinks);
+
+  const translatedSections = [];
   let done = 0;
   for (const sec of sections) {
-    if (sec.title) {
-      try {
-        const r = await mcTranslateOneDish(sec.title, targetLang);
-        if (targetLang === 'ca') sec.title_ca = r; else sec.title_en = r;
-      } catch (e) {}
-    }
-    if (sec.subtitle) {
-      try {
-        const r = await mcTranslateOneDish(sec.subtitle, targetLang);
-        if (targetLang === 'ca') sec.subtitle_ca = r; else sec.subtitle_en = r;
-      } catch (e) {}
-    }
+    const tTitle    = await tr(sec.title);
+    const tSubtitle = await tr(sec.subtitle);
+    const tDishes   = [];
     for (const d of sec.dishes) {
       if (!d.name) continue;
-      try {
-        const result = await mcTranslateOneDish(d.name, targetLang);
-        if (targetLang === 'ca') d.name_ca = result;
-        else d.name_en = result;
-      } catch (e) {
-        console.warn('Translation failed for', d.name, e);
-      }
+      tDishes.push({ ...d, name: await tr(d.name), name_ca: null, name_en: null });
       done++;
-      if (done % 3 === 0) toast(`Traduciendo… ${done}/${totalDishes}`, 'info');
+      if (done % 3 === 0) toast(`Traduciendo… ${done} elementos`, 'info');
     }
+    translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, dishes: tDishes });
   }
 
-  // Update DOM inputs
-  const container = $('mc-sections-container');
-  if (container) {
-    container.innerHTML = sections.map((s, i) => mcRenderSection(s, i)).join('');
-    mcBindSectionEvents();
-  }
-  mcCurrentMenu.sections = sections;
+  const newMenu = {
+    id: mcUUID(), name: translatedName,
+    type: mcCurrentMenu.type, occasion: mcCurrentMenu.occasion,
+    price: mcCurrentMenu.price, price_label: translatedPriceLabel,
+    min_people: mcCurrentMenu.min_people, notes: translatedNotes,
+    sections: translatedSections, drinks: translatedDrinks,
+    language: targetLang, parent_id: parentId,
+    version: mcCurrentMenu.version || 1,
+    tags: [...(mcCurrentMenu.tags || [])],
+    created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    _isNew: true
+  };
 
-  // Save to DB
-  await mcSaveMenu();
+  mcCurrentMenu = newMenu;
+  mcCurrentId = newMenu.id;
   if (caBtn) caBtn.disabled = false;
   if (enBtn) enBtn.disabled = false;
-  toast(`Traducción completada (${done} platos)`, 'success');
+  mcRenderEditor();
+  await mcSaveMenu();
+  mcRenderLibrary();
+  toast(`Versión en ${langName} creada — revisa y guarda si es necesario`, 'success');
 }
 
 async function mcTranslateOneDish(text, targetLang) {
@@ -4052,7 +4069,7 @@ async function mcTranslateOneDish(text, targetLang) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text:
-              `Translate this Spanish restaurant dish name to ${langName}. Return only the translated name, no explanation.\n\nDish: ${JSON.stringify(text)}`
+              `Translate the following Spanish restaurant menu text to ${langName}. Return only the translation, no explanation.\n\nText: ${JSON.stringify(text)}`
             }] }],
             generationConfig: { temperature: 0, maxOutputTokens: 128, thinkingConfig: { thinkingBudget: 0 } }
           })
