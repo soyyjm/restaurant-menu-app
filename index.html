@@ -1251,6 +1251,11 @@ kbd {
   border: 1px solid var(--cream); border-radius: var(--radius);
   background: white; color: var(--ink-soft); outline: none;
 }
+.mc-library-tag-filter {
+  grid-column: 1 / -1; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink-soft); outline: none;
+}
 .mc-library-count {
   margin-top: 8px; font-size: 11px; color: var(--ink-faint);
 }
@@ -1277,6 +1282,25 @@ kbd {
 .mc-list-item.active { background: var(--terracotta-light); border-left-color: var(--terracotta); }
 .mc-list-item-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
 .mc-list-item-meta { font-size: 11px; color: var(--ink-faint); display: flex; gap: 8px; align-items: center; }
+.mc-family-item {
+  border-left: 3px solid transparent; border-bottom: 1px solid var(--paper-warm);
+  padding: 10px 12px 10px 13px;
+}
+.mc-family-item.active {
+  background: var(--terracotta-light); border-left-color: var(--terracotta);
+}
+.mc-family-head { cursor: pointer; }
+.mc-family-head:hover .mc-list-item-name { color: var(--terracotta-dark); }
+.mc-family-variants {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
+}
+.mc-variant-chip {
+  font-family: var(--font-body); font-size: 10px; font-weight: 800;
+  padding: 3px 7px; border: 1px solid var(--cream); border-radius: 999px;
+  background: white; color: var(--ink-faint); cursor: pointer;
+}
+.mc-variant-chip:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
+.mc-variant-chip.active { background: var(--terracotta); border-color: var(--terracotta); color: white; }
 .mc-type-badge {
   padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
@@ -1292,6 +1316,14 @@ kbd {
   background: var(--paper-warm); border: 1px solid var(--cream);
   border-radius: 10px; color: var(--ink-faint);
 }
+.mc-status-badge {
+  font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+}
+.mc-status-badge.borrador { background: #f1ece6; color: #6b5c4e; }
+.mc-status-badge.revisar { background: #fff4cf; color: #7a5a00; }
+.mc-status-badge.listo { background: var(--olive-light); color: var(--olive-dark); }
+.mc-status-badge.archivado { background: #ececec; color: #777; }
 .mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 24px 30px 46px; }
 .mc-editor-shell {
   display: grid; grid-template-columns: minmax(520px, 1fr) 360px; gap: 28px; align-items: start;
@@ -1452,6 +1484,29 @@ kbd {
 }
 .mc-check-pill input { accent-color: var(--terracotta); }
 .mc-help-text { font-size: 11px; color: var(--ink-faint); margin-top: 7px; line-height: 1.35; }
+.mc-tag-input {
+  width: 100%; font-family: var(--font-body); font-size: 12px; padding: 7px 9px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: var(--paper); color: var(--ink); outline: none;
+}
+.mc-tag-input:focus { border-color: var(--terracotta); background: white; }
+.mc-qa-panel {
+  margin: 0 0 18px; padding: 11px 13px; border-radius: var(--radius);
+  border: 1px solid var(--cream); background: var(--paper-warm);
+  font-size: 12px; line-height: 1.45; color: var(--ink-soft);
+}
+.mc-qa-panel.ok { background: var(--olive-light); border-color: rgba(90,110,60,0.25); color: var(--olive-dark); }
+.mc-qa-panel.warn { background: #fff8e8; border-color: rgba(184,144,64,0.35); }
+.mc-qa-panel.error { background: var(--wine-light); border-color: rgba(122,46,59,0.28); color: var(--wine); }
+.mc-qa-panel strong { display: block; margin-bottom: 3px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.mc-qa-panel ul { margin: 4px 0 0 16px; }
+.mc-qa-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mc-qa-action {
+  font-family: var(--font-body); font-size: 11px; font-weight: 800; padding: 5px 8px;
+  border: 1px solid var(--cream); border-radius: 999px; background: white;
+  color: var(--ink-soft); cursor: pointer;
+}
+.mc-qa-action:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
 .mc-field-label {
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 6px;
@@ -1477,10 +1532,18 @@ kbd {
   border: 1px solid var(--cream); border-radius: var(--radius-lg);
   margin-bottom: 10px; background: white; overflow: hidden;
 }
+.mc-section-block.collapsed .mc-section-dishes { display: none; }
 .mc-section-head {
   display: flex; align-items: center; gap: 8px;
   padding: 10px 12px; background: var(--paper-warm); border-bottom: 1px solid var(--cream);
 }
+.mc-section-block.collapsed .mc-section-head { border-bottom: none; }
+.mc-section-toggle {
+  width: 24px; height: 24px; border: 1px solid var(--cream); border-radius: 4px;
+  background: white; color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
+  font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.mc-section-toggle:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
 .mc-section-title-input {
   flex: 1; font-family: var(--font-body); font-size: 13px; font-weight: 700;
   background: none; border: none; color: var(--ink); outline: none; min-width: 0;
@@ -1494,6 +1557,13 @@ kbd {
   border: 1px solid var(--cream); border-radius: 4px; background: white;
   color: var(--ink-soft); outline: none; cursor: pointer; flex-shrink: 0;
 }
+.mc-section-tool {
+  font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 4px 7px;
+  border: 1px solid var(--cream); border-radius: 4px; background: white;
+  color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
+}
+.mc-section-tool:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
+.mc-section-tool:disabled { opacity: 0.35; cursor: default; }
 .mc-section-remove {
   background: none; border: none; color: var(--ink-faint); cursor: pointer;
   font-size: 17px; line-height: 1; padding: 2px; flex-shrink: 0;
@@ -1843,6 +1913,14 @@ kbd {
               <option value="ca">Català</option>
               <option value="en">English</option>
             </select>
+            <select class="mc-library-select" id="mc-status-filter">
+              <option value="all">Todos estados</option>
+              <option value="borrador">Borrador</option>
+              <option value="revisar">Revisar</option>
+              <option value="listo">Listo</option>
+              <option value="archivado">Archivado</option>
+            </select>
+            <input class="mc-library-tag-filter" id="mc-tag-filter" type="text" placeholder="Filtrar por etiqueta...">
           </div>
           <div class="mc-type-filters" id="mc-type-filters">
             <button class="mc-type-chip active" data-type="all">Todos</button>
@@ -3654,6 +3732,8 @@ const MC_TEMPLATES = {
   minimal: 'B&N minimal'
 };
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
+const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
+const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:'];
 
 let mcMenus = [];
 let mcCurrentId = null;
@@ -3661,7 +3741,10 @@ let mcCurrentMenu = null;
 let mcFilterType = 'all';
 let mcFilterPrice = 'all';
 let mcFilterLang = 'all';
+let mcFilterStatus = 'all';
+let mcFilterTag = '';
 let mcLoaded = false;
+let mcCollapsedSections = new Set();
 
 function mcUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -3679,6 +3762,26 @@ function mcSetTagValue(menu, prefix, value) {
   const tags = (menu.tags || []).filter(t => !(typeof t === 'string' && t.startsWith(prefix)));
   if (value) tags.push(prefix + value);
   menu.tags = tags;
+}
+
+function mcGetStatus(menu) {
+  const saved = mcTagValue(menu, 'status:', '');
+  return MC_STATUSES[saved] ? saved : 'borrador';
+}
+
+function mcRawTags(menu) {
+  return (menu?.tags || []).filter(t =>
+    typeof t === 'string' &&
+    !MC_SYSTEM_TAG_PREFIXES.some(prefix => t.startsWith(prefix))
+  );
+}
+
+function mcParseRawTags(value) {
+  return (value || '')
+    .split(',')
+    .map(t => t.trim())
+    .filter(Boolean)
+    .filter((t, i, arr) => arr.findIndex(x => x.toLowerCase() === t.toLowerCase()) === i);
 }
 
 function mcGetTemplate(menu) {
@@ -3713,13 +3816,43 @@ function mcMenuSearchText(menu) {
     sec.title, sec.subtitle,
     ...(sec.dishes || []).map(d => d.name)
   ].join(' ')).join(' ');
-  return [menu.name, menu.type, menu.occasion, menu.notes, menu.drinks, sectionText, ...(menu.tags || [])].join(' ').toLowerCase();
+  return [menu.name, menu.type, menu.occasion, menu.notes, menu.drinks, sectionText, mcGetStatus(menu), ...mcRawTags(menu)].join(' ').toLowerCase();
 }
 
 function mcFindFamilyMenu(menu, lang) {
   const pid = menu?.parent_id || menu?.id;
   if (!pid) return null;
   return (mcMenus || []).find(x => (x.id === pid || x.parent_id === pid) && (x.language || 'es') === lang) || null;
+}
+
+function mcFamilyId(menu) {
+  return menu?.parent_id || menu?.id || '';
+}
+
+function mcFamilyMembers(menu) {
+  const fid = mcFamilyId(menu);
+  return (mcMenus || []).filter(m => mcFamilyId(m) === fid);
+}
+
+function mcVariantLabel(menu) {
+  const lang = (menu.language || 'es').toUpperCase();
+  const version = menu.version && menu.version > 1 ? ` v${menu.version}` : '';
+  return `${lang}${version}`;
+}
+
+function mcPickRepresentative(members) {
+  return members.find(m => m.id === mcCurrentId)
+    || members.find(m => (m.language || 'es') === 'es')
+    || members[0];
+}
+
+function mcSelectMenuById(id) {
+  const m = mcMenus.find(x => x.id === id);
+  if (!m) return;
+  mcCurrentMenu = { ...m };
+  mcCurrentId = m.id;
+  mcRenderEditor();
+  mcRenderLibrary();
 }
 
 function mcLangDishName(menu, lang, si, di, fallback = '') {
@@ -3748,6 +3881,84 @@ function mcLangSectionText(menu, lang, si, field, fallback = '') {
   return esMenu?.sections?.[si]?.[field] || fallback;
 }
 
+function mcHasDishTranslation(menu, lang, si, di) {
+  if (lang === (menu?.language || 'es')) return true;
+  const sibling = mcFindFamilyMenu(menu, lang);
+  if (sibling?.sections?.[si]?.dishes?.[di]?.name) return true;
+  const dish = menu?.sections?.[si]?.dishes?.[di];
+  if (lang === 'ca') return !!dish?.name_ca;
+  if (lang === 'en') return !!dish?.name_en;
+  const esMenu = mcFindFamilyMenu(menu, 'es');
+  return !!esMenu?.sections?.[si]?.dishes?.[di]?.name;
+}
+
+function mcHasSectionTranslation(menu, lang, si, field) {
+  if (lang === (menu?.language || 'es')) return true;
+  const sibling = mcFindFamilyMenu(menu, lang);
+  if (sibling?.sections?.[si]?.[field]) return true;
+  const sec = menu?.sections?.[si];
+  if (lang === 'ca') return !!sec?.[field + '_ca'];
+  if (lang === 'en') return !!sec?.[field + '_en'];
+  const esMenu = mcFindFamilyMenu(menu, 'es');
+  return !!esMenu?.sections?.[si]?.[field];
+}
+
+function mcValidateMenu(menu, langs = [menu?.language || 'es']) {
+  const errors = [];
+  const warnings = [];
+  const missing = [];
+  const sections = menu.sections || [];
+  const nonEmptySections = sections.filter(sec => (sec.dishes || []).some(d => d.name));
+  const emptyDishCount = sections.reduce((sum, sec) => sum + (sec.dishes || []).filter(d => !d.name).length, 0);
+
+  if (!menu.name || !menu.name.trim()) errors.push('Falta el nombre del menú.');
+  if (nonEmptySections.length === 0) errors.push('El menú no tiene platos.');
+  if (!menu.price) warnings.push('No tiene precio definido.');
+  if (!menu.drinks || !menu.drinks.trim()) warnings.push('No hay bebidas incluidas o condiciones de bebida.');
+  if (!menu.min_people && menu.type === 'grupos') warnings.push('Es un menú de grupos sin mínimo de personas.');
+  if (emptyDishCount > 0) warnings.push(`Hay ${emptyDishCount} línea(s) de plato vacía(s); se ignorarán al guardar/imprimir.`);
+
+  langs.forEach(lang => {
+    if (!MC_LANG_LABELS[lang]) return;
+    if (lang === (menu.language || 'es')) return;
+    sections.forEach((sec, si) => {
+      if (sec.title && !mcHasSectionTranslation(menu, lang, si, 'title')) {
+        missing.push(`${MC_LANG_LABELS[lang]}: sección "${sec.title}"`);
+      }
+      (sec.dishes || []).forEach((d, di) => {
+        if (d.name && !mcHasDishTranslation(menu, lang, si, di)) {
+          missing.push(`${MC_LANG_LABELS[lang]}: ${d.name}`);
+        }
+      });
+    });
+  });
+
+  if (missing.length > 0) {
+    warnings.push(`Faltan traducciones para ${missing.length} elemento(s).`);
+  }
+
+  return { errors, warnings, missing };
+}
+
+function mcValidationMessage(validation) {
+  const parts = [];
+  if (validation.errors.length) parts.push('Errores:\n- ' + validation.errors.join('\n- '));
+  if (validation.warnings.length) parts.push('Avisos:\n- ' + validation.warnings.join('\n- '));
+  if (validation.missing.length) parts.push('Traducciones pendientes:\n- ' + validation.missing.slice(0, 8).join('\n- ') + (validation.missing.length > 8 ? `\n- ... y ${validation.missing.length - 8} más` : ''));
+  return parts.join('\n\n');
+}
+
+function mcConfirmValidation(action, validation) {
+  if (validation.errors.length) {
+    alert(`No se puede ${action} todavía:\n\n${mcValidationMessage(validation)}`);
+    return false;
+  }
+  if (validation.warnings.length || validation.missing.length) {
+    return confirm(`Antes de ${action}, revisa esto:\n\n${mcValidationMessage(validation)}\n\n¿Continuar igualmente?`);
+  }
+  return true;
+}
+
 async function mcLoadMenus() {
   if (!supabase) return;
   try {
@@ -3765,6 +3976,8 @@ async function mcLoadMenus() {
 async function mcSaveMenu() {
   if (!mcCurrentMenu) return;
   const gathered = mcGatherFromEditor();
+  const validation = mcValidateMenu({ ...mcCurrentMenu, ...gathered }, mcGetDisplayLangs(gathered));
+  if (!mcConfirmValidation('guardar', validation)) return;
   if (gathered.sections) {
     gathered.sections = gathered.sections.map(sec => ({
       ...sec,
@@ -3849,28 +4062,49 @@ function mcRenderLibrary() {
   if (mcFilterType !== 'all') filtered = filtered.filter(m => m.type === mcFilterType);
   if (mcFilterPrice !== 'all') filtered = filtered.filter(m => mcPriceMatches(m, mcFilterPrice));
   if (mcFilterLang !== 'all') filtered = filtered.filter(m => (m.language || 'es') === mcFilterLang);
+  if (mcFilterStatus !== 'all') filtered = filtered.filter(m => mcGetStatus(m) === mcFilterStatus);
+  if (mcFilterTag) filtered = filtered.filter(m => mcRawTags(m).some(t => t.toLowerCase().includes(mcFilterTag)));
   const q = $('mc-search')?.value.trim().toLowerCase();
   if (q) filtered = filtered.filter(m => mcMenuSearchText(m).includes(q));
   const countEl = $('mc-library-count');
-  if (countEl) countEl.textContent = `${filtered.length} de ${mcMenus.length} menús`;
+  const familyMap = new Map();
+  filtered.forEach(m => {
+    const fid = mcFamilyId(m);
+    if (!familyMap.has(fid)) familyMap.set(fid, []);
+    familyMap.get(fid).push(m);
+  });
+  const families = Array.from(familyMap.values()).map(members => members.sort((a, b) => {
+    const langOrder = { es: 0, ca: 1, en: 2 };
+    return (langOrder[a.language || 'es'] ?? 9) - (langOrder[b.language || 'es'] ?? 9)
+      || (a.version || 1) - (b.version || 1);
+  }));
+  if (countEl) countEl.textContent = `${families.length} familias · ${filtered.length} de ${mcMenus.length} menús`;
   if (filtered.length === 0) {
     list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--ink-faint);text-align:center">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
     return;
   }
-  list.innerHTML = filtered.map(m => {
-    const vTag = (m.language && m.language !== 'es') ? ` <span class="mc-version-tag">${m.language.toUpperCase()}</span>` : ((m.version||1) > 1 ? ` <span class="mc-version-tag">v${m.version}</span>` : '');
-    const badge = `<span class="mc-type-badge ${m.type}">${MC_TYPES[m.type] || m.type}</span>`;
-    const price = m.price ? `${parseFloat(m.price).toFixed(2)}€` : 'Sin precio';
-    const tmpl = MC_TEMPLATES[mcGetTemplate(m)] || '';
-    return `<div class="mc-list-item${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}">
-      <div class="mc-list-item-name">${esc(m.name)}${vTag}</div>
-      <div class="mc-list-item-meta">${badge}<span>${price}</span>${tmpl ? `<span>${esc(tmpl)}</span>` : ''}</div>
+  list.innerHTML = families.map(members => {
+    const rep = mcPickRepresentative(members);
+    const familyActive = members.some(m => m.id === mcCurrentId);
+    const badge = `<span class="mc-type-badge ${rep.type}">${MC_TYPES[rep.type] || rep.type}</span>`;
+    const prices = [...new Set(members.map(m => m.price ? `${parseFloat(m.price).toFixed(2)}€` : 'Sin precio'))];
+    const price = prices.length === 1 ? prices[0] : `${prices[0]} +`;
+    const tmpl = MC_TEMPLATES[mcGetTemplate(rep)] || '';
+    const status = mcGetStatus(rep);
+    const rawTags = mcRawTags(rep).slice(0, 2).map(t => `<span>#${esc(t)}</span>`).join('');
+    const variants = members.map(m => `<button class="mc-variant-chip${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}" title="${esc(m.name || '')}">${mcVariantLabel(m)}</button>`).join('');
+    return `<div class="mc-family-item${familyActive ? ' active' : ''}">
+      <div class="mc-family-head" data-id="${rep.id}">
+        <div class="mc-list-item-name">${esc(rep.name || 'Sin nombre')} ${members.length > 1 ? `<span class="mc-version-tag">${members.length} versiones</span>` : ''}</div>
+        <div class="mc-list-item-meta">${badge}<span class="mc-status-badge ${status}">${MC_STATUSES[status]}</span><span>${price}</span>${tmpl ? `<span>${esc(tmpl)}</span>` : ''}${rawTags}</div>
+      </div>
+      <div class="mc-family-variants">${variants}</div>
     </div>`;
   }).join('');
-  list.querySelectorAll('.mc-list-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const m = mcMenus.find(x => x.id === el.dataset.id);
-      if (m) { mcCurrentMenu = { ...m }; mcCurrentId = m.id; mcRenderEditor(); mcRenderLibrary(); }
+  list.querySelectorAll('.mc-family-head, .mc-variant-chip').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      mcSelectMenuById(el.dataset.id);
     });
   });
 }
@@ -3893,6 +4127,8 @@ function mcRenderEditor() {
 
   const selectedTemplate = mcGetTemplate(m);
   const selectedLangs = mcGetDisplayLangs(m);
+  const selectedStatus = mcGetStatus(m);
+  const selectedTags = mcRawTags(m).join(', ');
 
   area.innerHTML = `
     <div class="mc-editor-shell">
@@ -3904,6 +4140,10 @@ function mcRenderEditor() {
           <div class="mc-meta-field"><label>Tipo</label>
             <select class="mc-meta-select" id="mc-type-select">
               ${Object.entries(MC_TYPES).map(([k,v]) => `<option value="${k}"${m.type===k?' selected':''}>${v}</option>`).join('')}
+            </select></div>
+          <div class="mc-meta-field"><label>Estado</label>
+            <select class="mc-meta-select" id="mc-status-select">
+              ${Object.entries(MC_STATUSES).map(([k,v]) => `<option value="${k}"${selectedStatus===k?' selected':''}>${v}</option>`).join('')}
             </select></div>
           <div class="mc-meta-field"><label>Precio</label>
             <input class="mc-meta-input" id="mc-price-input" type="number" step="0.5" min="0" value="${m.price||''}" style="width:72px" placeholder="€"></div>
@@ -3924,6 +4164,10 @@ function mcRenderEditor() {
       <div class="mc-field-label">Condiciones / Notas</div>
       <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
     </div>
+    <div class="mc-notes-row">
+      <div class="mc-field-label">Etiquetas</div>
+      <input class="mc-tag-input" id="mc-tags-input" value="${esc(selectedTags)}" placeholder="Ej: navidad, empresa, sin marisco, 2026">
+    </div>
     <div class="mc-control-panel">
       <div>
         <div class="mc-field-label">Plantilla de impresión</div>
@@ -3940,6 +4184,7 @@ function mcRenderEditor() {
         <div class="mc-help-text">Por defecto se imprime un solo idioma. Marca varios para una versión bilingüe o trilingüe.</div>
       </div>
     </div>
+    <div id="mc-qa-panel"></div>
     <div class="mc-sections-header">
       <div class="mc-sections-title">Secciones del menú</div>
       <button class="mc-add-section-btn" id="mc-add-section-btn">+ Añadir sección</button>
@@ -3998,13 +4243,19 @@ function mcRenderEditor() {
 }
 
 function mcRenderSection(sec, si) {
-  return `<div class="mc-section-block" data-si="${si}">
+  const collapsed = mcCollapsedSections.has(sec.id);
+  return `<div class="mc-section-block${collapsed ? ' collapsed' : ''}" data-si="${si}">
     <div class="mc-section-head">
+      <button class="mc-section-toggle" data-si="${si}" title="${collapsed ? 'Expandir sección' : 'Contraer sección'}">${collapsed ? '▶' : '▼'}</button>
       <input class="mc-section-title-input" value="${esc(sec.title||'')}" placeholder="Nombre de la sección..." data-si="${si}">
       <input class="mc-section-subtitle-input" value="${esc(sec.subtitle||'')}" placeholder="(subtítulo)" data-si="${si}">
       <select class="mc-section-mode-select" data-si="${si}">
         ${Object.entries(MC_MODES).map(([k,v]) => `<option value="${k}"${sec.mode===k?' selected':''}>${v}</option>`).join('')}
       </select>
+      <button class="mc-section-tool mc-section-up" data-si="${si}" title="Subir sección"${si === 0 ? ' disabled' : ''}>↑</button>
+      <button class="mc-section-tool mc-section-down" data-si="${si}" title="Bajar sección">↓</button>
+      <button class="mc-section-tool mc-section-duplicate" data-si="${si}" title="Duplicar sección">Copiar</button>
+      <button class="mc-section-tool mc-section-paste" data-si="${si}" title="Pegar varios platos">Pegar</button>
       <button class="mc-section-remove" data-si="${si}">×</button>
     </div>
     <div class="mc-section-dishes">
@@ -4027,6 +4278,9 @@ function mcRefreshSections() {
   const c = $('mc-sections-container');
   if (c) {
     c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join('');
+    c.querySelectorAll('.mc-section-down').forEach(btn => {
+      btn.disabled = parseInt(btn.dataset.si) >= (mcCurrentMenu.sections || []).length - 1;
+    });
     mcBindSectionEvents();
     c.querySelectorAll('input, select').forEach(el => {
       el.addEventListener('input', mcUpdatePreview);
@@ -4062,6 +4316,64 @@ function mcGatherSections() {
 function mcBindSectionEvents() {
   const c = $('mc-sections-container');
   if (!c) return;
+  c.querySelectorAll('.mc-section-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const si = parseInt(btn.dataset.si);
+      mcCurrentMenu.sections = mcGatherSections();
+      const id = mcCurrentMenu.sections?.[si]?.id;
+      if (!id) return;
+      if (mcCollapsedSections.has(id)) mcCollapsedSections.delete(id);
+      else mcCollapsedSections.add(id);
+      mcRefreshSections();
+    });
+  });
+  c.querySelectorAll('.mc-section-up, .mc-section-down').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const si = parseInt(btn.dataset.si);
+      const delta = btn.classList.contains('mc-section-up') ? -1 : 1;
+      mcCurrentMenu.sections = mcGatherSections();
+      const target = si + delta;
+      if (target < 0 || target >= mcCurrentMenu.sections.length) return;
+      const [section] = mcCurrentMenu.sections.splice(si, 1);
+      mcCurrentMenu.sections.splice(target, 0, section);
+      mcRefreshSections();
+      mcUpdatePreview();
+    });
+  });
+  c.querySelectorAll('.mc-section-duplicate').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const si = parseInt(btn.dataset.si);
+      mcCurrentMenu.sections = mcGatherSections();
+      const copy = JSON.parse(JSON.stringify(mcCurrentMenu.sections[si] || {}));
+      copy.id = mcUUID();
+      copy.title = copy.title ? `${copy.title} copia` : 'Sección copia';
+      copy.dishes = (copy.dishes || []).map(d => ({ ...d, id: mcUUID() }));
+      mcCurrentMenu.sections.splice(si + 1, 0, copy);
+      mcRefreshSections();
+      mcUpdatePreview();
+    });
+  });
+  c.querySelectorAll('.mc-section-paste').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const si = parseInt(btn.dataset.si);
+      const text = prompt('Pega una lista de platos, uno por línea. Puedes añadir suplemento con | +4.50');
+      if (!text) return;
+      const newDishes = text.split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => {
+          const parts = line.split('|').map(p => p.trim());
+          const suppRaw = (parts[1] || '').replace(/^\+/, '').replace('€', '').replace(',', '.').trim();
+          return { id: mcUUID(), name: parts[0], supplement: parseFloat(suppRaw) || null };
+        });
+      if (!newDishes.length) return;
+      mcCurrentMenu.sections = mcGatherSections();
+      mcCurrentMenu.sections[si].dishes = [...(mcCurrentMenu.sections[si].dishes || []), ...newDishes];
+      mcRefreshSections();
+      mcUpdatePreview();
+    });
+  });
   c.querySelectorAll('.mc-section-remove').forEach(btn => {
     btn.addEventListener('click', () => {
       mcCurrentMenu.sections = mcGatherSections();
@@ -4103,6 +4415,7 @@ function mcActiveDisplayLangs() {
 }
 
 function mcGatherFromEditor() {
+  const rawTags = mcParseRawTags($('mc-tags-input')?.value || '');
   const gathered = {
     name: $('mc-name-input')?.value.trim() || mcCurrentMenu.name,
     type: $('mc-type-select')?.value || mcCurrentMenu.type,
@@ -4112,10 +4425,14 @@ function mcGatherFromEditor() {
     notes: $('mc-notes-input')?.value.trim() || '',
     drinks: $('mc-drinks-input')?.value.trim() || '',
     sections: mcGatherSections(),
-    tags: [...(mcCurrentMenu.tags || [])]
+    tags: [
+      ...(mcCurrentMenu.tags || []).filter(t => typeof t === 'string' && MC_SYSTEM_TAG_PREFIXES.some(prefix => t.startsWith(prefix))),
+      ...rawTags
+    ]
   };
   mcSetTagValue(gathered, 'template:', $('mc-template-select')?.value || mcGetTemplate(mcCurrentMenu));
   mcSetTagValue(gathered, 'langs:', mcActiveDisplayLangs().join('-'));
+  mcSetTagValue(gathered, 'status:', $('mc-status-select')?.value || mcGetStatus(mcCurrentMenu));
   return gathered;
 }
 
@@ -4163,6 +4480,39 @@ function mcUpdatePreview() {
   const template = $('mc-template-select')?.value || mcGetTemplate(menu);
   const langs = mcActiveDisplayLangs();
   preview.innerHTML = mcRenderPreview(menu, langs, template);
+  mcRenderQualityPanel(menu, langs);
+}
+
+function mcRenderQualityPanel(menu, langs) {
+  const panel = $('mc-qa-panel');
+  if (!panel) return;
+  const validation = mcValidateMenu(menu, langs);
+  if (!validation.errors.length && !validation.warnings.length && !validation.missing.length) {
+    panel.innerHTML = '<div class="mc-qa-panel ok"><strong>Revisión</strong>Listo para guardar o imprimir.<div class="mc-qa-actions"><button class="mc-qa-action" data-status="listo">Marcar listo</button></div></div>';
+    mcBindQualityActions();
+    return;
+  }
+  const items = [
+    ...validation.errors.map(t => `<li>${esc(t)}</li>`),
+    ...validation.warnings.map(t => `<li>${esc(t)}</li>`),
+    ...validation.missing.slice(0, 5).map(t => `<li>${esc(t)}</li>`)
+  ].join('');
+  const more = validation.missing.length > 5 ? `<li>... y ${validation.missing.length - 5} traducciones más</li>` : '';
+  const cls = validation.errors.length ? 'error' : 'warn';
+  const suggested = validation.missing.length ? '<button class="mc-qa-action" data-status="revisar">Marcar revisar</button>' : '';
+  panel.innerHTML = `<div class="mc-qa-panel ${cls}"><strong>Revisión antes de imprimir</strong><ul>${items}${more}</ul>${suggested ? `<div class="mc-qa-actions">${suggested}</div>` : ''}</div>`;
+  mcBindQualityActions();
+}
+
+function mcBindQualityActions() {
+  document.querySelectorAll('.mc-qa-action[data-status]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const statusSelect = $('mc-status-select');
+      if (!statusSelect) return;
+      statusSelect.value = btn.dataset.status;
+      mcUpdatePreview();
+    });
+  });
 }
 
 async function mcGeneratePDF(colorMode) {
@@ -4172,6 +4522,8 @@ async function mcGeneratePDF(colorMode) {
   const langs = mcActiveDisplayLangs();
   const primaryLang = langs[0] || (m.language || 'es');
   const template = $('mc-template-select')?.value || mcGetTemplate(m);
+  const validation = mcValidateMenu(m, langs);
+  if (!mcConfirmValidation('imprimir/generar PDF', validation)) return;
   try {
     toast('Generando PDF…', 'info');
     const tpl = $('mc-pdf-template');
@@ -4442,6 +4794,14 @@ function mcInitTabs() {
   });
   $('mc-lang-filter').addEventListener('change', e => {
     mcFilterLang = e.target.value;
+    mcRenderLibrary();
+  });
+  $('mc-status-filter').addEventListener('change', e => {
+    mcFilterStatus = e.target.value;
+    mcRenderLibrary();
+  });
+  $('mc-tag-filter').addEventListener('input', e => {
+    mcFilterTag = e.target.value.trim().toLowerCase();
     mcRenderLibrary();
   });
   $('mc-type-filters').addEventListener('click', e => {
