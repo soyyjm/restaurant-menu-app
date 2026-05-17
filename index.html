@@ -2149,6 +2149,15 @@ kbd {
         <button class="btn btn-secondary btn-small" id="testGeminiKey" style="font-size:12px;padding:6px 12px;">🧪 Probar traducción</button>
         <span id="geminiStatus" style="font-size:12px;color:var(--ink-faint);align-self:center;"></span>
       </div>
+      <div class="modal-row" style="margin-top:12px;">
+        <label>Modelo Gemini</label>
+        <select id="geminiModelSelect">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </select>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">Se guarda solo en este dispositivo.</div>
     </div>
 
     <div style="background:var(--paper-warm);padding:14px;border-radius:var(--radius);margin-bottom:20px;border:1px solid var(--cream);">
@@ -2196,6 +2205,8 @@ const HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-0
                   '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26'];
 
 const CATEGORY_LABELS = { primer: 'PRIMER PLATO', segundo: 'SEGUNDO PLATO', postre: 'POSTRES' };
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL_OPTIONS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
 // ==================== STATE ====================
 let supabase, isCloud = false;
@@ -2214,6 +2225,14 @@ let authSubscription = null;
 const $ = id => document.getElementById(id);
 const uid = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
 const SETTINGS_MAP = { psTitleSize: 'titleSize', psTitleAlign: 'titleAlign', psPriceSize: 'priceSize', psSectionSize: 'sectionSize', psMainEs: 'mainEs', psMainCa: 'mainCa', psPostreEs: 'postreEs', psPostreCa: 'postreCa', psSectionMargin: 'sectionMargin', psItemMargin: 'itemMargin' };
+
+function normalizeGeminiModel(value) {
+  return GEMINI_MODEL_OPTIONS.includes(value) ? value : DEFAULT_GEMINI_MODEL;
+}
+
+function getGeminiModel() {
+  return normalizeGeminiModel(localStorage.getItem('gemini_model') || DEFAULT_GEMINI_MODEL);
+}
 
 function toIntInRange(value, fallback, min, max) {
   const n = Number.parseInt(value, 10);
@@ -2443,8 +2462,6 @@ async function deleteFromCloud(id) {
 // 获取 API Key: https://aistudio.google.com/apikey
 // 免费额度: ~500次/天, 15次/分钟 — 餐馆菜单绰绰有余
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
-
 function parseGeminiTranslation(raw) {
   const cleaned = raw
     .replace(/```(?:json)?/gi, '')
@@ -2500,7 +2517,7 @@ async function translateText(text) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent?key=${geminiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -3138,6 +3155,7 @@ function bindEvents() {
     const savedKey = localStorage.getItem('gemini_api_key') || '';
     $('geminiKeyInput').value = savedKey;
     $('geminiStatus').textContent = savedKey ? '✅ Key guardada (solo este dispositivo)' : '⚠️ Sin configurar — usa Google Translate como respaldo';
+    $('geminiModelSelect').value = getGeminiModel();
     $('restaurantPhone').value = localStorage.getItem('v2_restaurantPhone') || '';
     $('restaurantAddress').value = localStorage.getItem('v2_restaurantAddress') || '';
     refreshAuthUI();
@@ -3190,6 +3208,13 @@ function bindEvents() {
       $('geminiStatus').textContent = '⚠️ Key eliminada';
       toast('API Key eliminada', 'info');
     }
+  });
+
+  $('geminiModelSelect').addEventListener('change', () => {
+    const model = normalizeGeminiModel($('geminiModelSelect').value);
+    localStorage.setItem('gemini_model', model);
+    $('geminiModelSelect').value = model;
+    toast('Gemini 模型已切换', 'success');
   });
 
   $('testGeminiKey').addEventListener('click', async () => {
@@ -3370,6 +3395,8 @@ function initSettingsUI() {
     const el = $(inputId);
     if (el) el.value = printSettings[key];
   }
+  const modelEl = $('geminiModelSelect');
+  if (modelEl) modelEl.value = getGeminiModel();
 }
 
 function syncUI(status, msg) {
@@ -4874,7 +4901,7 @@ async function mcTranslateOneDish(text, targetLang) {
     const langCode = targetLang;
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent?key=${geminiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
