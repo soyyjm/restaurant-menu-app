@@ -1350,6 +1350,13 @@ kbd {
 .mc-preview-card.template-fiesta { background: #f5efe3; border-color: rgba(122,46,59,0.25); }
 .mc-preview-card.template-tapas { background: #fffaf4; border-color: rgba(196,101,42,0.30); }
 .mc-preview-card.template-minimal { background: white; border-color: #ddd; }
+.mc-preview-card.template-marinero { background: #fff8ec; border-color: rgba(198,151,63,0.46); box-shadow: 0 8px 0 #083f46; }
+.template-marinero .mc-preview-restaurant { color: #083f46; letter-spacing: 0.16em; }
+.template-marinero .mc-preview-name { color: #073f47; font-size: 34px; }
+.template-marinero .mc-preview-pill { border-color: rgba(198,151,63,0.55); background: white; color: #073f47; }
+.template-marinero .mc-preview-section { border: 1px solid rgba(198,151,63,0.32); border-radius: 12px; padding: 12px 14px; background: rgba(255,255,255,0.62); }
+.template-marinero .mc-preview-section-title { color: #073f47; }
+.template-marinero .mc-preview-dish { font-size: 19px; }
 .mc-preview-restaurant {
   font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
   font-weight: 800; text-align: center; color: var(--ink-faint); margin-bottom: 10px;
@@ -1622,6 +1629,7 @@ kbd {
 .mcp-template-fiesta .mcp-page { padding: 50px 62px 38px; }
 .mcp-template-tapas .mcp-page { padding: 42px 56px 34px; }
 .mcp-template-minimal .mcp-page { padding: 46px 54px 34px; }
+.mcp-template-marinero .mcp-page { padding: 72px 70px 62px; }
 /* ── Color theme ── */
 #mc-pdf-template.mcp-color .mcp-page          { background: #f5f0e6; }
 #mc-pdf-template.mcp-color .mcp-corner        { border-color: rgba(180,140,56,0.55); }
@@ -1672,6 +1680,117 @@ kbd {
 #mc-pdf-template.mcp-bw .mcp-drinks-text   { color: #333; }
 #mc-pdf-template.mcp-bw .mcp-footer-rule   { background: rgba(0,0,0,0.14); }
 #mc-pdf-template.mcp-bw .mcp-footer-text   { color: #999; }
+
+/* ── Marinero premium template ── */
+#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-page {
+  background: linear-gradient(#0a4248 0 31%, #fff7e9 31% 100%);
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-page { background: #fff; }
+.mcp-template-marinero .mcp-page::before {
+  content: ""; position: absolute; inset: 64px 56px 52px; border: 2px solid #cf9b3e;
+  border-radius: 26px; pointer-events: none; z-index: 1;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-page::before { border-color: #111; border-radius: 0; }
+.mcp-template-marinero .mcp-corner { display: none; }
+.mcp-template-marinero .mcp-header-box {
+  position: relative; z-index: 2; display: flex; flex-direction: column; border: 0;
+  padding: 0 24px 22px; margin-bottom: 22px; min-height: 305px;
+}
+.mcp-template-marinero .mcp-restaurant {
+  order: 1; color: #fff1d7; font-size: 16px; letter-spacing: 0.07em; margin: 4px 0 34px;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-restaurant { color: #fff1d7; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-restaurant { color: #666; }
+.mcp-template-marinero .mcp-ornament-row {
+  order: 3; position: relative; height: 48px; margin: -18px auto 10px; width: 78%;
+  opacity: 0.45;
+}
+.mcp-template-marinero .mcp-ornament-line {
+  max-width: none; height: 28px; background: none !important; border-top: 3px solid rgba(239,246,241,0.45);
+  border-radius: 50%; transform: translateY(14px);
+}
+.mcp-template-marinero .mcp-ornament-dot { display: none; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-ornament-line { border-color: rgba(0,0,0,0.34); }
+.mcp-template-marinero .mcp-title {
+  order: 2; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 78px; font-weight: 700;
+  line-height: 0.92; letter-spacing: 0; text-transform: none; color: #fffaf0; margin: 0;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-title { color: #fffaf0; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-title { color: #111; font-size: 64px; }
+.mcp-template-marinero .mcp-notes {
+  order: 4; display: block !important; color: #ffe0ad; font-size: 19px; font-style: normal;
+  margin: 0 0 26px; letter-spacing: 0;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-notes { color: #ffe0ad; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-notes { color: #666; }
+.mcp-template-marinero .mcp-price-row { order: 5; margin: 0 0 18px; }
+.mcp-template-marinero .mcp-price-badge {
+  background: #fffaf2 !important; border: 3px solid #cf9b3e; border-radius: 26px;
+  padding: 16px 58px; box-shadow: 5px 5px 0 #0b0b0b;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-price-badge {
+  border-color: #111; box-shadow: none; background: #fff !important; border-radius: 8px;
+}
+.mcp-template-marinero .mcp-price { color: #073f47 !important; font-size: 38px; letter-spacing: 0.02em; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-price { color: #111 !important; }
+.mcp-template-marinero .mcp-price-label { display: none; }
+.mcp-template-marinero .mcp-type-label {
+  order: 6; display: block !important; color: #8b6630 !important; font-size: 14px;
+  letter-spacing: 0.06em; margin: 6px 0 0;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-type-label { color: #666 !important; }
+.mcp-template-marinero .mcp-body { position: relative; z-index: 2; padding: 0 40px 0; }
+.mcp-template-marinero .mcp-section {
+  position: relative; border: 1.5px solid #ead2a8; background: rgba(255,255,255,0.64);
+  border-radius: 24px; padding: 34px 38px 26px; margin-bottom: 32px;
+  box-shadow: 5px 5px 0 #0b0b0b;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-section {
+  border-color: #999; box-shadow: none; border-radius: 0; background: #fff;
+}
+.mcp-template-marinero .mcp-section-header { margin: -18px 0 12px; }
+.mcp-template-marinero .mcp-section-title {
+  display: inline-block; min-width: 148px; border: 1.5px solid #cf9b3e; border-radius: 12px;
+  padding: 8px 20px; color: #073f47 !important; background: #fffaf2; font-size: 13px;
+  letter-spacing: 0.04em; margin: 0;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-section-title { border-color: #111; color: #111 !important; }
+.mcp-template-marinero .mcp-section-rule { display: none; }
+.mcp-template-marinero .mcp-section-mode { display: none; }
+.mcp-template-marinero .mcp-dish-row { padding: 0; gap: 18px; }
+.mcp-template-marinero .mcp-bullet-dot { color: #c7963d !important; font-size: 13px; }
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-bullet-dot { color: #777 !important; }
+.mcp-template-marinero .mcp-dish {
+  font-size: 38px; font-weight: 700; line-height: 1.04; color: #171717 !important;
+}
+.mcp-template-marinero .mcp-dish-ca {
+  font-size: 25px; font-style: italic; line-height: 1.1; color: #69706e !important;
+}
+.mcp-template-marinero .mcp-marinero-connector {
+  color: #8b6630; font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 25px; font-style: italic; text-align: center; margin: -22px 0 16px;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-marinero-connector { color: #666; }
+.mcp-template-marinero .mcp-drinks-box {
+  border-color: #cf9b3e; border-radius: 18px; padding: 12px 20px; margin-top: -14px;
+  background: rgba(255,255,255,0.42);
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-drinks-box { border-color: #111; border-radius: 0; }
+.mcp-template-marinero .mcp-drinks-label {
+  color: #073f47 !important; font-size: 18px; letter-spacing: 0; text-transform: none;
+}
+.mcp-template-marinero .mcp-drinks-text {
+  font-family: 'DM Sans', sans-serif; color: #69706e !important; font-size: 14px; font-style: normal;
+}
+.mcp-template-marinero .mcp-footer { position: relative; z-index: 2; padding-top: 14px; }
+.mcp-template-marinero .mcp-footer-rule { display: none; }
+.mcp-template-marinero .mcp-footer-text {
+  display: inline-block; background: #073f47; color: #fff7e9 !important; border-radius: 16px;
+  padding: 16px 88px; font-size: 18px; letter-spacing: 0.04em;
+}
+#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-footer-text {
+  background: transparent; color: #111 !important; border-radius: 0; padding: 0;
+}
 /* ── Corner brackets ── */
 .mcp-corner {
   position: absolute; width: 22px; height: 22px; border-style: solid;
@@ -3868,7 +3987,8 @@ const MC_TEMPLATES = {
   grupo: 'Grupo claro',
   fiesta: 'Fiesta elegante',
   tapas: 'Tapas informal',
-  minimal: 'B&N minimal'
+  minimal: 'B&N minimal',
+  marinero: 'Marinero premium'
 };
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
@@ -4582,12 +4702,13 @@ function mcGatherFromEditor() {
 }
 
 function mcRenderPreview(menu, langs, template) {
+  const isMarineroPreview = template === 'marinero';
   const typeLabel = MC_TYPES[menu.type] || menu.type || '';
   const price = menu.price ? `${parseFloat(menu.price).toFixed(2)}€` : '';
   const langNames = langs.map(l => MC_LANG_LABELS[l]).join(' · ');
   const sections = (menu.sections || []).map((sec, si) => {
     const title = mcLangSectionText(menu, langs[0], si, 'title', sec.title) || sec.title;
-    const subtitle = mcLangSectionText(menu, langs[0], si, 'subtitle', sec.subtitle) || sec.subtitle || MC_MODES[sec.mode] || '';
+    const subtitle = mcLangSectionText(menu, langs[0], si, 'subtitle', sec.subtitle) || sec.subtitle || (isMarineroPreview ? '' : MC_MODES[sec.mode]) || '';
     const dishes = (sec.dishes || []).filter(d => d.name).map((d, di) => {
       const lines = langs.map((lang, li) => {
         const name = mcLangDishName(menu, lang, si, di, d.name) || (li === 0 ? d.name : '');
@@ -4614,7 +4735,7 @@ function mcRenderPreview(menu, langs, template) {
     </div>
     ${menu.notes ? `<div class="mc-preview-notes">${esc(menu.notes)}</div>` : ''}
     ${sections || '<div class="mc-preview-notes">Añade secciones y platos para ver la composición.</div>'}
-    ${menu.drinks ? `<div class="mc-preview-drinks"><strong>Bebidas incluidas</strong><br>${esc(menu.drinks)}</div>` : ''}
+    ${menu.drinks ? `<div class="mc-preview-drinks"><strong>${isMarineroPreview ? esc(menu.drinks.split('\n')[0] || '') : 'Bebidas incluidas'}</strong><br>${esc(isMarineroPreview ? menu.drinks.split('\n').slice(1).join('\n') : menu.drinks)}</div>` : ''}
   </div>`;
 }
 
@@ -4667,6 +4788,7 @@ async function mcGeneratePDF(colorMode) {
   const langs = mcActiveDisplayLangs();
   const primaryLang = langs[0] || (m.language || 'es');
   const template = $('mc-template-select')?.value || mcGetTemplate(m);
+  const isMarineroTemplate = template === 'marinero';
   const validation = mcValidateMenu(m, langs);
   if (!mcConfirmValidation('imprimir/generar PDF', validation)) return;
   try {
@@ -4684,12 +4806,15 @@ async function mcGeneratePDF(colorMode) {
       en: { grupos:'For Groups', festivo:'Festive Menu', infantil:"Children's Menu", tapas:'Tapas', degustacion:'Tasting Menu', otro:'' }
     };
     const typeEl = $('mcp-type-label');
-    typeEl.textContent = (typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '';
-    typeEl.style.display = (m.type && m.type !== 'otro') ? 'block' : 'none';
+    typeEl.textContent = isMarineroTemplate
+      ? (m.occasion || 'Entrante + Principal + Postre')
+      : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
+    typeEl.style.display = (isMarineroTemplate || (m.type && m.type !== 'otro')) ? 'block' : 'none';
 
     const priceRow = $('mcp-price-row');
     if (m.price) {
-      $('mcp-price').textContent = parseFloat(m.price).toFixed(2) + '€';
+      const priceText = parseFloat(m.price).toFixed(2);
+      $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
       $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
       priceRow.style.display = 'flex';
     } else {
@@ -4737,18 +4862,23 @@ async function mcGeneratePDF(colorMode) {
         di++;
       }
       bodyHtml += '</div>';
+      if (isMarineroTemplate && secSubBase) {
+        bodyHtml += `<div class="mcp-marinero-connector">${esc(secSubBase)}</div>`;
+      }
     }
     if (m.drinks) {
       const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
       bodyHtml += `<div class="mcp-drinks-box">
-        <div class="mcp-drinks-label">${drinksLabelMap[primaryLang] || 'Bebidas incluidas'}</div>
-        <div class="mcp-drinks-text">${esc(m.drinks)}</div>
+        <div class="mcp-drinks-label">${isMarineroTemplate ? esc(m.drinks.split('\n')[0] || '') : (drinksLabelMap[primaryLang] || 'Bebidas incluidas')}</div>
+        <div class="mcp-drinks-text">${esc(isMarineroTemplate ? m.drinks.split('\n').slice(1).join('\n') : m.drinks)}</div>
       </div>`;
     }
     $('mcp-body').innerHTML = bodyHtml;
 
     // Footer note
-    $('mcp-footer-text').textContent = m.min_people
+    $('mcp-footer-text').textContent = isMarineroTemplate
+      ? 'HORARIO DE MENÚ · 13:00 - 16:00'
+      : m.min_people
       ? `Mínimo ${m.min_people} personas · Restaurante Sol`
       : 'Restaurante Sol · Barcelona';
 
@@ -4767,7 +4897,7 @@ async function mcGeneratePDF(colorMode) {
     const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
     const allDishEls = Array.from(bodyEl.querySelectorAll('.mcp-dish-row'));
 
-    if (bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
+    if (!isMarineroTemplate && bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
       let occupiedH = 0;
       allSecEls.forEach((sec, i) => {
         occupiedH += sec.offsetHeight;
