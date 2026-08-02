@@ -2614,8 +2614,9 @@ function parseGeminiTranslation(raw) {
   const caMatch = cleaned.match(/(?:^|\n)\s*(?:CA|Català|Catalan)\s*[:\-]\s*(.+)$/im);
   if (caMatch?.[1]) return { catalan: caMatch[1].trim(), correctedSpanish: esMatch?.[1]?.trim() || '' };
 
-  const singleLine = cleaned.split('\n').map(l => l.replace(/^(?:ES|CA)\s*[:\-]\s*/i, '').trim()).filter(Boolean)[0];
-  return singleLine ? { catalan: singleLine, correctedSpanish: '' } : null;
+  // Structured output is required for the Gemini path. Do not treat prose such
+  // as "Here is JSON requested" as a Catalan translation.
+  return null;
 }
 
 function getGeminiText(candidate) {
@@ -2665,6 +2666,7 @@ async function translateText(text) {
                   text: `You are a Spanish-to-Catalan translator for a restaurant menu.
 First correct spelling errors and missing accents in the Spanish dish name, then translate it to Catalan.
 The dish name may have had a price supplement removed before translation. Do not invent, remove, or translate price supplements.
+The response must contain only the JSON object. Never add an introduction such as "Here is JSON requested".
 Return valid JSON only, with no markdown and no explanation:
 {"es":"corrected Spanish","ca":"Catalan translation"}
 
