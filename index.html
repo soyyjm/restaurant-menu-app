@@ -2271,8 +2271,8 @@ kbd {
       <div class="modal-row" style="margin-top:12px;">
         <label>Modelo Gemini</label>
         <select id="geminiModelSelect">
-          <option value="gemini-3.5-flash">Gemini 3.5 Flash (recomendado)</option>
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (recomendado)</option>
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash (prueba)</option>
           <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
         </select>
       </div>
@@ -2324,13 +2324,22 @@ const HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-0
                   '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26'];
 
 const CATEGORY_LABELS = { primer: 'PRIMER PLATO', segundo: 'SEGUNDO PLATO', postre: 'POSTRES' };
-const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
-const GEMINI_MODEL_OPTIONS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL_OPTIONS = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-2.5-flash-lite'];
+const GEMINI_MODEL_MIGRATION_KEY = 'gemini_model_migration_20260803';
 const GEMINI_TRANSLATION_SCHEMA = {
+  type: 'object',
+  properties: {
+    es: { type: 'string', description: 'Corrected Spanish dish name, preserving valid text when no correction is needed.' },
+    ca: { type: 'string', description: 'Catalan translation of the corrected Spanish dish name.' }
+  },
+  required: ['es', 'ca']
+};
+const GEMINI_TRANSLATION_LEGACY_SCHEMA = {
   type: 'OBJECT',
   properties: {
-    es: { type: 'STRING', description: 'Corrected Spanish dish name, preserving valid text when no correction is needed.' },
-    ca: { type: 'STRING', description: 'Catalan translation of the corrected Spanish dish name.' }
+    es: { type: 'STRING' },
+    ca: { type: 'STRING' }
   },
   required: ['es', 'ca'],
   propertyOrdering: ['es', 'ca']
@@ -2359,7 +2368,14 @@ function normalizeGeminiModel(value) {
 }
 
 function getGeminiModel() {
-  const saved = localStorage.getItem('gemini_model');
+  let saved = localStorage.getItem('gemini_model');
+  // The previous release stored 3.5 as the default before its request format
+  // was verified. Move that implicit choice back to the stable 2.5 model once.
+  if (!localStorage.getItem(GEMINI_MODEL_MIGRATION_KEY)) {
+    if (!saved || saved === 'gemini-3.5-flash') saved = DEFAULT_GEMINI_MODEL;
+    localStorage.setItem('gemini_model', saved);
+    localStorage.setItem(GEMINI_MODEL_MIGRATION_KEY, '1');
+  }
   const model = normalizeGeminiModel(saved || DEFAULT_GEMINI_MODEL);
   if (saved !== model) localStorage.setItem('gemini_model', model);
   return model;
@@ -2587,7 +2603,7 @@ async function deleteFromCloud(id) {
 }
 
 // ==================== TRANSLATION ====================
-// Gemini 3.5 Flash — stable model with structured output for menu correction
+// Gemini 2.5 Flash — stable default with structured output for menu correction
 // Fallback: Google Translate non-official → Local dictionary
 //
 // 获取 API Key: https://aistudio.google.com/apikey
@@ -2626,6 +2642,10 @@ function getGeminiText(candidate) {
   return textParts.map(part => part.text.trim()).join('\n').trim();
 }
 
+function summarizeGeminiError(error) {
+  return String(error || 'respuesta no válida').replace(/\s+/g, ' ').trim().slice(0, 160);
+}
+
 function splitSupplementSuffix(text) {
   const trimmed = text.trim();
   const match = trimmed.match(/\s*(\(?\+\s*\d+(?:[.,]\d{1,2})?\s*€\)?)\s*$/);
@@ -2652,32 +2672,47 @@ async function translateText(text) {
 
   // Method 1: Gemini structured output (correction + translation)
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
+  let geminiFailure = '';
   if (geminiKey) {
+    const model = getGeminiModel();
     for (let attempt = 0; attempt < 2; attempt++) {
+      const generationConfig = attempt === 0
+        ? {
+            maxOutputTokens: 256,
+            responseFormat: {
+              text: {
+                mimeType: 'application/json',
+                schema: GEMINI_TRANSLATION_SCHEMA
+              }
+            }
+          }
+        : {
+            // Compatibility retry for older generateContent deployments.
+            maxOutputTokens: 256,
+            responseMimeType: 'application/json',
+            responseSchema: GEMINI_TRANSLATION_LEGACY_SCHEMA
+          };
       try {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent?key=${geminiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               contents: [{
                 parts: [{
-                  text: `You are a Spanish-to-Catalan translator for a restaurant menu.
-First correct spelling errors and missing accents in the Spanish dish name, then translate it to Catalan.
+                  text: `You are a Spanish-to-Catalan translator and Spanish proofreader for a restaurant menu.
+Proofread the Spanish dish name word by word before translating it. Correct clear spelling mistakes and missing accents, but do not change valid culinary names or the meaning.
+Always return the corrected Spanish in "es", even when it is unchanged. For example, "Jamon con patats fritas" must become "Jamón con patatas fritas".
+Then translate that corrected Spanish into Catalan in "ca".
 The dish name may have had a price supplement removed before translation. Do not invent, remove, or translate price supplements.
-The response must contain only the JSON object. Never add an introduction such as "Here is JSON requested".
-Return valid JSON only, with no markdown and no explanation:
+Return exactly one JSON object with these two string fields and no introduction, markdown, or explanation:
 {"es":"corrected Spanish","ca":"Catalan translation"}
 
 Dish name: ${JSON.stringify(textToTranslate)}`
                 }]
               }],
-              generationConfig: {
-                maxOutputTokens: 256,
-                responseMimeType: 'application/json',
-                responseSchema: GEMINI_TRANSLATION_SCHEMA
-              }
+              generationConfig
             })
           }
         );
@@ -2694,20 +2729,22 @@ Dish name: ${JSON.stringify(textToTranslate)}`
                 provider: 'gemini'
               };
             }
+            geminiFailure = 'respuesta no válida (se esperaba JSON con es y ca)';
             console.warn(`Gemini attempt ${attempt + 1}: unexpected format "${raw}" for "${textToTranslate}"`);
             continue;
           }
+          geminiFailure = 'respuesta vacía de Gemini';
         } else {
           const err = await res.json().catch(() => ({}));
+          geminiFailure = `HTTP ${res.status}: ${err.error?.message || 'error de Gemini'}`;
           console.warn('Gemini error:', res.status, err.error?.message);
           if (res.status === 403 || res.status === 401) {
             toast('API Key de Gemini inválida — ve a Ajustes ⚙️', 'error');
           }
-          break;
         }
       } catch(e) {
+        geminiFailure = e.message || 'fallo de red';
         console.warn('Gemini request failed:', e);
-        break;
       }
     }
   }
@@ -2720,7 +2757,7 @@ Dish name: ${JSON.stringify(textToTranslate)}`
       const data = await res.json();
       if (data?.[0]?.[0]?.[0]) {
         const catalan = data[0].map(s => s[0]).join('').replace(' ,', ',').replace(' .', '.');
-        return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '', provider: 'google' };
+        return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '', provider: 'google', fallbackReason: geminiFailure };
       }
     }
   } catch(e) {
@@ -2734,7 +2771,7 @@ Dish name: ${JSON.stringify(textToTranslate)}`
     'frito':'fregit','asado':'rostit','horno':'forn','plancha':'planxa','salsa':'salsa',
     'crema':'crema','tarta':'pastís','helado':'gelat','fruta':'fruita','pan':'pa' };
   const catalan = textToTranslate.split(' ').map(w => dict[w.toLowerCase()] || w).join(' ');
-  return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '', provider: 'local' };
+  return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '', provider: 'local', fallbackReason: geminiFailure };
 }
 
 async function doTranslate() {
@@ -2756,7 +2793,8 @@ async function doTranslate() {
     } else if (result.provider === 'gemini') {
       toast('Traducido con Gemini', 'success');
     } else if (result.provider === 'google') {
-      toast('Gemini no respondió — traducción normal, sin corrección', 'info');
+      const detail = result.fallbackReason ? ` (${summarizeGeminiError(result.fallbackReason)})` : '';
+      toast(`Gemini falló${detail} — traducción normal, sin corrección`, 'info');
     } else {
       toast('Traducción local — sin corrección', 'info');
     }
@@ -3374,8 +3412,9 @@ function bindEvents() {
         $('geminiStatus').textContent = `✅ ${getGeminiModel()}: "${corrected}${result.catalan}"`;
         toast('¡Traducción exitosa!', 'success');
       } else if (result?.catalan) {
-        $('geminiStatus').textContent = '⚠️ Gemini no respondió — se usó traducción normal';
-        toast('Gemini no respondió; revisa el modelo o la API Key', 'info');
+        const detail = result.fallbackReason ? `: ${summarizeGeminiError(result.fallbackReason)}` : '';
+        $('geminiStatus').textContent = `⚠️ Gemini falló${detail} — se usó traducción normal`;
+        toast('Gemini falló; revisa el detalle mostrado', 'info');
       } else {
         $('geminiStatus').textContent = '⚠️ Respuesta vacía — revisa la key';
         if (oldKey) localStorage.setItem('gemini_api_key', oldKey);
