@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Importar Menús Cerrados</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: monospace; padding: 30px; background: #1a1a1a; color: #eee; max-width: 800px; }
+    h1 { color: #c8a06e; margin-bottom: 4px; }
+    p { color: #aaa; margin: 0 0 20px; font-size: 13px; }
+    #log { white-space: pre; line-height: 1.8; font-size: 14px; }
+    .ok  { color: #66bb6a; }
+    .err { color: #ef5350; }
+    button { background: #c8a06e; color: #fff; border: none; padding: 12px 28px;
+             font-size: 15px; cursor: pointer; border-radius: 6px; margin-bottom: 24px; }
+    button:hover:not(:disabled) { background: #b08050; }
+    button:disabled { opacity: 0.4; cursor: default; }
+  </style>
+</head>
+<body>
+  <h1>Importar Menús Cerrados</h1>
+  <p>Inserta los 19 menús del directorio <code>menu cerrado/</code> en Supabase. Abre la consola para ver errores detallados.</p>
+  <button id="btn" onclick="run()">Importar todos los menús (19)</button>
+  <div id="log"></div>
+
+<script>
+const { createClient } = window.supabase;
+const client = createClient(
+  'https://nkteqmgslcrqiglzcsyv.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0'
+);
+
+function uid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function sec(title, mode, dishes, subtitle = '') {
+  return {
+    id: uid(), title, subtitle, mode,
+    dishes: dishes.map(d => ({
+      id: uid(),
+      name: typeof d === 'string' ? d : d.name,
+      supplement: (typeof d === 'object' && d.supplement) ? d.supplement : null
+    }))
+  };
+}
+
+const menus = [
+
+  // 1 ─ MENÚ CERRADO PARA GRUPOS 28.5.pdf
+  {
+    name: 'Menú Cerrado Grupos – 29.50€',
+    type: 'grupos', price: 29.50, min_people: 10,
+    notes: 'Disponible para grupos a partir de 10 personas',
+    drinks: 'Una botella de vino (blanco verdejo, tinto rioja) por cada 4 personas · O Agua y refrescos · Cerveza',
+    sections: [
+      sec('Entrantes para Compartir', 'shared', [
+        'Patatas bravas estilo Sol',
+        'Calamares a la andaluza con mayonesa de lima',
+        'Tequeños',
+        'Burrata sobre tartar de tomate con pipas y aceite de albahaca'
+      ], 'Los entrantes se sirven al centro para compartir'),
+      sec('Plato Principal', 'choose_one', [
+        'Bacalao al horno con muselina de ajo y patatas panaderas',
+        'Costillas de cabrito a la milanesa con patatas fritas y pimientos del padrón',
+        'Lomo alto de vaca a la parrilla con patata gajo y verduras de temporada',
+        'Pluma de cerdo ibérico al reducción de Oporto con Espárragos verdes salteados'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Coulant de chocolate con helado de vainilla',
+        'Bola de helado',
+        'Tiramisú casero'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 2 ─ MENÚ DE NAVIDAD 2025（2）.pdf
+  {
+    name: 'Menú de Navidad 2025',
+    type: 'festivo', occasion: 'navidad', price: 51.00,
+    notes: 'Precio por persona: 51.00€ (IVA incluido)',
+    drinks: 'Vino blanco o tinto D.O. Cataluña · Agua mineral y refrescos',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Tabla de embutidos cocido gallego con tosta de pan',
+        'Raviolis Crujientes de Rabo de Toro con su Reducción',
+        'Ensaladilla rusa tradicional con ventresca de atún',
+        'Pan de Coca de Folgueroles con Tomate y Aceite de Oliva Virgen Extra'
+      ], 'Para compartir'),
+      sec('Primer Plato', 'choose_one', [
+        'Timbal de verduras asadas con queso de cabra y salsa romesco',
+        "Escudella i carn d'olla tradicional de Navidad",
+        'Gran Canelón de Marisco con Bechamel Trufada',
+        'Concha de Vieira con Marisco y gamba Gratinada al Cava'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Confit de Pato con Salsa de Naranja y Gratén de Patata',
+        'Cochinillo Asado a Baja Temperatura con Compota de Manzana y Patatas Panaderas',
+        'Arroz del Senyoret con Bogavante (Caldereta)',
+        'Lomo de Bacalao Confitado con Muselina de Ajo Suave sobre Espinacas a la Catalana'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Tronco de navidad',
+        'Nuestra Tarta de Queso Casera al Horno con Crema de Pistacho',
+        'Brownie de Chocolate y Nueces con Helado de Turrón de Jijona'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 3 ─ Menu sol 25,5.pdf  (Degustación v1 – Crema de Verduras)
+  {
+    name: 'Menú Degustación 25.50€',
+    type: 'degustacion', price: 25.50,
+    drinks: 'Incluído la bebida (una botella de vino para 4) y el postre',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Nuestras Patatas Bravas con Alioli Suave y Salsa Brava Casera'
+      ]),
+      sec('Primer Plato', 'choose_one', [
+        'Ensalada de Queso de Cabra Gratinado, Bouquet de Frutos Secos y mermelada de tomate',
+        'Canelones Tradicionales con Fina Bechamel',
+        'Crema de Verduras de Temporada con Picatostes y Virutas de Jamón',
+        'Langostinos en Tempura con Salsa Agridulce',
+        { name: 'Pulpo a la parrilla con parmentier de patatas', supplement: 4.50 }
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Bacalao a la Muselina de Ajo con Patatas Panaderas',
+        'Costillas de Cordero a la Brasa con Patatas Fritas Caseras y Pimientos del Padrón',
+        'Arroz del "Senyoret" (Todo Marisco Pelado) Hecho al Momento',
+        'Lomo Alto de Vaca a la Parrilla con patata gajo y Verduras de Temporada',
+        { name: 'Chuletón de ternera 350 g con su guarnición', supplement: 5.50 }
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 4 ─ tapas menu 11.pdf
+  {
+    name: 'Tapas – 11€',
+    type: 'tapas', price: 11.00,
+    drinks: '1 bebida por persona',
+    sections: [
+      sec('Tapas', 'fixed', [
+        'Patatas bravas',
+        'Lágrimas de pollo',
+        'Surtido de embutidos ibéricos y queso',
+        'Calamares a la andaluza',
+        'Croquetas cocido'
+      ])
+    ]
+  },
+
+  // 5 ─ 👑 Menú de Reyes 2026 👑.pdf
+  {
+    name: 'Menú Especial Día de Reyes 2026',
+    type: 'festivo', occasion: 'reyes', price: 39.00,
+    drinks: 'Agua, Refresco o Cerveza · Vino blanco verdejo o tinto rioja (por cada 4 personas)',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Frituras de pescado',
+        'Surtido de Croquetas'
+      ], 'Para compartir'),
+      sec('Primer Plato', 'choose_one', [
+        'Ensalada Gourmet de Queso de Cabra, Mango y Nueces con Mermelada de Tomate Casera',
+        'Canelón de Carnes Gratinado con una Suave Bechamel Trufada',
+        'Pulpo a la Parrilla sobre Cremoso Parmentier de Patatas y Pimentón de la Vera',
+        'Buñuelos de mariscos con salsa de romesco casero'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Paletilla de Cordero al Horno con Finas Hierbas y Patatas Panaderas',
+        'Lomo de Merluza a la Plancha con Wok de Verduras de Temporada y Salsa de Pescado',
+        'Paella del Senyoret con Vieiras',
+        'Chuletón de Ternera a la Brasa (350g) con Guarnición del Chef'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Sorbete de Limón',
+        'Tarta Clásica de Zanahoria',
+        'Coulant de turón',
+        'El Tradicional Roscón de Reyes'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 6 ─ Menu cerrado 18-2.pdf
+  {
+    name: 'Menú Cerrado Grupos – 19€',
+    type: 'grupos', price: 19.00,
+    sections: [
+      sec('Primer Plato', 'choose_one', [
+        'Ensalada con queso de cabra, frutos secos y mermelada de tomate',
+        'Torta de mariscos con salsa de romescos casero',
+        'Canelones de carne gratinados con bechamel trufado',
+        'Gazpacho de andaluz con picatostes y picado de pimientos'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Bacalao a la muselina de ajos con patatas panaderas',
+        'Paella de mariscos hecha al momento',
+        'Entrecot de girona a la parrilla con su guarnición',
+        'Secreto de cerdo ibérico con puré de patatas y salsa pimienta'
+      ], 'A elegir uno'),
+      sec('Postres', 'fixed', [
+        'Tarta de queso',
+        'Crema catalana',
+        'Helado',
+        'Frutas',
+        'Tiramisú'
+      ])
+    ]
+  },
+
+  // 7 ─ AÑO NUEVO 2026改版.pdf
+  {
+    name: 'Menú Año Nuevo 2026',
+    type: 'festivo', occasion: 'año nuevo', price: 51.00,
+    notes: '1 de Enero de 2026 · Precio por persona: 51.00€ (IVA incluido)',
+    drinks: 'Vino blanco verdejo o tinto rioja (para 4 personas)',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Tabla de Embutidos Selectos de Galicia con tosta de pan',
+        'Croquetas cremosas de chuletón',
+        'Morcilla de burgos con pimientos piquillo',
+        'Pan de coca con tomate, aceite de oliva virgen extra y anchoas del Cantábrico'
+      ], 'Para compartir'),
+      sec('Primer Plato', 'choose_one', [
+        'Burrata con tomates cherry confitados, rúcula, piñones y salsa pesto',
+        'Gran crema de mariscos del cantábrico con sus trocitos',
+        'Tartar de atún rojo con aguacate, mango y vinagreta de cítricos',
+        'Lasaña de cochinillo con bechamel trufada'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Pierna de cabrito a baja temperatura con parmentier de boniato',
+        'Lomo de rodaballo al horno con verduras y refrito de ajo',
+        'Arroz caldoso de bogavante y pulpo con toque de azafrán',
+        'Solomillo de ternera con foie, salsa de oporto y patatas gratinadas'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Tiramisú Casero al estilo tradicional',
+        'Torrija de Brioche caramelizada',
+        'Coulant de Pistacho con corazón fundente',
+        'Helado de té verde'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 8 ─ MENÚ INFANTIL DE NAVIDAD.pdf
+  {
+    name: 'Menú Infantil de Navidad 2025',
+    type: 'infantil', occasion: 'navidad', price: 20.00,
+    notes: 'Precio IVA incluido',
+    drinks: '1 bebida incluida · Agua Mineral o Refresco',
+    sections: [
+      sec('Primer Plato', 'choose_one', [
+        'Sopa de Galets Tradicional de Navidad',
+        'Macarrones de "L\'Àvia" con Tomate y Carne'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Milanesa de Pollo Crujiente con Patatas Fritas',
+        'Mini hamburguesa casera con patatas fritas'
+      ], 'A elegir uno · Todos acompañados de patatas fritas'),
+      sec('Postre', 'choose_one', [
+        'Coulant de Chocolate con Helado de Vainilla',
+        'Bola de Helado'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 9 ─ MENÚ INFANTIL DE Reyes.pdf
+  {
+    name: 'Menú Infantil de Reyes 2026',
+    type: 'infantil', occasion: 'reyes', price: 20.00,
+    notes: 'IVA incluido',
+    drinks: 'Agua Mineral o Refresco (Coca-Cola, Fanta, Sprite...)',
+    sections: [
+      sec('Para Empezar', 'choose_one', [
+        'Croquetas Caseras de Jamón Ibérico',
+        'Macarrones de "L\'Àvia" con salsa de tomate casera y carne picada'
+      ], 'A elegir uno'),
+      sec('Plato Principal', 'choose_one', [
+        'Milanesa de Pollo Crujiente',
+        'Mini Hamburguesa Casera'
+      ], 'A elegir uno · Todos acompañados de patatas fritas'),
+      sec('Postre Final', 'choose_one', [
+        'Roscón de Reyes Tradicional',
+        'Coulant de Chocolate con bola de helado de vainilla',
+        'Bola de Helado Artesano (Vainilla, Chocolate o Fresa)'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 10 ─ Menu_cerrado_grupos_29bla.pdf  (diseño clásico B&W)
+  {
+    name: 'Menú Cerrado Grupos – 29€ (diseño clásico)',
+    type: 'grupos', price: 29.00,
+    notes: 'Menú cerrado sujeto a disponibilidad y confirmación previa',
+    drinks: 'Incluye un postre y una bebida',
+    sections: [
+      sec('Entrantes para Compartir', 'shared', [
+        'Patatas bravas al estilo Sol',
+        'Croquetas de jamón ibérico',
+        'Tabla de embutidos ibéricos y queso curado',
+        'Calamares a la andaluza con mayonesa de lima'
+      ]),
+      sec('Plato Principal', 'choose_one', [
+        'Paella de señorito',
+        'Codillo de cerdo al vino tinto con puré de patatas',
+        'Entrecot de ternera a la parrilla con su guarnición',
+        'Dorada al horno con verduras salteadas'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 11 ─ Menu_cerrado_grupos_29_v2.pdf  (diseño dorado)
+  {
+    name: 'Menú Cerrado Grupos – 29€ (diseño dorado)',
+    type: 'grupos', price: 29.00,
+    notes: 'Menú cerrado sujeto a disponibilidad y confirmación previa',
+    drinks: 'Incluye un postre y una bebida',
+    sections: [
+      sec('Entrantes para Compartir', 'shared', [
+        'Patatas bravas al estilo Sol',
+        'Croquetas de jamón ibérico',
+        'Tabla de embutidos ibéricos y queso curado',
+        'Calamares a la andaluza con mayonesa de lima'
+      ]),
+      sec('Plato Principal', 'choose_one', [
+        'Paella de señorito',
+        'Codillo de cerdo al vino tinto con puré de patatas',
+        'Entrecot de ternera a la parrilla con su guarnición',
+        'Dorada al horno con verduras salteadas'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 12 ─ Menu sol 25.pdf
+  {
+    name: 'Menú Degustación 25€',
+    type: 'degustacion', price: 25.00,
+    drinks: 'Incluído la bebida (una botella de vino para 4) y el postre',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Patatas bravas con tequeños'
+      ]),
+      sec('Primer Plato', 'choose_one', [
+        'Ensalada con queso de cabra, frutos secos y mermelada de tomate',
+        'Canelones de carne gratinado con bechamel',
+        'Crema de verduras con picatostes y crujiente de jamón',
+        'Tempura de langostinos con salsa agridulce'
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Bacalao a la muselina de ajos con patatas panaderas',
+        'Costillas de cordero a la parrilla con patatas fritas y pimientos padrón',
+        'Paella del señorito al momento',
+        'Lomo alto de ternera con su guarnición'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 13 ─ Sugerencias.pdf
+  {
+    name: 'Sugerencias del Chef',
+    type: 'otro',
+    notes: 'Platos especiales del chef disponibles según temporada',
+    sections: [
+      sec('Sugerencias', 'fixed', [
+        'Brocheta de pollo con salsa de teriyaki, patatas panaderas y ensalada – 8.50€',
+        'Ceviche de corvina estilo de la casa – 13.95€',
+        'Chuletón de ternera 350g con su guarnición – 19.95€ / 500g – 29.95€',
+        'Croquetas mixtas (jamón ibérico, calçot, chipirones) 6 uds – 8.95€',
+        'Trikini sándwich con jamón cocido trufada – 9.95€',
+        'Tartar de salmón con aguacate, cebolla roja y salsa de teriyaki – 12.95€',
+        'Tequeños de nutella – 6.50€',
+        'Cachopo de ternera con patatas fritas – 14.50€'
+      ])
+    ]
+  },
+
+  // 14 ─ Tapas  15.pdf  (precio real: 14.80€)
+  {
+    name: 'Tapas – 14.80€',
+    type: 'tapas', price: 14.80,
+    drinks: '1 bebida por persona',
+    sections: [
+      sec('Tapas', 'fixed', [
+        'Patatas bravas',
+        'Lágrimas de pollo',
+        'Surtido de embutidos ibéricos y queso',
+        'Calamares a la andaluza',
+        'Croquetas cocido',
+        'Torreznos de Soria',
+        'Pan de cristal con tomate'
+      ])
+    ]
+  },
+
+  // 15 ─ tapas 15.pdf  (precio real: 19€)
+  {
+    name: 'Tapas – 19€',
+    type: 'tapas', price: 19.00,
+    sections: [
+      sec('Tapas', 'fixed', [
+        'Bomba casera',
+        'Lágrimas de pollo',
+        'Pimientos padrón',
+        'Calamares a la andaluza',
+        'Gambas al ajillo',
+        'Ensaladilla rusa casera',
+        'Lacón a la plancha con patatas fritas',
+        'Croquetas de mixta'
+      ])
+    ]
+  },
+
+  // 16 ─ MENÚ CERRADO PARA GRUPOS 28.5（副本）.pdf  (borrador sin precio)
+  {
+    name: 'Menú Cerrado Grupos (borrador sin precio)',
+    type: 'grupos', min_people: 10,
+    notes: 'Disponible para grupos a partir de 10 personas · Precio orientativo pendiente de confirmar',
+    drinks: 'Una botella de vino (blanco verdejo, tinto rioja) por cada 4 personas · O Agua y refrescos · Cerveza',
+    sections: [
+      sec('Entrantes para Compartir', 'shared', [
+        'Patatas bravas estilo Sol',
+        'Lágrimas de pollo crujientes rebozadas con panko y salsa sojanesa',
+        'Tequeños',
+        'Burrata sobre tartar de tomate con pipas y aceite de albahaca'
+      ], 'Los entrantes se sirven al centro para compartir'),
+      sec('Plato Principal', 'choose_one', [
+        'Bacalao al horno con muselina de ajo y patatas panaderas',
+        'Costillas de cabrito a la milanesa con patatas fritas y pimientos padrón',
+        'Lomo alto de vaca a la parrilla con patata gajo y verduras de temporada',
+        'Pluma de cerdo ibérico al reducción de Oporto con Espárragos verdes salteados',
+        'Pechuga de pollo a la plancha'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Coulant de chocolate con helado de vainilla',
+        'Bola de helado',
+        'Tiramisú casero'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 17 ─ MENÚ CERRADO PARA GRUPOS 28.5（副本） (1).pdf
+  {
+    name: 'Menú Cerrado Grupos – 22€',
+    type: 'grupos', price: 22.00, min_people: 10,
+    notes: 'Disponible para grupos a partir de 10 personas',
+    drinks: 'Una botella de vino (blanco verdejo, tinto rioja) por cada 4 personas · O Agua y refrescos · Cerveza',
+    sections: [
+      sec('Entrantes para Compartir', 'shared', [
+        'Patatas bravas estilo Sol',
+        'Lágrimas de pollo crujientes rebozadas con panko y salsa sojanesa'
+      ], 'Los entrantes se sirven al centro para compartir'),
+      sec('Plato Principal', 'choose_one', [
+        'Bacalao al horno con muselina de ajo y patatas panaderas',
+        'Costillas de cabrito a la milanesa con patatas fritas y pimientos del padrón',
+        'Lomo alto de vaca a la parrilla con patata gajo y verduras de temporada',
+        'Pluma de cerdo ibérico al reducción de Oporto con Espárragos verdes salteados'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 18 ─ MENÚ CERRADO PARA GRUPOS – CENA DE NAVIDAD.pdf
+  {
+    name: 'Menú Cerrado Grupos – Cena de Navidad',
+    type: 'festivo', occasion: 'navidad', price: 30.00, min_people: 15,
+    notes: 'Disponible para grupos a partir de 15 personas · 30€ versión básica / 35€ con café y copa de cava al final',
+    drinks: 'Una botella de vino (blanco verdejo, tinto rioja) por cada 4 personas · O Agua y refrescos · Cerveza',
+    sections: [
+      sec('Aperitivos', 'fixed', [
+        'Surtido de canapés'
+      ]),
+      sec('Entrantes para Compartir', 'shared', [
+        'Pan de payés con tomate y aceite de oliva virgen extra',
+        'Tabla de embutidos ibéricos',
+        'Ensalada de Queso de Cabra Gratinado, Bouquet de Frutos Secos y mermelada de tomate',
+        'Calamares a la andaluza con mayonesa de lima',
+        'Nuestras Patatas Bravas con alioli suave y salsa brava casera'
+      ], 'Los entrantes se sirven al centro para compartir'),
+      sec('Plato Principal', 'choose_one', [
+        'Bacalao al horno con muselina de ajo y patatas panaderas',
+        'Costillas de cabrito a la milanesa con patatas fritas y pimientos del padrón',
+        'Lomo alto de vaca a la parrilla con patata gajo y verduras de temporada',
+        'Pluma de cerdo ibérico al reducción de Oporto con Espárragos verdes salteados'
+      ], 'A elegir uno'),
+      sec('Postre', 'choose_one', [
+        'Coulant de chocolate con helado de vainilla',
+        'Tarta de queso casera con salsa de frutos rojos',
+        'Tiramisú casero'
+      ], 'A elegir uno')
+    ]
+  },
+
+  // 19 ─ Menu sol 25,5-2.pdf  (Degustación v2 – Salmorejo)
+  {
+    name: 'Menú Degustación 25.50€ (v2)',
+    type: 'degustacion', price: 25.50,
+    drinks: 'Incluído la bebida (una botella de vino para 4) y el postre',
+    sections: [
+      sec('Pica Pica', 'shared', [
+        'Nuestras Patatas Bravas con Alioli Suave y Salsa Brava Casera'
+      ]),
+      sec('Primer Plato', 'choose_one', [
+        'Ensalada de Queso de Cabra Gratinado, Bouquet de Frutos Secos y mermelada de tomate',
+        'Canelones Tradicionales con Fina Bechamel',
+        'Salmorejo cordobés con huevo rallado y virutas de jamón',
+        'Langostinos en Tempura con Salsa Agridulce',
+        { name: 'Pulpo a la parrilla con parmentier de patatas', supplement: 4.50 }
+      ], 'A elegir uno'),
+      sec('Segundo Plato', 'choose_one', [
+        'Bacalao a la Muselina de Ajo con Patatas Panaderas',
+        'Costillas de Cordero a la Brasa con Patatas Fritas Caseras y Pimientos del Padrón',
+        'Arroz del "Senyoret" (Todo Marisco Pelado) Hecho al Momento',
+        'Lomo Alto de Vaca a la Parrilla con patata gajo y Verduras de Temporada',
+        { name: 'Chuletón de ternera 350 g con su guarnición', supplement: 5.50 }
+      ], 'A elegir uno')
+    ]
+  }
+
+];
+
+async function run() {
+  const btn = document.getElementById('btn');
+  const logEl = document.getElementById('log');
+  btn.disabled = true;
+  logEl.innerHTML = `Iniciando importación de ${menus.length} menús...\n\n`;
+
+  let ok = 0, fail = 0;
+  for (const menu of menus) {
+    const { data, error } = await client.from('menus_cerrados').insert([menu]).select().single();
+    if (error) {
+      logEl.innerHTML += `<span class="err">❌  ${menu.name}\n   ${error.message}</span>\n`;
+      console.error(menu.name, error);
+      fail++;
+    } else {
+      logEl.innerHTML += `<span class="ok">✅  ${menu.name}</span>\n`;
+      ok++;
+    }
+  }
+  logEl.innerHTML += `\n<strong>Resultado: ${ok} insertados correctamente, ${fail} errores.</strong>\n`;
+  btn.textContent = 'Importar de nuevo';
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

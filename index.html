@@ -885,6 +885,24 @@ body {
   .input-row { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 600px) {
+  .action-row, .date-price-bar { flex-wrap: wrap; width: 100%; min-width: 0; }
+  .action-row .btn { width: 100%; justify-content: center; white-space: normal; }
+  .quick-input-section { padding: 18px 14px; min-width: 0; }
+  .input-row, .input-row .field, .app-header { min-width: 0; }
+  .input-row input { width: 100%; min-width: 0; }
+  .sync-badge { white-space: normal; max-width: 100%; }
+  .dish-card .dish-actions { opacity: 1; flex-wrap: wrap; }
+  .dish-action-btn { min-width: 36px; min-height: 36px; }
+  .history-item { flex-wrap: wrap; }
+  .history-summary { flex-basis: 100%; }
+  .preview-actions { flex-wrap: wrap; }
+}
+@media (hover: none) { .dish-card .dish-actions { opacity: 1; } }
+button:disabled { opacity: .55; cursor: not-allowed; }
+[hidden] { display: none !important; }
+.preview-actions { flex-wrap: wrap; }
+
 @media print {
   body * { visibility: hidden; }
   .menu-preview-frame, .menu-preview-frame * { visibility: visible; }
@@ -903,7 +921,7 @@ body {
    ========================================== */
 .inline-edit-row {
   display: grid;
-  grid-template-columns: 1fr 1fr minmax(130px, 0.7fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(130px, 0.7fr);
   gap: 8px;
   padding: 8px;
   background: var(--terracotta-light);
@@ -925,6 +943,8 @@ body {
 .inline-edit-row input:focus,
 .inline-edit-row select:focus { border-color: var(--terracotta); }
 
+.inline-edit-row > label { grid-column: 1 / -1; font-size: 12px; }
+.inline-edit-row input:not([type="checkbox"]), .inline-edit-row select { min-width: 0; width: 100%; }
 .inline-edit-actions {
   display: flex;
   gap: 4px;
@@ -2007,6 +2027,17 @@ kbd {
   .mc-preview-toolbar { flex-wrap: wrap; }
   .mc-preview-mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
 }
+.shortcut-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.shortcut-list button { white-space: normal; text-align: left; }
+#batchPanel summary { cursor: pointer; font-weight: 600; }
+#batchPanel textarea, #batchPanel > select { width: 100%; font: inherit; padding: 8px; margin: 8px 0; border: 1px solid var(--cream); border-radius: 6px; }
+.batch-row { display: grid; grid-template-columns: 24px minmax(0,1fr) minmax(0,1fr); gap: 8px; margin: 10px 0; }
+.batch-row input[type="text"] { width: 100%; min-width: 0; padding: 8px; font: inherit; }
+.batch-row small { grid-column: 2 / -1; }
+.library-item .favorite-toggle { border: 0; background: none; color: var(--terracotta); padding: 8px; cursor: pointer; }
+.mc-map-row { display: block; font-size: 12px; margin: 10px 0; }
+.mc-map-row select { display: block; width: 100%; min-width: 0; padding: 8px; margin-top: 4px; }
+@media (max-width: 600px) { .batch-row { grid-template-columns: 24px minmax(0,1fr); } .batch-row input[data-field="catalan"] { grid-column: 2; } }
 </style>
 </head>
 <body>
@@ -2027,6 +2058,7 @@ kbd {
       <div class="sync-badge" id="syncStatus">
         <span class="sync-dot" id="syncDot"></span>
         <span id="syncText">Conectando...</span>
+        <button class="btn btn-secondary btn-small" id="btnRetrySync" hidden>Reintentar</button>
       </div>
       <div class="date-price-bar">
         <input type="date" id="menuDate">
@@ -2035,6 +2067,8 @@ kbd {
         <span class="price-badge" id="priceInfo"></span>
       </div>
     </div>
+
+    <p id="dateNotice" class="hint" hidden></p>
 
     <!-- QUICK INPUT -->
     <div class="quick-input-section">
@@ -2060,12 +2094,31 @@ kbd {
         </div>
       </div>
       <div class="action-row">
-        <button class="btn btn-primary" id="btnAddMenu">➕ Añadir al menú de hoy</button>
+        <button class="btn btn-primary" id="btnAddMenu">➕ Añadir al menú</button>
         <button class="btn btn-secondary" id="btnSaveLib">💾 Guardar en biblioteca</button>
-        <button class="btn btn-secondary" id="btnBoth">✅ Ambos</button>
+        <button class="btn btn-secondary" id="btnBoth">✅ Menú + biblioteca</button>
       </div>
       <p class="hint"><kbd>Enter</kbd> traduce y añade al menú &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> traduce y guarda en biblioteca &nbsp;·&nbsp; Escribe para buscar platos existentes</p>
     </div>
+
+    <section class="quick-input-section" aria-label="Platos habituales">
+      <h2>Favoritos y frecuentes</h2>
+      <div id="dailyShortcuts" class="shortcut-list"></div>
+      <p class="hint">Marca ★ en la biblioteca. Los frecuentes se calculan con los últimos 30 menús guardados.</p>
+    </section>
+    <details class="quick-input-section" id="batchPanel">
+      <summary>Añadir varios platos</summary>
+      <p class="hint">Un plato por línea. Opcional: Español | Català. Máximo 50 platos.</p>
+      <label for="batchText">Lista de platos</label>
+      <textarea id="batchText" rows="4" placeholder="Sopa de verduras | Sopa de verdures"></textarea>
+      <label for="batchCategory">Categoría del lote</label>
+      <select id="batchCategory"><option value="primer">Primer Plato</option><option value="segundo">Segundo Plato</option><option value="postre">Postres</option></select>
+      <div class="action-row"><button class="btn btn-secondary" id="batchPrepare">Preparar lista</button><button class="btn btn-secondary" id="batchTranslate">Traducir pendientes</button><button class="btn btn-secondary" id="batchCancel" hidden>Detener traducción</button></div>
+      <div id="batchRows"></div>
+      <label><input type="checkbox" id="batchSaveLibrary"> Guardar también en la biblioteca</label>
+      <button class="btn btn-primary" id="batchAdd">Añadir seleccionados</button>
+      <p id="batchStatus" class="hint" role="status"></p>
+    </details>
 
     <!-- TODAY'S MENU -->
     <div id="menuBuilder">
@@ -2111,6 +2164,7 @@ kbd {
     <div class="preview-actions">
       <button class="btn btn-primary" id="btnPrint">🖨️ Imprimir</button>
       <button class="btn btn-olive" id="btnShare">📤 Compartir</button>
+      <button class="btn btn-secondary" id="btnUndo" disabled>↶ Deshacer</button>
       <button class="btn btn-secondary" id="btnClear" style="color:var(--wine)">🗑️ Vaciar</button>
     </div>
     <div class="preview-actions-row2">
@@ -2240,6 +2294,17 @@ kbd {
   <div class="modal">
     <button class="modal-close" id="closeSettings">&times;</button>
     <h2>Ajustes</h2>
+    <div style="padding:14px;border:1px solid var(--cream);border-radius:var(--radius);margin-bottom:20px;">
+      <h3 style="font-size:15px;margin-bottom:8px;">Copia del menú diario</h3>
+      <p style="font-size:12px;margin-bottom:10px;">Biblioteca, favoritos y menús por fecha (incluido el actual). No incluye menús cerrados, ajustes ni claves de acceso.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia</button>
+        <button class="btn btn-secondary btn-small" id="chooseDailyBackup">Abrir copia…</button>
+      </div>
+      <input id="dailyBackupFile" type="file" accept=".json,application/json" hidden>
+      <p id="dailyBackupSummary" role="status" style="font-size:12px;margin-top:10px;white-space:pre-line;"></p>
+      <button class="btn btn-primary btn-small" id="restoreDailyBackup" style="max-width:100%;white-space:normal;" hidden>Añadir datos faltantes y sincronizar</button>
+    </div>
 
     <div style="background:var(--olive-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
       <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔐 Cuenta Supabase</div>
@@ -2253,6 +2318,7 @@ kbd {
         <button class="btn btn-secondary btn-small" id="authSignUp" style="font-size:12px;padding:6px 12px;">Crear cuenta</button>
         <button class="btn btn-secondary btn-small" id="authSignOut" style="font-size:12px;padding:6px 12px;">Salir</button>
       </div>
+      <button class="btn btn-secondary btn-small" id="recoverGuestDraft" hidden>Recuperar borrador sin sesión</button>
       <div id="authStatus" style="font-size:12px;color:var(--ink-faint);margin-top:8px;"></div>
     </div>
     
@@ -2309,6 +2375,7 @@ kbd {
 <div class="toast-container" id="toastContainer" aria-live="polite" role="status"></div>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="menu-workflows.js"></script>
 <script>
 // ============================================================
 // MENÚ DEL DÍA v2.0 — Streamlined Daily Workflow
@@ -2358,6 +2425,69 @@ let autocompleteHighlight = -1;
 let currentUser = null;
 let hasOwnerColumns = false;
 let authSubscription = null;
+let translating = false;
+let translationRevision = 0;
+let menuMetadata = {};
+let activeDate = '';
+let pendingSaves = { menus: {}, library: false, deletes: [], settings: false };
+let syncPromise = null;
+let editRevision = 0;
+let undoMenu = null;
+let cacheOwner = 'local';
+let authGeneration = 0;
+let localSaveError = false;
+let dishPreferences = { favorites: [] };
+let batchDraft = { text: '', category: 'primer', rows: [] };
+let batchRunning = false;
+let batchGeneration = 0;
+
+function localDate(now = new Date()) {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+}
+
+function cacheKey(name) { return `menu_v3_${cacheOwner}_${name}`; }
+function readCache(name, fallback) {
+  try {
+    const snapshot = JSON.parse(localStorage.getItem(cacheKey('snapshot')));
+    return snapshot?.[name] ?? JSON.parse(localStorage.getItem(cacheKey(name))) ?? fallback;
+  }
+  catch { return fallback; }
+}
+function hasPending() {
+  return Object.keys(pendingSaves.menus).length > 0 || pendingSaves.library || pendingSaves.deletes.length > 0 || pendingSaves.settings;
+}
+function unpackMenu(value) {
+  const dishes = {};
+  for (const cat of ['primer', 'segundo', 'postre']) dishes[cat] = Array.isArray(value?.[cat]) ? value[cat] : [];
+  return dishes;
+}
+function menuPacket(date) {
+  return { ...JSON.parse(JSON.stringify(todayMenu)), _meta: { date, price: $('menuPrice').value.trim() } };
+}
+function updateSaveStatus() {
+  if (localSaveError) { syncUI('error', 'No se pudo guardar en este dispositivo · no cierres la página'); return; }
+  if (hasPending()) syncUI('error', currentUser ? 'Guardado en este dispositivo · pendiente de sincronizar' : 'Guardado en este dispositivo · inicia sesión para sincronizar');
+  else syncUI('ok', currentUser ? 'Guardado en la nube' : 'Guardado en este dispositivo');
+  if ($('btnRetrySync')) $('btnRetrySync').hidden = !hasPending() || !currentUser;
+}
+function rememberUndo() {
+  undoMenu = { dishes: JSON.parse(JSON.stringify(todayMenu)), date: $('menuDate').value, price: $('menuPrice').value };
+  $('btnUndo').disabled = false;
+}
+async function restoreUndo() {
+  if (!undoMenu) return;
+  const snapshot = undoMenu;
+  undoMenu = null;
+  $('btnUndo').disabled = true;
+  todayMenu = snapshot.dishes;
+  activeDate = snapshot.date;
+  $('menuDate').value = snapshot.date;
+  setDate();
+  $('menuPrice').value = snapshot.price;
+  await saveMenu();
+  renderAll();
+}
+
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
@@ -2414,7 +2544,7 @@ function applyOwnerFilter(query) {
 
 async function detectOwnerColumns() {
   if (!isCloud || !supabase) { hasOwnerColumns = false; return false; }
-  const { error } = await supabase.from('dishes').select('owner_id').limit(1);
+  const { error } = await supabase.from('dishes').select('owner_id').limit(1).abortSignal(AbortSignal.timeout(15000));
   if (!error) { hasOwnerColumns = true; return true; }
 
   const msg = (error.message || '') + ' ' + (error.details || '');
@@ -2438,17 +2568,18 @@ function refreshAuthUI() {
   const signOutBtn = $('authSignOut');
 
   if (!statusEl) return;
+  $('recoverGuestDraft').hidden = !currentUser || !localStorage.getItem('menu_v3_local_snapshot');
 
   if (currentUser) {
     const label = currentUser.email || ('uid:' + String(currentUser.id || '').slice(0, 8));
-    statusEl.textContent = '✅ Sesión: ' + label + (hasOwnerColumns ? ' · owner_id activo' : ' · modo compatibilidad');
+    statusEl.textContent = '✅ Sesión: ' + label;
     if (emailEl && currentUser.email) emailEl.value = currentUser.email;
     if (passEl) passEl.value = '';
     if (signInBtn) signInBtn.disabled = true;
     if (signUpBtn) signUpBtn.disabled = true;
     if (signOutBtn) signOutBtn.disabled = false;
   } else {
-    statusEl.textContent = '⚠️ Sin sesión — inicia sesión antes de activar 002';
+    statusEl.textContent = 'Inicia sesión para guardar y recuperar los menús en otros dispositivos.';
     if (signInBtn) signInBtn.disabled = false;
     if (signUpBtn) signUpBtn.disabled = false;
     if (signOutBtn) signOutBtn.disabled = true;
@@ -2465,13 +2596,23 @@ async function init() {
     currentUser = data?.session?.user || null;
     await detectOwnerColumns();
 
-    const { data: authData } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      currentUser = session?.user || null;
-      await detectOwnerColumns();
-      refreshAuthUI();
-      await loadAll();
-      initSettingsUI();
-      renderAll();
+    const { data: authData } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user || null;
+      if ((currentUser?.id || null) === (nextUser?.id || null)) return;
+      const generation = ++authGeneration;
+      setTimeout(async () => {
+        await syncPromise;
+        if (generation !== authGeneration) return;
+        currentUser = nextUser;
+        mcPersistCurrent();
+        mcMenus = []; mcCurrentMenu = null; mcCurrentId = null; mcLoaded = false;
+        undoMenu = null;
+        $('btnUndo').disabled = true;
+        await detectOwnerColumns();
+        await loadAll();
+        initSettingsUI(); refreshAuthUI(); renderAll(); renderBatch();
+        mcRenderLibrary(); mcRenderEditor();
+      }, 0);
     });
     authSubscription = authData?.subscription || null;
   } catch(e) { 
@@ -2479,45 +2620,137 @@ async function init() {
   }
 
   await loadAll();
-  setDate();
   initSettingsUI();
   bindEvents();
   refreshAuthUI();
   renderAll();
+  renderBatch();
+}
+
+// Backup review is bound to the current account. Import rechecks live state at confirmation.
+let dailyBackupReview = null;
+let dailyBackupReadRevision = 0;
+function dailyImportState() {
+  return {library,history:menuHistory,metadata:menuMetadata,favorites:dishPreferences.favorites,activeDate:$('menuDate').value};
+}
+function downloadDailyBackup() {
+  try {
+    const history = {...menuHistory,[$('menuDate').value]:todayMenu};
+    const metadata = {...menuMetadata,[$('menuDate').value]:{price:$('menuPrice').value.trim()}};
+    const backup = MenuWorkflows.dailyBackup({format:'menu-daily-backup',version:1,library,
+      menus:Object.entries(history).map(([date,dishes])=>({date,dishes,price:String(metadata[date]?.price || '')})),
+      favorites:library.filter(d=>(dishPreferences.favorites || []).map(String).includes(String(d.id))).map(d=>MenuWorkflows.key(d.spanish,d.category))});
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    if (blob.size>5*1024*1024) throw new Error('Backup too large');
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=`menu-diario-${localDate()}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),60000);
+    $('dailyBackupSummary').textContent=`Copia preparada: ${backup.library.length} platos y ${backup.menus.length} fechas. Comprueba el archivo en Descargas.`;
+  } catch { $('dailyBackupSummary').textContent='No se pudo crear la copia. Revisa las fechas, precios y platos.'; }
+}
+async function reviewDailyBackup(file) {
+  dailyBackupReview=null; $('restoreDailyBackup').hidden=true;
+  const readRevision=++dailyBackupReadRevision;
+  if (!file) return;
+  const owner=cacheOwner, generation=authGeneration;
+  try {
+    if (file.size > 5*1024*1024) throw new Error('El archivo supera 5 MB.');
+    const data=MenuWorkflows.dailyBackup(JSON.parse(await file.text()));
+    if (owner!==cacheOwner || generation!==authGeneration || readRevision!==dailyBackupReadRevision) return;
+    const plan=MenuWorkflows.planDailyImport(data,dailyImportState(),uid);
+    dailyBackupReview={data,owner,generation};
+    $('dailyBackupSummary').textContent=`Nuevos: ${plan.addedDishes} platos · ${plan.addedMenus} fechas. Conservados: ${plan.skippedDishes} platos coincidentes · ${plan.skippedMenus} fechas existentes o abiertas.\nPara recuperar la fecha abierta, selecciona antes otra fecha en el menú diario. Los datos añadidos se guardarán en este dispositivo y se sincronizarán con la cuenta activa.`;
+    $('restoreDailyBackup').hidden=!(plan.addedDishes || plan.addedMenus);
+  } catch { if (owner!==cacheOwner || generation!==authGeneration || readRevision!==dailyBackupReadRevision) return; $('dailyBackupSummary').textContent='No se pudo abrir la copia. Usa un archivo JSON de menú diario válido (máximo 5 MB).'; }
+}
+function restoreDailyBackup() {
+  const review=dailyBackupReview;
+  if (!review || review.owner!==cacheOwner || review.generation!==authGeneration) {
+    $('dailyBackupSummary').textContent='La cuenta ha cambiado. Abre la copia de nuevo.'; $('restoreDailyBackup').hidden=true; return;
+  }
+  const plan=MenuWorkflows.planDailyImport(review.data,dailyImportState(),uid);
+  if (!confirm(`Importar a la cuenta activa? Nuevos: ${plan.addedDishes} platos · ${plan.addedMenus} fechas. El menú abierto y los datos existentes se conservan.`)) return;
+  const previous={library,menuHistory,menuMetadata,dishPreferences,pendingSaves};
+  library=plan.library; menuHistory=plan.history; menuMetadata=plan.metadata;
+  dishPreferences={...dishPreferences,favorites:plan.favorites};
+  pendingSaves={...pendingSaves,menus:{...pendingSaves.menus,...plan.packets},library:pendingSaves.library || plan.addedDishes>0,settings:true};
+  if (!saveLocal()) {
+    ({library,menuHistory,menuMetadata,dishPreferences,pendingSaves}=previous);
+    $('dailyBackupSummary').textContent='No se pudo guardar: no se ha aplicado la importación.'; return;
+  }
+  editRevision++; dailyBackupReview=null; $('restoreDailyBackup').hidden=true;
+  $('dailyBackupSummary').textContent=`Añadidos: ${plan.addedDishes} platos · ${plan.addedMenus} fechas. Revisa el indicador de sincronización.`;
+  renderAll(); syncPending();
 }
 
 // ==================== DATA LAYER ====================
 async function loadAll() {
-  // Always load from localStorage first (instant)
-  try { library = JSON.parse(localStorage.getItem('v2_library') || '[]'); } catch(e) { library = []; }
-  try { todayMenu = JSON.parse(localStorage.getItem('v2_todayMenu') || '{"primer":[],"segundo":[],"postre":[]}'); } catch(e) { todayMenu = { primer: [], segundo: [], postre: [] }; }
-  try { menuHistory = JSON.parse(localStorage.getItem('v2_history') || '{}'); } catch(e) { menuHistory = {}; }
-  try { specialPrices = JSON.parse(localStorage.getItem('v2_specialPrices') || '{}'); } catch(e) { specialPrices = {}; }
-  try { printSettings = normalizePrintSettings({ ...printSettings, ...JSON.parse(localStorage.getItem('v2_printSettings') || '{}') }); } catch(e) { printSettings = normalizePrintSettings(printSettings); }
+  cacheOwner = currentUser?.id || 'local';
+  dailyBackupReview=null; $('restoreDailyBackup').hidden=true; $('dailyBackupSummary').textContent='';
+  mcRestoreDrafts();
+  // Preserve the old cache once. Never hand it to a second account.
+  const legacyOwner = localStorage.getItem('menu_v3_legacy_owner');
+  if (!localStorage.getItem(cacheKey('initialized')) && (!legacyOwner || legacyOwner === cacheOwner)) {
+    for (const name of ['library', 'todayMenu', 'history', 'specialPrices', 'printSettings']) {
+      const old = localStorage.getItem('v2_' + name);
+      if (old) localStorage.setItem(cacheKey(name), old);
+    }
+    localStorage.setItem('menu_v3_legacy_owner', cacheOwner);
+    localStorage.setItem(cacheKey('initialized'), '1');
+  }
+  library = readCache('library', []);
+  dishPreferences = readCache('dishPreferences', { favorites: [] });
+  batchDraft = readCache('batchDraft', { text: '', category: 'primer', rows: [] });
+  batchGeneration++;
+  batchRunning = false;
+  todayMenu = unpackMenu(readCache('todayMenu', {}));
+  menuHistory = readCache('history', {});
+  menuMetadata = readCache('metadata', {});
+  specialPrices = readCache('specialPrices', {});
+  printSettings = normalizePrintSettings(readCache('printSettings', {}));
+  const draft = readCache('draft', {});
+  activeDate = draft.date || localDate();
+  $('menuDate').value = activeDate;
+  setDate();
+  if (draft.price) $('menuPrice').value = draft.price;
+  pendingSaves = { menus: {}, library: false, deletes: [], settings: false, ...readCache('pending', {}) };
+  updateSaveStatus();
 
-  if (!isCloud) { syncUI('ok', 'Local'); return; }
-  if (!currentUser) { syncUI('error', 'Inicia sesión para sincronizar'); return; }
+  if (!isCloud) return;
+  if (!currentUser) return;
+  const loadRevision = editRevision;
+  const loadOwner = cacheOwner;
 
   try {
     syncUI('syncing', 'Sincronizando...');
     const [libRes, menuRes, histRes, settRes] = await Promise.allSettled([
-      applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })),
-      applyOwnerFilter(supabase.from('selected_menu').select('*').eq('id', 1).maybeSingle()),
-      applyOwnerFilter(supabase.from('menu_history').select('*').order('date', { ascending: false }).limit(30)),
-      applyOwnerFilter(supabase.from('settings').select('*').eq('id', 1).maybeSingle())
+      applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })).abortSignal(AbortSignal.timeout(15000)),
+      applyOwnerFilter(supabase.from('selected_menu').select('*').eq('id', 1).maybeSingle()).abortSignal(AbortSignal.timeout(15000)),
+      applyOwnerFilter(supabase.from('menu_history').select('*').order('date', { ascending: false }).limit(60)).abortSignal(AbortSignal.timeout(15000)),
+      applyOwnerFilter(supabase.from('settings').select('*').eq('id', 1).maybeSingle()).abortSignal(AbortSignal.timeout(15000))
     ]);
 
+    if (loadOwner !== cacheOwner || loadRevision !== editRevision) { updateSaveStatus(); return; }
     let hasCloudError = false;
 
     if (libRes.status === 'fulfilled' && !libRes.value.error) {
-      if (libRes.value.data) library = libRes.value.data;
+      if (libRes.value.data && !pendingSaves.library && !pendingSaves.deletes.length) library = libRes.value.data;
     } else {
       hasCloudError = true;
       console.warn('Cloud load dishes failed:', libRes.status === 'fulfilled' ? libRes.value.error : libRes.reason);
     }
 
     if (menuRes.status === 'fulfilled' && !menuRes.value.error) {
-      if (menuRes.value.data?.dishes) todayMenu = { primer: [], segundo: [], postre: [], ...menuRes.value.data.dishes };
+      if (menuRes.value.data?.dishes && !Object.keys(pendingSaves.menus).length) {
+        const packet = menuRes.value.data.dishes;
+        todayMenu = unpackMenu(packet);
+        if (packet._meta?.date) {
+          activeDate = packet._meta.date;
+          $('menuDate').value = activeDate;
+          setDate();
+          if (packet._meta.price) $('menuPrice').value = packet._meta.price;
+        }
+      }
     } else {
       hasCloudError = true;
       console.warn('Cloud load selected_menu failed:', menuRes.status === 'fulfilled' ? menuRes.value.error : menuRes.reason);
@@ -2525,8 +2758,11 @@ async function loadAll() {
 
     if (histRes.status === 'fulfilled' && !histRes.value.error) {
       if (histRes.value.data) {
-        menuHistory = {};
-        histRes.value.data.forEach(h => { menuHistory[h.date] = h.dishes; });
+        histRes.value.data.forEach(h => {
+          if (pendingSaves.menus[h.date]) return;
+          menuHistory[h.date] = unpackMenu(h.dishes);
+          if (h.dishes?._meta) menuMetadata[h.date] = h.dishes._meta;
+        });
       }
     } else {
       hasCloudError = true;
@@ -2534,14 +2770,32 @@ async function loadAll() {
     }
 
     if (settRes.status === 'fulfilled' && !settRes.value.error) {
-      if (settRes.value.data?.print_settings) printSettings = normalizePrintSettings({ ...printSettings, ...settRes.value.data.print_settings });
+      const cloudSettings = settRes.value.data?.print_settings;
+      if (cloudSettings && !pendingSaves.settings) printSettings = normalizePrintSettings({ ...printSettings, ...cloudSettings });
+      if (cloudSettings?.dish_preferences_v1 && !pendingSaves.settings) dishPreferences = cloudSettings.dish_preferences_v1;
+      const menuState = cloudSettings?.menu_state_v1;
+      if (menuState) {
+        for (const [date, meta] of Object.entries(menuState.history || {})) {
+          if (!pendingSaves.menus[date]) menuMetadata[date] = meta;
+        }
+        if (!Object.keys(pendingSaves.menus).length) {
+          specialPrices = menuState.specialPrices || {};
+          if (menuRes.status === 'fulfilled' && !menuRes.value.error && menuRes.value.data?.dishes && menuState.date) {
+            activeDate = menuState.date;
+            $('menuDate').value = activeDate;
+            setDate();
+            if (menuState.price) $('menuPrice').value = menuState.price;
+          }
+        }
+      }
     } else {
       hasCloudError = true;
       console.warn('Cloud load settings failed:', settRes.status === 'fulfilled' ? settRes.value.error : settRes.reason);
     }
 
     saveLocal();
-    syncUI(hasCloudError ? 'error' : 'ok', hasCloudError ? 'Sync parcial' : 'Sincronizado');
+    if (hasCloudError) syncUI('error', 'No se ha podido cargar toda la información · copia local disponible');
+    else updateSaveStatus();
   } catch(e) {
     console.error('Cloud load failed:', e);
     syncUI('error', 'Fallo sync');
@@ -2549,56 +2803,105 @@ async function loadAll() {
 }
 
 function saveLocal() {
-  localStorage.setItem('v2_library', JSON.stringify(library));
-  localStorage.setItem('v2_todayMenu', JSON.stringify(todayMenu));
-  localStorage.setItem('v2_history', JSON.stringify(menuHistory));
-  localStorage.setItem('v2_specialPrices', JSON.stringify(specialPrices));
-  localStorage.setItem('v2_printSettings', JSON.stringify(printSettings));
+  try {
+    const values = { dishPreferences, batchDraft, library, todayMenu, history: menuHistory, metadata: menuMetadata, specialPrices, printSettings,
+      draft: { date: $('menuDate').value, price: $('menuPrice').value }, pending: pendingSaves };
+    localStorage.setItem(cacheKey('snapshot'), JSON.stringify(values));
+    localSaveError = false;
+    return true;
+  } catch {
+    localSaveError = true;
+    syncUI('error', 'No se pudo guardar en este dispositivo');
+    toast('No cierres esta página: el almacenamiento local no está disponible.', 'error');
+    return false;
+  }
+}
+
+function stageMenu() {
+  const date = $('menuDate').value;
+  if (!date) { toast('Elige una fecha', 'error'); return false; }
+  const packet = menuPacket(date);
+  menuHistory[date] = unpackMenu(packet);
+  menuMetadata[date] = packet._meta;
+  pendingSaves.menus[date] = packet;
+  editRevision++;
+  if (!saveLocal()) return false;
+  renderHistory();
+  updateSaveStatus();
+  return true;
 }
 
 async function saveMenu() {
-  // Auto-save to history
-  const dateStr = $('menuDate').value;
-  if (dateStr) {
-    const hasContent = Object.values(todayMenu).some(arr => arr.length > 0);
-    if (hasContent) menuHistory[dateStr] = JSON.parse(JSON.stringify(todayMenu));
-  }
-  // Trim history to max 60 entries
-  const histDates = Object.keys(menuHistory).sort();
-  while (histDates.length > 60) {
-    delete menuHistory[histDates.shift()];
-  }
-  saveLocal();
-
-  if (!isCloud || !currentUser) return;
-  try {
-    syncUI('syncing', 'Guardando...');
-    await supabase.from('selected_menu').upsert(withOwner({ id: 1, dishes: todayMenu, updated_at: new Date().toISOString() }));
-    if (dateStr) {
-      await supabase.from('menu_history').upsert(withOwner({ date: dateStr, dishes: todayMenu, updated_at: new Date().toISOString() }), { onConflict: 'date' });
-    }
-    syncUI('ok', 'Guardado');
-  } catch(e) { syncUI('error', 'Error guardar'); }
+  if (!stageMenu()) return false;
+  return syncPending();
 }
 
 async function saveLibrary() {
-  saveLocal();
-  if (!isCloud || !currentUser) return;
-  try {
-    syncUI('syncing', 'Guardando...');
-    const upserts = library.map((d, i) => withOwner({ ...d, order_index: i, updated_at: new Date().toISOString() }));
-    await supabase.from('dishes').upsert(upserts, { onConflict: 'id' });
-    syncUI('ok', 'Guardado');
-  } catch(e) { syncUI('error', 'Error guardar'); }
+  pendingSaves.library = true;
+  editRevision++;
+  if (!saveLocal()) return false;
+  return syncPending();
+}
+
+async function saveSettings() {
+  pendingSaves.settings = true;
+  editRevision++;
+  if (!saveLocal()) return false;
+  return syncPending();
 }
 
 async function deleteFromCloud(id) {
-  if (!isCloud || !currentUser) return;
-  try {
-    let q = supabase.from('dishes').delete().eq('id', id);
-    if (hasOwnerColumns && currentUser?.id) q = q.eq('owner_id', currentUser.id);
-    await q;
-  } catch(e) {}
+  if (!pendingSaves.deletes.includes(id)) pendingSaves.deletes.push(id);
+  editRevision++;
+  if (!saveLocal()) return false;
+  return syncPending();
+}
+
+async function syncPending() {
+  updateSaveStatus();
+  if (!isCloud || !currentUser || !hasPending()) return false;
+  if (syncPromise) return syncPromise;
+  const generation = authGeneration;
+  syncPromise = (async () => {
+    try {
+      while (hasPending()) {
+        const revision = editRevision;
+        const batch = JSON.parse(JSON.stringify(pendingSaves));
+        const currentPacket = menuPacket($('menuDate').value);
+        const dishes = library.map((d, i) => withOwner({ ...d, order_index: i, updated_at: new Date().toISOString() }));
+        const settings = {
+          ...printSettings,
+          dish_preferences_v1: MenuWorkflows.clone(dishPreferences),
+          menu_state_v1: { ...currentPacket._meta, history: JSON.parse(JSON.stringify(menuMetadata)), specialPrices: { ...specialPrices } }
+        };
+        const checked = async query => {
+          if (generation !== authGeneration) throw new Error('Session changed');
+          const { error } = await query.abortSignal(AbortSignal.timeout(15000));
+          if (error || generation !== authGeneration) throw error || new Error('Session changed');
+        };
+        syncUI('syncing', 'Sincronizando…');
+        // Keep failed history writes pending; retries are idempotent.
+        for (const [date, packet] of Object.entries(batch.menus)) {
+          await checked(supabase.from('menu_history').upsert(withOwner({ date, dishes: unpackMenu(packet), updated_at: new Date().toISOString() }), { onConflict: 'date' }));
+        }
+        if (Object.keys(batch.menus).length) {
+          await checked(supabase.from('selected_menu').upsert(withOwner({ id: 1, dishes: unpackMenu(currentPacket), updated_at: new Date().toISOString() })));
+        }
+        if (batch.library && dishes.length) await checked(supabase.from('dishes').upsert(dishes, { onConflict: 'id' }));
+        for (const id of batch.deletes) await checked(applyOwnerFilter(supabase.from('dishes').delete().eq('id', id)));
+        if (batch.settings || Object.keys(batch.menus).length) await checked(supabase.from('settings').upsert(withOwner({ id: 1, print_settings: settings }), { onConflict: 'id' }));
+        if (revision === editRevision) pendingSaves = { menus: {}, library: false, deletes: [], settings: false };
+        if (!saveLocal()) return false;
+      }
+      updateSaveStatus();
+      return true;
+    } catch {
+      updateSaveStatus();
+      toast('La nube no ha confirmado el guardado. Tu copia local se conserva; pulsa Reintentar.', 'error');
+      return false;
+    }
+  })();
+  try { return await syncPromise; } finally { syncPromise = null; }
 }
 
 // ==================== TRANSLATION ====================
@@ -2697,6 +3000,7 @@ async function translateText(text) {
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(20000),
             body: JSON.stringify({
               contents: [{
                 parts: [{
@@ -2751,7 +3055,7 @@ Dish name: ${JSON.stringify(textToTranslate)}`
   // Method 2: Google Translate (non-official, no key needed)
   try {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=ca&dt=t&q=${encodeURIComponent(textToTranslate)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const data = await res.json();
       if (data?.[0]?.[0]?.[0]) {
@@ -2763,46 +3067,35 @@ Dish name: ${JSON.stringify(textToTranslate)}`
     console.warn('Google fallback failed:', e);
   }
 
-  // Method 3: Local dictionary (last resort)
-  const dict = { 'pollo':'pollastre','jamón':'pernil','ternera':'vedella','cerdo':'porc',
-    'pescado':'peix','ensalada':'amanida','sopa':'sopa','arroz':'arròs','patatas':'patates',
-    'huevos':'ous','queso':'formatge','con':'amb','y':'i','de':'de','al':'al','a la':'a la',
-    'frito':'fregit','asado':'rostit','horno':'forn','plancha':'planxa','salsa':'salsa',
-    'crema':'crema','tarta':'pastís','helado':'gelat','fruta':'fruita','pan':'pa' };
-  const catalan = textToTranslate.split(' ').map(w => dict[w.toLowerCase()] || w).join(' ');
-  return { catalan: appendSupplementSuffix(catalan, supplement), correctedSpanish: '', provider: 'local', fallbackReason: geminiFailure };
+  throw new Error('Translation unavailable');
 }
 
 async function doTranslate() {
-  const esInput = $('inputEs');
-  const caInput = $('inputCa');
-  const text = esInput.value.trim();
-  if (!text) return;
-  
-  caInput.classList.add('translating');
-  caInput.value = 'Traduciendo...';
-  
+  if (translating) return false;
+  const text = $('inputEs').value.trim();
+  if (!text) return false;
+  const revision = ++translationRevision;
+  const previousCa = $('inputCa').value;
+  translating = true;
+  for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'btnBoth', 'inputCategory']) $(id).disabled = true;
+  $('inputCa').classList.add('translating');
+  $('inputCa').placeholder = 'Traduciendo…';
   try {
     const result = await translateText(text);
-    caInput.value = result.catalan;
-    // If Gemini corrected the Spanish, update the input
-    if (result.correctedSpanish && result.correctedSpanish !== text) {
-      esInput.value = result.correctedSpanish;
-      toast('Traducido ✨ español corregido', 'success');
-    } else if (result.provider === 'gemini') {
-      toast('Traducido con Gemini', 'success');
-    } else if (result.provider === 'google') {
-      const detail = result.fallbackReason ? ` (${summarizeGeminiError(result.fallbackReason)})` : '';
-      toast(`Gemini falló${detail} — traducción normal, sin corrección`, 'info');
-    } else {
-      toast('Traducción local — sin corrección', 'info');
-    }
-  } catch(e) {
-    caInput.value = '';
-    toast('Error de traducción', 'error');
+    if (revision !== translationRevision || $('inputEs').value.trim() !== text || $('inputCa').value !== previousCa) return false;
+    $('inputCa').value = result.catalan;
+    if (result.correctedSpanish) $('inputEs').value = result.correctedSpanish;
+    toast(result.provider === 'gemini' ? 'Traducción lista · revisa antes de añadir' : 'Traducción alternativa · revisa antes de añadir', 'info');
+    return true;
+  } catch {
+    toast('No se pudo traducir. Escribe o revisa la traducción antes de añadir.', 'error');
+    return false;
+  } finally {
+    translating = false;
+    for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'btnBoth', 'inputCategory']) $(id).disabled = false;
+    $('inputCa').classList.remove('translating');
+    $('inputCa').placeholder = 'Traducción automática...';
   }
-  
-  caInput.classList.remove('translating');
 }
 
 // ==================== AUTOCOMPLETE ====================
@@ -2834,6 +3127,7 @@ function highlightMatch(text, query) {
 }
 
 function selectAutocomplete(id) {
+  translationRevision++;
   const dish = library.find(d => d.id === id);
   if (!dish) return;
   $('inputEs').value = dish.spanish;
@@ -2845,12 +3139,13 @@ function selectAutocomplete(id) {
 
 // ==================== MENU ACTIONS ====================
 async function addToMenu() {
+  if (translating) return;
   let es = $('inputEs').value.trim();
   let ca = $('inputCa').value.trim();
   const cat = $('inputCategory').value;
   if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
   if (!ca) { 
-    await doTranslate();
+    if (!await doTranslate()) return;
     es = $('inputEs').value.trim();
     ca = $('inputCa').value.trim();
     if (!ca) { toast('Falta la traducción', 'error'); return; }
@@ -2874,6 +3169,7 @@ async function addToMenu() {
 }
 
 async function addToLibrary() {
+  if (translating) return;
   const es = $('inputEs').value.trim();
   const ca = $('inputCa').value.trim();
   const cat = $('inputCategory').value;
@@ -2893,12 +3189,13 @@ async function addToLibrary() {
 }
 
 async function addBoth() {
+  if (translating) return;
   let es = $('inputEs').value.trim();
   let ca = $('inputCa').value.trim();
   const cat = $('inputCategory').value;
   if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
   if (!ca) {
-    await doTranslate();
+    if (!await doTranslate()) return;
     es = $('inputEs').value.trim();
     ca = $('inputCa').value.trim();
   }
@@ -2939,6 +3236,7 @@ async function addFromLibrary(id) {
 }
 
 async function removeFromMenu(id, category) {
+  rememberUndo();
   todayMenu[category] = todayMenu[category].filter(d => d.id !== id);
   await saveMenu();
   renderMenuBuilder();
@@ -2949,7 +3247,6 @@ async function removeFromMenu(id, category) {
 async function deleteFromLibrary(id) {
   if (!confirm('¿Eliminar de la biblioteca?')) return;
   library = library.filter(d => d.id !== id);
-  await saveLibrary();
   await deleteFromCloud(id);
   renderLibrary();
   toast('Eliminado', 'success');
@@ -3005,7 +3302,7 @@ async function saveInlineEdit(id, category) {
     d.spanish.toLowerCase() === oldSpanish.toLowerCase() &&
     d.catalan.toLowerCase() === oldCatalan.toLowerCase()
   );
-  if (libraryDish) {
+  if (libraryDish && row.querySelector('.edit-library')?.checked) {
     libraryDish.spanish = es;
     libraryDish.catalan = ca;
     libraryDish.category = newCategory;
@@ -3014,7 +3311,7 @@ async function saveInlineEdit(id, category) {
 
   editingId = null;
   await saveMenu();
-  if (libraryDish) await saveLibrary();
+  if (libraryDish && row.querySelector('.edit-library')?.checked) await saveLibrary();
   renderMenuBuilder();
   renderPreview();
   renderLibrary();
@@ -3027,23 +3324,30 @@ function cancelInlineEdit() {
 }
 
 async function clearMenu() {
-  if (!confirm('¿Vaciar el menú de hoy?')) return;
+  if (!confirm(`¿Vaciar el menú del ${$('menuDate').value}? Puedes deshacer este cambio.`)) return;
+  rememberUndo();
   todayMenu = { primer: [], segundo: [], postre: [] };
   await saveMenu();
   renderAll();
   toast('Menú vaciado', 'info');
 }
 
-async function loadFromHistory(dateStr) {
+async function loadFromHistory(dateStr, restoreDate = false) {
   const hist = menuHistory[dateStr];
   if (!hist) return;
-  if (Object.values(todayMenu).some(a => a.length > 0)) {
-    if (!confirm(`¿Cargar el menú del ${dateStr}? Se reemplazará el menú actual.`)) return;
-  }
+  if (Object.values(todayMenu).some(a => a.length > 0) && !confirm('Se reemplazará el menú actual. Puedes deshacer este cambio. ¿Continuar?')) return;
+  rememberUndo();
   todayMenu = JSON.parse(JSON.stringify(hist));
+  if (restoreDate) {
+    activeDate = dateStr;
+    $('menuDate').value = dateStr;
+    setDate();
+    if (menuMetadata[dateStr]?.price) $('menuPrice').value = menuMetadata[dateStr].price;
+    else toast('Este historial antiguo no incluye precio. Compruébalo antes de imprimir.', 'info');
+  }
   await saveMenu();
   renderAll();
-  toast(`Menú del ${dateStr} cargado`, 'success');
+  toast(restoreDate ? 'Menú y fecha restaurados' : 'Menú copiado a la fecha seleccionada', 'success');
 }
 
 // ==================== RENDERING ====================
@@ -3078,6 +3382,7 @@ function renderMenuBuilder() {
               <option value="segundo" ${cat === 'segundo' ? 'selected' : ''}>Segundo Plato</option>
               <option value="postre" ${cat === 'postre' ? 'selected' : ''}>Postres</option>
             </select>
+            <label><input type="checkbox" class="edit-library"> Actualizar también la biblioteca</label>
             <div class="inline-edit-actions">
               <button class="dish-action-btn" data-action="save-inline" data-id="${dish.id}" data-cat="${cat}" title="Guardar">✓</button>
               <button class="dish-action-btn" data-action="cancel-inline" title="Cancelar">✕</button>
@@ -3106,6 +3411,8 @@ function renderMenuBuilder() {
 }
 
 function renderPreview() {
+  $('dateNotice').hidden = $('menuDate').value === localDate();
+  $('dateNotice').textContent = `Estás editando el menú del ${$('menuDate').value}. Hoy es ${localDate()}.`;
   const price = $('menuPrice').value || '14.50 €';
   const dateVal = $('menuDate').value;
   const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
@@ -3145,9 +3452,119 @@ function renderPreview() {
   
   html += '<div class="mp-hours">HORARIO DE MENÚ 13:00 – 16:00</div>';
   $('menuPreview').innerHTML = html;
+  renderDailyShortcuts();
+}
+
+function renderDailyShortcuts() {
+  const el = $('dailyShortcuts');
+  if (!el) return;
+  const items = MenuWorkflows.frequentDishes(library, menuHistory, dishPreferences.favorites);
+  el.innerHTML = items.map(d => {
+    const inMenu = (todayMenu[d.category] || []).some(x => MenuWorkflows.key(x.spanish,d.category) === MenuWorkflows.key(d.spanish,d.category));
+    return `<button class="btn btn-secondary" data-dish="${d.id}" ${inMenu ? 'disabled' : ''}>${d.favorite ? '★ ' : ''}${esc(d.spanish)}${inMenu ? ' ✓' : ''}</button>`;
+  }).join('') || '<p class="hint">Guarda platos en la biblioteca y marca tus favoritos con ☆.</p>';
+}
+async function toggleFavorite(id) {
+  const favorites = new Set(dishPreferences.favorites.map(String));
+  if (favorites.has(String(id))) favorites.delete(String(id)); else favorites.add(String(id));
+  dishPreferences.favorites = [...favorites];
+  renderLibrary();
+  await saveSettings();
+}
+function renderBatch() {
+  if (!$('batchText')) return;
+  $('batchText').value = batchDraft.text;
+  $('batchCategory').value = batchDraft.category;
+  $('batchRows').innerHTML = batchDraft.rows.map((r,i) => `<div class="batch-row" data-row="${i}">
+    <input type="checkbox" data-field="selected" aria-label="Seleccionar plato ${i+1}" ${r.selected ? 'checked' : ''}>
+    <input type="text" data-field="spanish" aria-label="Español ${i+1}" value="${esc(r.spanish)}">
+    <input type="text" data-field="catalan" aria-label="Català ${i+1}" value="${esc(r.catalan)}">
+    <small>${CATEGORY_LABELS[r.category]} · ${esc(r.status)}</small></div>`).join('');
+  for (const id of ['batchPrepare','batchTranslate','batchAdd','batchText','batchCategory']) $(id).disabled = batchRunning;
+  $('batchRows').querySelectorAll('input').forEach(el => el.disabled = batchRunning);
+  $('batchCancel').hidden = !batchRunning;
+}
+function prepareBatch() {
+  if (batchRunning) return;
+  try {
+    const rows = MenuWorkflows.parseBatch(batchDraft.text, batchDraft.category);
+    if (batchDraft.rows.length && !confirm('¿Reemplazar la lista preparada? Las correcciones de esa lista se sustituirán.')) return;
+    batchDraft.rows = rows.map(r => {
+      const existing = library.find(d=>MenuWorkflows.key(d.spanish,d.category)===MenuWorkflows.key(r.spanish,r.category));
+      return existing && !r.catalan ? {...r,catalan:existing.catalan,status:'De la biblioteca · revisar'} : r;
+    });
+    saveLocal(); renderBatch();
+    $('batchStatus').textContent = `${rows.length} platos preparados. Revisa traducciones y selección antes de añadir.`;
+  } catch(e) { $('batchStatus').textContent = e.message; }
+}
+async function translateBatch() {
+  if (batchRunning || !batchDraft.rows.length) return;
+  batchRunning = true;
+  const generation = ++batchGeneration;
+  const owner = cacheOwner;
+  renderBatch();
+  try {
+    for (const row of batchDraft.rows) {
+      if (generation !== batchGeneration || owner !== cacheOwner) break;
+      if (!row.selected || row.catalan.trim() || !row.spanish.trim()) continue;
+      try {
+        const result = await translateText(row.spanish);
+        if (generation !== batchGeneration || owner !== cacheOwner) break;
+        row.spanish = result.correctedSpanish || row.spanish;
+        row.catalan = result.catalan;
+        row.status = 'Traducido · revisar';
+      } catch { if (generation !== batchGeneration || owner !== cacheOwner) break; row.status = 'Error de traducción · puedes escribirla o reintentar'; }
+      if (generation !== batchGeneration || owner !== cacheOwner) break;
+      saveLocal(); renderBatch();
+    }
+  } finally {
+    if (generation === batchGeneration && owner === cacheOwner) {
+      batchRunning = false; renderBatch();
+      $('batchStatus').textContent = 'Revisa los resultados. Las filas sin traducción se pueden reintentar.';
+    }
+  }
+}
+async function addBatch() {
+  if (batchRunning) return;
+  const selected = batchDraft.rows.filter(r=>r.selected);
+  if (!selected.length || selected.some(r=>!r.spanish.trim()||!r.catalan.trim())) {
+    $('batchStatus').textContent = 'Selecciona platos y completa sus dos nombres antes de añadir.'; return;
+  }
+  rememberUndo();
+  let count = 0, libraryChanged = false;
+  for (const row of selected) {
+    const name = row.spanish.trim(), ca = row.catalan.trim(), cat = row.category;
+    if (!todayMenu[cat].some(d=>MenuWorkflows.key(d.spanish,cat)===MenuWorkflows.key(name,cat))) {
+      todayMenu[cat].push({id:uid(),spanish:name,catalan:ca,category:cat}); count++;
+    }
+    if ($('batchSaveLibrary').checked && !library.some(d=>MenuWorkflows.key(d.spanish,d.category)===MenuWorkflows.key(name,cat))) {
+      library.unshift({id:uid(),spanish:name,catalan:ca,category:cat,created_at:new Date().toISOString()}); libraryChanged=true;
+    }
+  }
+  if (libraryChanged) pendingSaves.library = true;
+  batchDraft.rows = batchDraft.rows.filter(r=>!r.selected);
+  await saveMenu();
+  renderAll(); renderBatch();
+  $('batchStatus').textContent = `${count} platos añadidos. Los duplicados se han omitido.`;
+}
+function bindBatchEvents() {
+  $('batchText').addEventListener('input', e=> { batchDraft.text=e.target.value; saveLocal(); });
+  $('batchCategory').addEventListener('change', e=> { batchDraft.category=e.target.value; batchDraft.rows.forEach(r=>r.category=e.target.value); saveLocal(); renderBatch(); });
+  $('batchPrepare').addEventListener('click', prepareBatch);
+  $('batchTranslate').addEventListener('click', translateBatch);
+  $('batchAdd').addEventListener('click', addBatch);
+  $('batchCancel').addEventListener('click', ()=> { batchGeneration++; batchRunning=false; renderBatch(); $('batchStatus').textContent='Traducción detenida. Se conservan las filas ya completadas.'; });
+  $('batchRows').addEventListener('input', e=> {
+    const i = e.target.closest('[data-row]')?.dataset.row;
+    const field = e.target.dataset.field;
+    if (batchRunning || i === undefined || !field) return;
+    batchDraft.rows[i][field] = field==='selected' ? e.target.checked : e.target.value;
+    batchDraft.rows[i].status = 'Revisar'; e.target.closest('[data-row]').querySelector('small').textContent = CATEGORY_LABELS[batchDraft.rows[i].category] + ' · Revisar'; saveLocal();
+  });
 }
 
 function renderLibrary() {
+  renderDailyShortcuts();
   const search = ($('librarySearch')?.value || '').toLowerCase();
   $('libraryCount').textContent = `(${library.length})`;
   
@@ -3166,6 +3583,7 @@ function renderLibrary() {
     dishes.forEach(d => {
       const inMenu = menuNames.has(d.spanish.toLowerCase());
       html += `<div class="library-item ${inMenu ? 'in-menu' : ''}" data-action="add-from-library" data-id="${d.id}">
+        <button class="favorite-toggle" data-favorite="${d.id}" aria-label="Favorito: ${esc(d.spanish)}" aria-pressed="${dishPreferences.favorites.map(String).includes(String(d.id))}">${dishPreferences.favorites.map(String).includes(String(d.id)) ? '★' : '☆'}</button>
         <span class="lib-es">${esc(d.spanish)}</span>
         <span class="lib-ca">${esc(d.catalan)}</span>
         <span class="lib-add">${inMenu ? '✓' : '+'}</span>
@@ -3180,7 +3598,7 @@ function renderLibrary() {
 }
 
 function renderHistory() {
-  const dates = Object.keys(menuHistory).sort().reverse().slice(0, 15);
+  const dates = Object.keys(menuHistory).sort().reverse();
   if (dates.length === 0) {
     $('historyList').innerHTML = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">Sin historial aún. Los menús se guardan automáticamente.</p>';
     return;
@@ -3194,15 +3612,21 @@ function renderHistory() {
     return `<div class="history-item" data-date="${esc(dateStr)}">
       <span class="history-date">${esc(displayDate)}</span>
       <span class="history-summary">${total} platos · ${esc(sample || '...')}</span>
-      <button class="history-load-btn">Cargar ↗</button>
+      <button class="history-load-btn" data-restore="false">Copiar a fecha actual ↗</button>
+      <button class="history-load-btn" data-restore="true">Restaurar fecha y precio</button>
     </div>`;
   }).join('');
 }
 
 // ==================== EVENTS ====================
 function bindEvents() {
+  bindBatchEvents();
+  $('dailyShortcuts').addEventListener('click', e => {
+    const btn = e.target.closest('[data-dish]');
+    if (btn) addFromLibrary(Number(btn.dataset.dish));
+  });
   // Quick input keyboard shortcuts
-  $('inputEs').addEventListener('input', e => showAutocomplete(e.target.value));
+  $('inputEs').addEventListener('input', e => { translationRevision++; showAutocomplete(e.target.value); });
   $('inputEs').addEventListener('keydown', async e => {
     const dropdown = $('autocompleteDropdown');
     const items = dropdown.querySelectorAll('.autocomplete-item');
@@ -3221,7 +3645,8 @@ function bindEvents() {
         selectAutocomplete(Number(items[autocompleteHighlight].dataset.id));
       } else {
         // Translate + add to menu
-        if (!$('inputCa').value.trim()) await doTranslate();
+        if (translating) return;
+        if (!$('inputCa').value.trim() && !await doTranslate()) return;
         if (e.shiftKey) {
           await addToLibrary();
         } else {
@@ -3257,8 +3682,8 @@ function bindEvents() {
 
   $('historyList').addEventListener('click', e => {
     const item = e.target.closest('.history-item[data-date]');
-    if (!item) return;
-    loadFromHistory(item.dataset.date);
+    if (!item || !e.target.closest('[data-restore]')) return;
+    loadFromHistory(item.dataset.date, e.target.closest('[data-restore]')?.dataset.restore === 'true');
   });
 
   $('menuBuilder').addEventListener('click', async e => {
@@ -3277,6 +3702,8 @@ function bindEvents() {
   });
 
   $('libraryList').addEventListener('click', async e => {
+    const favorite = e.target.closest('[data-favorite]');
+    if (favorite) { await toggleFavorite(favorite.dataset.favorite); return; }
     const actionEl = e.target.closest('[data-action]');
     if (!actionEl) return;
 
@@ -3305,10 +3732,14 @@ function bindEvents() {
   $('btnPDFColor').addEventListener('click', () => generateDesignPDF('color'));
   $('btnPDFBW').addEventListener('click', () => generateDesignPDF('bw'));
   $('btnClear').addEventListener('click', clearMenu);
+  $('btnUndo').addEventListener('click', restoreUndo);
+  $('btnRetrySync').addEventListener('click', syncPending);
+  window.addEventListener('online', syncPending);
 
   // Date change
-  $('menuDate').addEventListener('change', () => { setDate(); renderPreview(); });
-  $('menuPrice').addEventListener('input', renderPreview);
+  $('menuDate').addEventListener('change', changeMenuDate);
+  $('menuPrice').addEventListener('input', () => { renderPreview(); stageMenu(); });
+  $('menuPrice').addEventListener('change', saveMenu);
 
   // Library toggle
   $('libraryToggle').addEventListener('click', () => {
@@ -3328,6 +3759,10 @@ function bindEvents() {
   $('librarySearch').addEventListener('input', () => renderLibrary());
 
   // Settings modal
+  $('downloadDailyBackup').addEventListener('click',downloadDailyBackup);
+  $('chooseDailyBackup').addEventListener('click',()=>{ $('dailyBackupFile').value=''; $('dailyBackupFile').click(); });
+  $('dailyBackupFile').addEventListener('change',e=>reviewDailyBackup(e.target.files[0]));
+  $('restoreDailyBackup').addEventListener('click',restoreDailyBackup);
   $('btnSettings').addEventListener('click', () => {
     $('settingsModal').classList.add('visible');
     const savedKey = localStorage.getItem('gemini_api_key') || '';
@@ -3368,7 +3803,20 @@ function bindEvents() {
     toast('Cuenta creada. Revisa tu email si se requiere confirmación.', 'success');
   });
 
+  $('recoverGuestDraft').addEventListener('click', async () => {
+    const saved = JSON.parse(localStorage.getItem('menu_v3_local_snapshot') || 'null');
+    if (!saved || !confirm('¿Reemplazar el menú actual por el borrador creado sin sesión? La biblioteca actual se mantiene.')) return;
+    rememberUndo();
+    todayMenu = unpackMenu(saved.todayMenu);
+    activeDate = saved.draft?.date || localDate();
+    $('menuDate').value = activeDate;
+    setDate();
+    if (saved.draft?.price) $('menuPrice').value = saved.draft.price;
+    await saveMenu(); renderAll();
+    toast('Borrador recuperado', 'success');
+  });
   $('authSignOut').addEventListener('click', async () => {
+    if (!mcPersistCurrent()) return;
     const { error } = await supabase.auth.signOut();
     if (error) { toast('Error al cerrar sesión', 'error'); return; }
     toast('Sesión cerrada', 'info');
@@ -3436,10 +3884,7 @@ function bindEvents() {
     printSettings = normalizePrintSettings(printSettings);
     saveLocal();
     renderPreview();
-    // Sync to Supabase
-    if (isCloud) {
-      if (currentUser) supabase.from('settings').upsert(withOwner({ id: 1, print_settings: printSettings }), { onConflict: 'id' }).then(({ error }) => { if (error) console.warn('Settings sync failed:', error); });
-    }
+    saveSettings();
   }
   
   let settingsSaveTimer = null;
@@ -3447,14 +3892,16 @@ function bindEvents() {
     const handler = e => {
       printSettings[key] = e.target.tagName === 'SELECT' ? e.target.value : parseInt(e.target.value) || 0;
       printSettings = normalizePrintSettings(printSettings);
+      pendingSaves.settings = true;
+      editRevision++;
       saveLocal();
+      updateSaveStatus();
       renderPreview();
       // Debounced cloud save
       clearTimeout(settingsSaveTimer);
+      const settingsOwner = cacheOwner;
       settingsSaveTimer = setTimeout(() => {
-        if (isCloud) {
-          if (currentUser) supabase.from('settings').upsert(withOwner({ id: 1, print_settings: printSettings }), { onConflict: 'id' }).then(({ error }) => { if (error) console.warn(error); });
-        }
+        if (settingsOwner === cacheOwner) syncPending();
       }, 1500);
     };
     $(inputId)?.addEventListener('input', handler);
@@ -3519,9 +3966,26 @@ function setupDragDrop() {
 }
 
 // ==================== UTILITIES ====================
+async function changeMenuDate() {
+  const date = $('menuDate').value;
+  if (!date) { $('menuDate').value = activeDate || localDate(); return; }
+  if (editingId !== null && !confirm('Hay un plato en edición sin confirmar. ¿Cambiar de fecha y descartar esa edición?')) {
+    $('menuDate').value = activeDate; return;
+  }
+  undoMenu = { dishes: JSON.parse(JSON.stringify(todayMenu)), date: activeDate || localDate(), price: $('menuPrice').value };
+  $('btnUndo').disabled = false;
+  activeDate = date;
+  editingId = null;
+  todayMenu = unpackMenu(JSON.parse(JSON.stringify(menuHistory[date] || {})));
+  setDate();
+  if (menuMetadata[date]?.price) $('menuPrice').value = menuMetadata[date].price;
+  await saveMenu();
+  renderAll();
+}
+
 function setDate() {
   const input = $('menuDate');
-  if (!input.value) input.valueAsDate = new Date();
+  if (!input.value) input.value = localDate();
   const d = new Date(input.value);
   const day = d.getUTCDay();
   const isWeekend = day === 0 || day === 6;
@@ -3554,6 +4018,7 @@ function saveSpecialPriceForDate() {
     delete specialPrices[dateStr];
     saveLocal();
     setDate();
+    saveMenu();
     renderPreview();
     toast('Precio especial eliminado', 'info');
     return;
@@ -3563,10 +4028,12 @@ function saveSpecialPriceForDate() {
   saveLocal();
   setDate();
   renderPreview();
+  saveMenu();
   toast('Precio especial guardado', 'success');
 }
 
 function clearInputs() {
+  translationRevision++;
   $('inputEs').value = '';
   $('inputCa').value = '';
   $('inputEs').focus();
@@ -3819,6 +4286,7 @@ async function generateDesignPDF(mode) {
 function printMenu() {
   const content = $('menuPreview').innerHTML;
   const w = window.open('', '_blank');
+  if (!w) { toast('Permite ventanas emergentes o usa PDF para imprimir.', 'error'); return; }
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del Día</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <style>
@@ -4067,6 +4535,68 @@ let mcFilterStatus = 'all';
 let mcFilterTag = '';
 let mcLoaded = false;
 let mcCollapsedSections = new Set();
+let mcDrafts = {};
+let mcDraftError = false;
+let mcSavingIds = new Set();
+let mcMappingsOpen = false;
+let mcViewBaselines = {};
+
+function mcWriteDrafts() {
+  try {
+    localStorage.setItem(cacheKey('closedDrafts'), JSON.stringify({ drafts: mcDrafts, menus: mcMenus, selectedId: mcCurrentId }));
+    mcDraftError = false;
+    return true;
+  } catch {
+    mcDraftError = true;
+    toast('No se pudo guardar el borrador local. No cierres esta página.', 'error');
+    return false;
+  }
+}
+function mcRestoreDrafts() {
+  mcViewBaselines = {};
+  try {
+    const saved = JSON.parse(localStorage.getItem(cacheKey('closedDrafts')) || '{}');
+    mcDrafts = saved.drafts || {};
+    mcMenus = saved.menus || [];
+    mcCurrentId = saved.selectedId || null;
+    mcCurrentMenu = MenuWorkflows.clone(mcDrafts[mcCurrentId] || mcMenus.find(m => m.id === mcCurrentId) || null);
+    mcDraftError = false;
+    mcLoaded = false;
+  } catch { mcDrafts = {}; mcMenus = []; mcCurrentMenu = null; mcCurrentId = null; }
+}
+function mcPersistCurrent() {
+  if (!mcCurrentMenu) return true;
+  if ($('mc-name-input')) Object.assign(mcCurrentMenu, mcGatherFromEditor());
+  const original = mcMenus.find(m => m.id === mcCurrentId);
+  if (original && !mcCurrentMenu._baseUpdatedAt) mcCurrentMenu._baseUpdatedAt = original.updated_at;
+  if (MenuWorkflows.content(mcViewBaselines[mcCurrentId] || original) !== MenuWorkflows.content(mcCurrentMenu)) {
+    mcDrafts[mcCurrentId] = MenuWorkflows.clone(mcCurrentMenu);
+  } else delete mcDrafts[mcCurrentId];
+  const saved = mcWriteDrafts();
+  mcRenderDraftStatus();
+  mcRenderLibrary();
+  return saved;
+}
+function mcRenderDraftStatus() {
+  const status = $('mc-draft-status');
+  if (!status || !mcCurrentMenu) return;
+  const cloud = mcMenus.find(m => m.id === mcCurrentId);
+  const conflict = cloud && mcDrafts[mcCurrentId]?._baseUpdatedAt && cloud.updated_at !== mcDrafts[mcCurrentId]._baseUpdatedAt;
+  status.textContent = mcDraftError ? 'No se pudo guardar el borrador · no cierres esta página'
+    : conflict ? 'La versión en la nube ha cambiado. Conserva este borrador como nueva versión o descártalo.'
+    : mcDrafts[mcCurrentId] ? 'Borrador guardado en este dispositivo · pendiente de Guardar en la nube'
+    : 'Sin cambios pendientes';
+  if ($('mc-discard-draft')) $('mc-discard-draft').hidden = !mcDrafts[mcCurrentId];
+}
+function mcDiscardDraft() {
+  if (!mcCurrentId || !confirm('¿Descartar este borrador local y volver a la versión guardada?')) return;
+  delete mcDrafts[mcCurrentId];
+  const saved = mcMenus.find(m => m.id === mcCurrentId);
+  mcCurrentMenu = saved ? { ...MenuWorkflows.clone(saved), _baseUpdatedAt: saved.updated_at } : null;
+  if (!saved) mcCurrentId = null;
+  mcWriteDrafts(); mcRenderLibrary(); mcRenderEditor();
+}
+
 
 function mcUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -4142,9 +4672,8 @@ function mcMenuSearchText(menu) {
 }
 
 function mcFindFamilyMenu(menu, lang) {
-  const pid = menu?.parent_id || menu?.id;
-  if (!pid) return null;
-  return (mcMenus || []).find(x => (x.id === pid || x.parent_id === pid) && (x.language || 'es') === lang) || null;
+  const matches = mcMenus.filter(m => m.id !== menu.id && mcFamilyId(m) === mcFamilyId(menu) && MenuWorkflows.version(m) === MenuWorkflows.version(menu) && (m.language || 'es') === lang);
+  return matches.length === 1 ? matches[0] : null;
 }
 
 function mcFamilyId(menu) {
@@ -4169,60 +4698,30 @@ function mcPickRepresentative(members) {
 }
 
 function mcSelectMenuById(id) {
-  const m = mcMenus.find(x => x.id === id);
+  if (!mcPersistCurrent()) return;
+  const m = mcDrafts[id] || mcMenus.find(x => x.id === id);
   if (!m) return;
-  mcCurrentMenu = { ...m };
+  mcCurrentMenu = MenuWorkflows.clone(m);
+  if (!mcCurrentMenu._isNew && !mcCurrentMenu._baseUpdatedAt) mcCurrentMenu._baseUpdatedAt = m.updated_at;
   mcCurrentId = m.id;
-  mcRenderEditor();
-  mcRenderLibrary();
+  mcMappingsOpen = false;
+  mcWriteDrafts(); mcRenderEditor(); mcRenderLibrary();
 }
 
 function mcLangDishName(menu, lang, si, di, fallback = '') {
-  const menuLang = menu?.language || 'es';
-  if (lang === menuLang) return fallback;
-  const sibling = mcFindFamilyMenu(menu, lang);
-  const siblingName = sibling?.sections?.[si]?.dishes?.[di]?.name;
-  if (siblingName) return siblingName;
-  const dish = menu?.sections?.[si]?.dishes?.[di];
-  if (lang === 'ca') return dish?.name_ca || '';
-  if (lang === 'en') return dish?.name_en || '';
-  const esMenu = mcFindFamilyMenu(menu, 'es');
-  return esMenu?.sections?.[si]?.dishes?.[di]?.name || fallback;
+  return MenuWorkflows.translatedField(menu, mcMenus, lang, si, di, 'name');
 }
 
 function mcLangSectionText(menu, lang, si, field, fallback = '') {
-  const menuLang = menu?.language || 'es';
-  if (lang === menuLang) return fallback;
-  const sibling = mcFindFamilyMenu(menu, lang);
-  const siblingText = sibling?.sections?.[si]?.[field];
-  if (siblingText) return siblingText;
-  const sec = menu?.sections?.[si];
-  if (lang === 'ca') return sec?.[field + '_ca'] || '';
-  if (lang === 'en') return sec?.[field + '_en'] || '';
-  const esMenu = mcFindFamilyMenu(menu, 'es');
-  return esMenu?.sections?.[si]?.[field] || fallback;
+  return MenuWorkflows.translatedField(menu, mcMenus, lang, si, null, field);
 }
 
 function mcHasDishTranslation(menu, lang, si, di) {
-  if (lang === (menu?.language || 'es')) return true;
-  const sibling = mcFindFamilyMenu(menu, lang);
-  if (sibling?.sections?.[si]?.dishes?.[di]?.name) return true;
-  const dish = menu?.sections?.[si]?.dishes?.[di];
-  if (lang === 'ca') return !!dish?.name_ca;
-  if (lang === 'en') return !!dish?.name_en;
-  const esMenu = mcFindFamilyMenu(menu, 'es');
-  return !!esMenu?.sections?.[si]?.dishes?.[di]?.name;
+  return !!mcLangDishName(menu, lang, si, di);
 }
 
 function mcHasSectionTranslation(menu, lang, si, field) {
-  if (lang === (menu?.language || 'es')) return true;
-  const sibling = mcFindFamilyMenu(menu, lang);
-  if (sibling?.sections?.[si]?.[field]) return true;
-  const sec = menu?.sections?.[si];
-  if (lang === 'ca') return !!sec?.[field + '_ca'];
-  if (lang === 'en') return !!sec?.[field + '_en'];
-  const esMenu = mcFindFamilyMenu(menu, 'es');
-  return !!esMenu?.sections?.[si]?.[field];
+  return !!mcLangSectionText(menu, lang, si, field);
 }
 
 function mcValidateMenu(menu, langs = [menu?.language || 'es']) {
@@ -4244,6 +4743,7 @@ function mcValidateMenu(menu, langs = [menu?.language || 'es']) {
     if (!MC_LANG_LABELS[lang]) return;
     if (lang === (menu.language || 'es')) return;
     sections.forEach((sec, si) => {
+      if (sec.subtitle && !mcHasSectionTranslation(menu, lang, si, 'subtitle')) missing.push(`${MC_LANG_LABELS[lang]}: ${sec.subtitle}`);
       if (sec.title && !mcHasSectionTranslation(menu, lang, si, 'title')) {
         missing.push(`${MC_LANG_LABELS[lang]}: sección "${sec.title}"`);
       }
@@ -4271,6 +4771,7 @@ function mcValidationMessage(validation) {
 }
 
 function mcConfirmValidation(action, validation) {
+  if (action.includes('PDF') && validation.missing.length) { alert('Completa las correspondencias o selecciona solo el idioma original antes de generar el PDF.'); return false; }
   if (validation.errors.length) {
     alert(`No se puede ${action} todavía:\n\n${mcValidationMessage(validation)}`);
     return false;
@@ -4282,76 +4783,104 @@ function mcConfirmValidation(action, validation) {
 }
 
 async function mcLoadMenus() {
-  if (!supabase) return;
+  mcRenderLibrary(); mcRenderEditor();
+  if (!supabase || !currentUser) { mcLoaded = true; mcRenderLibrary(); return; }
+  const owner = cacheOwner;
   try {
-    const { data, error } = await supabase.from('menus_cerrados').select('*').order('updated_at', { ascending: false });
+    const { data, error } = await supabase.from('menus_cerrados').select('*').order('updated_at', { ascending: false }).abortSignal(AbortSignal.timeout(15000));
+    if (owner !== cacheOwner) return;
     if (error) throw error;
     mcMenus = data || [];
     mcLoaded = true;
+    if (!mcDrafts[mcCurrentId]) {
+      const selected = mcMenus.find(m => m.id === mcCurrentId);
+      mcCurrentMenu = selected ? { ...MenuWorkflows.clone(selected), _baseUpdatedAt: selected.updated_at } : null;
+      if (!selected) mcCurrentId = null;
+    }
+    mcWriteDrafts(); mcRenderLibrary(); mcRenderEditor();
+  } catch {
+    toast('No se pudo cargar la nube. Los menús y borradores locales siguen disponibles.', 'error');
     mcRenderLibrary();
-  } catch (e) {
-    console.error('mcLoadMenus:', e);
-    toast('Error cargando menús cerrados: ' + e.message, 'error');
   }
 }
 
 async function mcSaveMenu() {
-  if (!mcCurrentMenu) return;
-  const gathered = mcGatherFromEditor();
-  const validation = mcValidateMenu({ ...mcCurrentMenu, ...gathered }, mcGetDisplayLangs(gathered));
+  if (!mcCurrentMenu || mcSavingIds.has(mcCurrentId)) return;
+  if (!mcPersistCurrent()) return;
+  const snapshot = MenuWorkflows.clone(mcCurrentMenu);
+  const validation = mcValidateMenu(snapshot, mcGetDisplayLangs(snapshot));
   if (!mcConfirmValidation('guardar', validation)) return;
-  if (gathered.sections) {
-    gathered.sections = gathered.sections.map(sec => ({
-      ...sec,
-      dishes: (sec.dishes || []).filter(d => d.name)
-    }));
-  }
-  Object.assign(mcCurrentMenu, gathered);
-  mcCurrentMenu.updated_at = new Date().toISOString();
+  if (!currentUser || !supabase) { toast('Borrador local conservado. Inicia sesión para guardarlo en la nube.', 'info'); return; }
+  const id = snapshot.id;
+  const owner = cacheOwner;
+  const generation = authGeneration;
+  const payload = { ...snapshot, updated_at: new Date().toISOString() };
+  delete payload._isNew; delete payload._baseUpdatedAt;
+  payload.sections = (payload.sections || []).map(sec => ({ ...sec, dishes: (sec.dishes || []).filter(d => d.name) }));
+  mcSavingIds.add(id);
+  $('mc-save-btn').disabled = true;
   try {
-    if (mcCurrentMenu._isNew) {
-      const toInsert = { ...mcCurrentMenu };
-      delete toInsert._isNew;
-      const { data, error } = await supabase.from('menus_cerrados').insert([toInsert]).select().single();
-      if (error) throw error;
-      mcCurrentMenu = data;
-      mcCurrentId = data.id;
-      mcMenus.unshift(data);
+    let query;
+    if (snapshot._isNew) {
+      query = supabase.from('menus_cerrados').insert([payload]);
     } else {
-      const { error } = await supabase.from('menus_cerrados').update(mcCurrentMenu).eq('id', mcCurrentMenu.id);
-      if (error) throw error;
-      const idx = mcMenus.findIndex(m => m.id === mcCurrentMenu.id);
-      if (idx >= 0) mcMenus[idx] = { ...mcCurrentMenu };
+      query = supabase.from('menus_cerrados').update(payload).eq('id', id);
+      if (snapshot._baseUpdatedAt) query = query.eq('updated_at', snapshot._baseUpdatedAt);
     }
-    toast('Menú guardado', 'success');
-    mcRenderLibrary();
-    mcRenderEditor();
-  } catch (e) {
-    console.error('mcSaveMenu:', e);
-    toast('Error al guardar: ' + e.message, 'error');
+    let { data, error } = await query.select().single().abortSignal(AbortSignal.timeout(15000));
+    if (owner !== cacheOwner || generation !== authGeneration) return;
+    // A response can be lost after the server committed. Confirm identical content
+    // before retrying an insert or reporting an optimistic-lock conflict.
+    if (error || !data) {
+      const check = await supabase.from('menus_cerrados').select('*').eq('id', id).single().abortSignal(AbortSignal.timeout(15000));
+      if (owner !== cacheOwner || generation !== authGeneration) return;
+      if (!check.error && MenuWorkflows.savedMatches(check.data, payload)) { data = check.data; error = null; }
+    }
+    if (error || !data) throw error || new Error('No row saved');
+    // Capture edits made during the request before updating the cloud baseline.
+    if (mcCurrentId === id) mcPersistCurrent();
+    const currentDraft = mcDrafts[id];
+    mcMenus = [data, ...mcMenus.filter(m => m.id !== id)];
+    if (currentDraft && MenuWorkflows.content(currentDraft) !== MenuWorkflows.content(snapshot)) {
+      mcDrafts[id] = { ...currentDraft, _isNew: false, _baseUpdatedAt: data.updated_at };
+    } else delete mcDrafts[id];
+    if (mcCurrentId === id) {
+      mcCurrentMenu = MenuWorkflows.clone(mcDrafts[id] || { ...data, _baseUpdatedAt: data.updated_at });
+      mcRenderEditor();
+    }
+    mcWriteDrafts(); mcRenderLibrary();
+    toast(mcDrafts[id] ? 'Versión guardada; tus cambios posteriores siguen en el borrador local.' : 'Menú guardado en la nube', 'success');
+  } catch {
+    toast('La nube no confirmó el guardado. El borrador se conserva. Si otra persona cambió el menú, crea una nueva versión.', 'error');
+  } finally {
+    mcSavingIds.delete(id);
+    if (mcCurrentId === id && $('mc-save-btn')) $('mc-save-btn').disabled = false;
+    mcRenderDraftStatus();
   }
 }
 
 async function mcDeleteMenu() {
-  if (!mcCurrentMenu || mcCurrentMenu._isNew) return;
-  if (!confirm(`¿Eliminar "${mcCurrentMenu.name}"?`)) return;
+  if (!mcCurrentMenu || mcCurrentMenu._isNew || mcSavingIds.has(mcCurrentId)) return;
+  if (!mcPersistCurrent()) return;
+  if (!currentUser) { toast('Inicia sesión para eliminar un menú de la nube.', 'info'); return; }
+  const id = mcCurrentId, owner = cacheOwner;
+  if (!confirm(`¿Eliminar "${mcCurrentMenu.name}" y su borrador local?`)) return;
   try {
-    const { error } = await supabase.from('menus_cerrados').delete().eq('id', mcCurrentMenu.id);
-    if (error) throw error;
-    mcMenus = mcMenus.filter(m => m.id !== mcCurrentMenu.id);
-    mcCurrentMenu = null; mcCurrentId = null;
-    mcRenderLibrary(); mcRenderEditor();
+    const { error, data } = await supabase.from('menus_cerrados').delete().eq('id', id).select('id').abortSignal(AbortSignal.timeout(15000));
+    if (owner !== cacheOwner) return;
+    if (error || !data?.length) throw error || new Error('No row deleted');
+    mcMenus = mcMenus.filter(m => m.id !== id); delete mcDrafts[id];
+    if (mcCurrentId === id) { mcCurrentMenu = null; mcCurrentId = null; }
+    mcWriteDrafts(); mcRenderLibrary(); mcRenderEditor();
     toast('Menú eliminado', 'success');
-  } catch (e) {
-    toast('Error al eliminar', 'error');
-  }
+  } catch { toast('No se confirmó la eliminación. Se conserva la copia local.', 'error'); }
 }
 
 function mcDuplicateMenu() {
-  if (!mcCurrentMenu) return;
-  const base = mcCurrentMenu._isNew ? mcCurrentMenu : (mcMenus.find(m => m.id === mcCurrentMenu.id) || mcCurrentMenu);
-  const parentId = base.parent_id || base.id;
-  const family = mcMenus.filter(m => m.id === parentId || m.parent_id === parentId);
+  if (!mcCurrentMenu || !mcPersistCurrent()) return;
+  const base = { ...mcCurrentMenu, ...mcGatherFromEditor() };
+  const parentId = base.parent_id || (base._isNew ? null : base.id);
+  const family = [...mcMenus.filter(m => !mcDrafts[m.id]), ...Object.values(mcDrafts)].filter(m => m.id === parentId || (parentId && m.parent_id === parentId));
   const maxVer = Math.max(...family.map(m => m.version || 1), base.version || 1);
   const newMenu = {
     id: mcUUID(),
@@ -4366,7 +4895,7 @@ function mcDuplicateMenu() {
     drinks: base.drinks,
     language: base.language || 'es',
     parent_id: parentId,
-    version: maxVer + 1,
+    version: parentId ? maxVer + 1 : 1,
     tags: [...(base.tags || [])],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -4380,7 +4909,8 @@ function mcDuplicateMenu() {
 function mcRenderLibrary() {
   const list = $('mc-library-list');
   if (!list) return;
-  let filtered = mcMenus;
+  const combined = [...mcMenus.filter(m => !mcDrafts[m.id]), ...Object.values(mcDrafts)];
+  let filtered = combined;
   if (mcFilterType !== 'all') filtered = filtered.filter(m => m.type === mcFilterType);
   if (mcFilterPrice !== 'all') filtered = filtered.filter(m => mcPriceMatches(m, mcFilterPrice));
   if (mcFilterLang !== 'all') filtered = filtered.filter(m => (m.language || 'es') === mcFilterLang);
@@ -4400,7 +4930,7 @@ function mcRenderLibrary() {
     return (langOrder[a.language || 'es'] ?? 9) - (langOrder[b.language || 'es'] ?? 9)
       || (a.version || 1) - (b.version || 1);
   }));
-  if (countEl) countEl.textContent = `${families.length} familias · ${filtered.length} de ${mcMenus.length} menús`;
+  if (countEl) countEl.textContent = `${families.length} familias · ${filtered.length} de ${combined.length} menús`;
   if (filtered.length === 0) {
     list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--ink-faint);text-align:center">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
     return;
@@ -4414,7 +4944,7 @@ function mcRenderLibrary() {
     const tmpl = MC_TEMPLATES[mcGetTemplate(rep)] || '';
     const status = mcGetStatus(rep);
     const rawTags = mcRawTags(rep).slice(0, 2).map(t => `<span>#${esc(t)}</span>`).join('');
-    const variants = members.map(m => `<button class="mc-variant-chip${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}" title="${esc(m.name || '')}">${mcVariantLabel(m)}</button>`).join('');
+    const variants = members.map(m => `<button class="mc-variant-chip${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}" title="${esc(m.name || '')}">${mcVariantLabel(m)}${mcDrafts[m.id] ? ' · borrador' : ''}</button>`).join('');
     return `<div class="mc-family-item${familyActive ? ' active' : ''}">
       <div class="mc-family-head" data-id="${rep.id}">
         <div class="mc-list-item-name">${esc(rep.name || 'Sin nombre')} ${members.length > 1 ? `<span class="mc-version-tag">${members.length} versiones</span>` : ''}</div>
@@ -4482,6 +5012,8 @@ function mcRenderEditor() {
         ${!m._isNew ? `<button class="mc-btn mc-btn-del" id="mc-del-btn" title="Eliminar">🗑</button>` : ''}
       </div>
     </div>
+    <p id="mc-draft-status" class="mc-help-text" role="status"></p>
+    <button class="btn btn-secondary btn-small" id="mc-discard-draft" hidden>Descartar borrador local</button>
     <div class="mc-notes-row">
       <div class="mc-field-label">Condiciones / Notas</div>
       <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
@@ -4507,6 +5039,8 @@ function mcRenderEditor() {
       </div>
     </div>
     <div id="mc-qa-panel"></div>
+    <button class="btn btn-secondary btn-small" id="mc-mappings-toggle">Revisar correspondencias de idiomas</button>
+    <div id="mc-mappings" hidden></div>
     <div class="mc-sections-header">
       <div class="mc-sections-title">Secciones del menú</div>
       <button class="mc-add-section-btn" id="mc-add-section-btn">+ Añadir sección</button>
@@ -4541,6 +5075,9 @@ function mcRenderEditor() {
     </div>`;
 
   $('mc-save-btn').addEventListener('click', mcSaveMenu);
+  $('mc-save-btn').disabled = mcSavingIds.has(mcCurrentId);
+  $('mc-discard-draft').addEventListener('click', mcDiscardDraft);
+  $('mc-mappings-toggle').addEventListener('click', () => { mcMappingsOpen = !mcMappingsOpen; mcRenderMappings(); });
   $('mc-dup-btn').addEventListener('click', mcDuplicateMenu);
   const delBtn = $('mc-del-btn');
   if (delBtn) delBtn.addEventListener('click', mcDeleteMenu);
@@ -4548,6 +5085,7 @@ function mcRenderEditor() {
     mcCurrentMenu.sections = mcGatherSections();
     mcCurrentMenu.sections.push({ id: mcUUID(), title: 'Nueva sección', subtitle: '', mode: 'choose_one', dishes: [{ id: mcUUID(), name: '', supplement: null }] });
     mcRefreshSections();
+    mcUpdatePreview();
   });
   $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color'));
   $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw'));
@@ -4562,11 +5100,11 @@ function mcRenderEditor() {
   $('mc-translate-en-btn').addEventListener('click', () => mcTranslateAll('en'));
   area.querySelectorAll('.mc-version-sibling').forEach(el => {
     el.addEventListener('click', () => {
-      const m2 = mcMenus.find(x => x.id === el.dataset.id);
-      if (m2) { mcCurrentMenu = { ...m2 }; mcCurrentId = m2.id; mcRenderEditor(); mcRenderLibrary(); }
+      mcSelectMenuById(el.dataset.id);
     });
   });
   mcBindSectionEvents();
+  if (!mcDrafts[mcCurrentId] && !mcCurrentMenu._isNew) mcViewBaselines[mcCurrentId] = MenuWorkflows.clone({ ...mcCurrentMenu, ...mcGatherFromEditor() });
   mcUpdatePreview();
 }
 
@@ -4625,9 +5163,9 @@ function mcGatherSections() {
       const name    = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
       const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
       const prev = mcCurrentMenu.sections?.[si]?.dishes?.[di];
-      return { id: (prev?.id || mcUUID()), name, name_ca: prev?.name_ca || null, name_en: prev?.name_en || null, supplement: parseFloat(suppRaw) || null };
+      return MenuWorkflows.editTranslatedItem(prev || {}, { id: prev?.id || mcUUID(), name, supplement: parseFloat(suppRaw.replace(',', '.')) || null });
     });
-    return {
+    return MenuWorkflows.editTranslatedItem(mcCurrentMenu.sections?.[si] || {}, {
       id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
       title: block.querySelector('.mc-section-title-input')?.value.trim() || '',
       subtitle: block.querySelector('.mc-section-subtitle-input')?.value.trim() || '',
@@ -4637,7 +5175,7 @@ function mcGatherSections() {
       subtitle_en: mcCurrentMenu.sections?.[si]?.subtitle_en || null,
       mode: block.querySelector('.mc-section-mode-select')?.value || 'choose_one',
       dishes
-    };
+    });
   });
 }
 
@@ -4675,8 +5213,9 @@ function mcBindSectionEvents() {
       mcCurrentMenu.sections = mcGatherSections();
       const copy = JSON.parse(JSON.stringify(mcCurrentMenu.sections[si] || {}));
       copy.id = mcUUID();
+      delete copy.language_links; delete copy.translation_source;
       copy.title = copy.title ? `${copy.title} copia` : 'Sección copia';
-      copy.dishes = (copy.dishes || []).map(d => ({ ...d, id: mcUUID() }));
+      copy.dishes = (copy.dishes || []).map(d => { const item = { ...d, id: mcUUID() }; delete item.language_links; delete item.translation_source; return item; });
       mcCurrentMenu.sections.splice(si + 1, 0, copy);
       mcRefreshSections();
       mcUpdatePreview();
@@ -4745,7 +5284,7 @@ function mcActiveDisplayLangs() {
 function mcGatherFromEditor() {
   const rawTags = mcParseRawTags($('mc-tags-input')?.value || '');
   const gathered = {
-    name: $('mc-name-input')?.value.trim() || mcCurrentMenu.name,
+    name: $('mc-name-input') ? $('mc-name-input').value.trim() : mcCurrentMenu.name,
     type: $('mc-type-select')?.value || mcCurrentMenu.type,
     price: parseFloat($('mc-price-input')?.value) || null,
     price_label: $('mc-price-label-input')?.value.trim() || 'por persona (IVA incluido)',
@@ -4772,9 +5311,10 @@ function mcRenderPreview(menu, langs, template) {
   const sections = (menu.sections || []).map((sec, si) => {
     const title = mcLangSectionText(menu, langs[0], si, 'title', sec.title) || sec.title;
     const subtitle = mcLangSectionText(menu, langs[0], si, 'subtitle', sec.subtitle) || sec.subtitle || (isMarineroPreview ? '' : MC_MODES[sec.mode]) || '';
-    const dishes = (sec.dishes || []).filter(d => d.name).map((d, di) => {
+    const dishes = (sec.dishes || []).map((d, di) => {
+      if (!d.name) return '';
       const lines = langs.map((lang, li) => {
-        const name = mcLangDishName(menu, lang, si, di, d.name) || (li === 0 ? d.name : '');
+        const name = mcLangDishName(menu, lang, si, di, d.name) || (li === 0 ? '[Traducción pendiente]' : '');
         return name ? `${li === 0 ? esc(name) : `<small>${esc(name)}</small>`}` : '';
       }).join('');
       const supp = d.supplement ? ` <span class="mc-preview-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
@@ -4806,10 +5346,47 @@ function mcUpdatePreview() {
   const preview = $('mc-live-preview');
   if (!preview || !mcCurrentMenu) return;
   const menu = { ...mcCurrentMenu, ...mcGatherFromEditor() };
+  Object.assign(mcCurrentMenu, menu);
+  mcPersistCurrent();
   const template = $('mc-template-select')?.value || mcGetTemplate(menu);
   const langs = mcActiveDisplayLangs();
   preview.innerHTML = mcRenderPreview(menu, langs, template);
   mcRenderQualityPanel(menu, langs);
+  mcRenderMappings();
+}
+
+function mcRenderMappings() {
+  const panel = $('mc-mappings');
+  if (!panel || !mcCurrentMenu) return;
+  panel.hidden = !mcMappingsOpen;
+  if (!mcMappingsOpen) return;
+  const menu = mcCurrentMenu;
+  const rows = [];
+  for (const lang of mcActiveDisplayLangs().filter(l=>l !== (menu.language || 'es'))) {
+    const targets = mcMenus.filter(m => m.id !== menu.id && mcFamilyId(m) === mcFamilyId(menu) && MenuWorkflows.version(m) === MenuWorkflows.version(menu) && (m.language || 'es') === lang);
+    (menu.sections || []).forEach((sec,si) => {
+      const fields = [{item:sec,di:null,field:'title'}, {item:sec,di:null,field:'subtitle'}, ...(sec.dishes||[]).map((item,di)=>({item,di,field:'name'}))];
+      fields.forEach(({item,di,field}) => {
+        if (!item[field] || MenuWorkflows.translatedField(menu,mcMenus,lang,si,di,field)) return;
+        const choices = targets.flatMap(m=>(m.sections||[]).flatMap(s=>(di===null?[s]:(s.dishes||[])).filter(i=>i[field]&&i.id).map(i=>({menu:m,item:i}))));
+        const options = choices.map(x=>`<option value="${esc(JSON.stringify([x.menu.id,x.item.id]))}">${esc(x.menu.name)} · ${esc(x.item[field])}</option>`).join('');
+        rows.push(`<label class="mc-map-row">${esc(item[field])} → ${lang.toUpperCase()}<select data-lang="${lang}" data-si="${si}" data-di="${di===null?'':di}" data-field="${field}"><option value="">Selecciona la traducción correspondiente</option>${options}</select></label>`);
+      });
+    });
+  }
+  panel.innerHTML = '<p class="hint">Elige cada correspondencia por su texto. Solo se ofrecen versiones de la misma familia y número de versión. Si no existe una traducción, crea una versión CA/EN.</p>' + (rows.join('') || '<p class="hint">No hay correspondencias pendientes en los idiomas seleccionados.</p>');
+  panel.querySelectorAll('select').forEach(el=>el.addEventListener('change',()=>{
+    if (!el.value) return;
+    const [menuId,itemId] = JSON.parse(el.value);
+    const targetMenu = mcMenus.find(m=>m.id===menuId);
+    const section = mcCurrentMenu.sections[Number(el.dataset.si)];
+    const source = el.dataset.di==='' ? section : section.dishes[Number(el.dataset.di)];
+    const candidates = (targetMenu?.sections||[]).flatMap(s=>el.dataset.di===''?[s]:(s.dishes||[])).filter(i=>i.id===itemId);
+    if (candidates.length!==1) return;
+    const field = el.dataset.field;
+    source.language_links = {...source.language_links, [`${el.dataset.lang}:${field}`]:{menuId,itemId,sourceText:source[field],targetText:candidates[0][field]}};
+    mcUpdatePreview();
+  }));
 }
 
 function mcRenderQualityPanel(menu, langs) {
@@ -4906,11 +5483,10 @@ async function mcGeneratePDF(colorMode) {
           <div class="mcp-section-rule"></div>
           ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
         </div>`;
-      let di = 0;
-      for (const d of (sec.dishes || [])) {
+      for (const [di, d] of (sec.dishes || []).entries()) {
         if (!d.name) continue;
         const lineHtml = langs.map((displayLang, li) => {
-          const text = mcLangDishName(m, displayLang, si, di, d.name) || (li === 0 ? d.name : '');
+          const text = mcLangDishName(m, displayLang, si, di, d.name) || (li === 0 ? '[Traducción pendiente]' : '');
           if (!text) return '';
           const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
           return `<span class="${cls}">${esc(text)}</span>`;
@@ -4922,7 +5498,6 @@ async function mcGeneratePDF(colorMode) {
           ${suppHtml}
           <span class="mcp-bullet-dot">●</span>
         </div>`;
-        di++;
       }
       bodyHtml += '</div>';
       if (isMarineroTemplate && secSubBase) {
@@ -5037,9 +5612,12 @@ async function mcTranslateAll(targetLang) {
   if (!mcCurrentMenu) return;
   if (mcCurrentMenu._isNew) { toast('Guarda el menú primero antes de crear una traducción', 'info'); return; }
 
+  if (!mcPersistCurrent()) return;
+  const sourceMenu = JSON.parse(JSON.stringify(mcCurrentMenu));
+  const sourceOwner = cacheOwner;
   const langName = targetLang === 'ca' ? 'catalán' : 'inglés';
   const parentId = mcCurrentMenu.parent_id || mcCurrentMenu.id;
-  const existing = mcMenus.find(m => (m.id === parentId || m.parent_id === parentId) && m.language === targetLang && m.id !== mcCurrentMenu.id);
+  const existing = [...mcMenus, ...Object.values(mcDrafts)].find(m => (m.id === parentId || m.parent_id === parentId) && m.language === targetLang && m.id !== mcCurrentMenu.id);
   if (existing && !confirm(`Ya existe una versión en ${langName} ("${existing.name}"). ¿Crear de todas formas una nueva?`)) return;
 
   const caBtn = $('mc-translate-ca-btn');
@@ -5048,53 +5626,61 @@ async function mcTranslateAll(targetLang) {
   if (enBtn) enBtn.disabled = true;
   toast(`Creando versión en ${langName}…`, 'info');
 
-  const sections = mcGatherSections();
-  const tr = async (text) => text ? mcTranslateOneDish(text, targetLang).catch(() => text) : text;
+  try {
+    const sections = sourceMenu.sections;
+    const tr = async (text) => text ? mcTranslateOneDish(text, targetLang, sourceMenu.language || 'es') : text;
 
-  const translatedName       = await tr(mcCurrentMenu.name);
-  const translatedPriceLabel = await tr(mcCurrentMenu.price_label);
-  const translatedNotes      = await tr(mcCurrentMenu.notes);
-  const translatedDrinks     = await tr(mcCurrentMenu.drinks);
+    const translatedName       = await tr(sourceMenu.name);
+    const translatedPriceLabel = await tr(sourceMenu.price_label);
+    const translatedNotes      = await tr(sourceMenu.notes);
+    const translatedDrinks     = await tr(sourceMenu.drinks);
 
-  const translatedSections = [];
-  let done = 0;
-  for (const sec of sections) {
-    const tTitle    = await tr(sec.title);
-    const tSubtitle = await tr(sec.subtitle);
-    const tDishes   = [];
-    for (const d of sec.dishes) {
-      if (!d.name) continue;
-      tDishes.push({ ...d, name: await tr(d.name), name_ca: null, name_en: null });
-      done++;
-      if (done % 3 === 0) toast(`Traduciendo… ${done} elementos`, 'info');
+    const translatedSections = [];
+    let done = 0;
+    for (const sec of sections) {
+      const tTitle    = await tr(sec.title);
+      const tSubtitle = await tr(sec.subtitle);
+      const tDishes   = [];
+      for (const d of sec.dishes) {
+        if (!d.name) continue;
+        tDishes.push({ ...d, name: await tr(d.name), name_ca: null, name_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceMenu.language || 'es', name: d.name } });
+        done++;
+        if (done % 3 === 0) toast(`Traduciendo… ${done} elementos`, 'info');
+      }
+      translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceMenu.language || 'es', title: sec.title, subtitle: sec.subtitle }, dishes: tDishes });
     }
-    translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, dishes: tDishes });
+
+    const newMenu = {
+      id: mcUUID(), name: translatedName,
+      type: sourceMenu.type, occasion: sourceMenu.occasion,
+      price: sourceMenu.price, price_label: translatedPriceLabel,
+      min_people: sourceMenu.min_people, notes: translatedNotes,
+      sections: translatedSections, drinks: translatedDrinks,
+      language: targetLang, parent_id: parentId,
+      version: sourceMenu.version || 1,
+      tags: [...(sourceMenu.tags || [])],
+      created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      _isNew: true
+    };
+
+    if (cacheOwner !== sourceOwner || mcCurrentId !== sourceMenu.id) { toast('El menú abierto ha cambiado. Vuelve al original para traducirlo.', 'info'); return; }
+    if (!mcPersistCurrent()) return;
+    mcCurrentMenu = newMenu;
+    mcCurrentId = newMenu.id;
+    if (caBtn) caBtn.disabled = false;
+    if (enBtn) enBtn.disabled = false;
+    mcRenderEditor();
+    mcRenderLibrary();
+    toast(`Borrador en ${langName} creado · revísalo y pulsa Guardar`, 'info');
+  } catch {
+    toast('Traducción incompleta. No se ha creado ninguna versión; el menú original se conserva.', 'error');
+  } finally {
+    if (caBtn) caBtn.disabled = false;
+    if (enBtn) enBtn.disabled = false;
   }
-
-  const newMenu = {
-    id: mcUUID(), name: translatedName,
-    type: mcCurrentMenu.type, occasion: mcCurrentMenu.occasion,
-    price: mcCurrentMenu.price, price_label: translatedPriceLabel,
-    min_people: mcCurrentMenu.min_people, notes: translatedNotes,
-    sections: translatedSections, drinks: translatedDrinks,
-    language: targetLang, parent_id: parentId,
-    version: mcCurrentMenu.version || 1,
-    tags: [...(mcCurrentMenu.tags || [])],
-    created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-    _isNew: true
-  };
-
-  mcCurrentMenu = newMenu;
-  mcCurrentId = newMenu.id;
-  if (caBtn) caBtn.disabled = false;
-  if (enBtn) enBtn.disabled = false;
-  mcRenderEditor();
-  await mcSaveMenu();
-  mcRenderLibrary();
-  toast(`Versión en ${langName} creada — revisa y guarda si es necesario`, 'success');
 }
 
-async function mcTranslateOneDish(text, targetLang) {
+async function mcTranslateOneDish(text, targetLang, sourceLang = 'es') {
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
   if (geminiKey) {
     const langName = targetLang === 'ca' ? 'Catalan' : 'English';
@@ -5105,9 +5691,10 @@ async function mcTranslateOneDish(text, targetLang) {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(20000),
           body: JSON.stringify({
             contents: [{ parts: [{ text:
-              `Translate the following Spanish restaurant menu text to ${langName}. Return only the translation, no explanation.\n\nText: ${JSON.stringify(text)}`
+              `Translate the following restaurant menu text from ${sourceLang} to ${langName}. Return only the translation, no explanation.\n\nText: ${JSON.stringify(text)}`
             }] }],
             generationConfig: { maxOutputTokens: 128 }
           })
@@ -5122,18 +5709,20 @@ async function mcTranslateOneDish(text, targetLang) {
   }
   // Google Translate fallback
   try {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-    const res = await fetch(url);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (res.ok) {
       const data = await res.json();
       if (data?.[0]?.[0]?.[0]) return data[0].map(s => s[0]).join('').trim();
     }
   } catch(e) { /* fall through */ }
-  return text;
+  throw new Error('No se pudo traducir este texto');
 }
 
 function mcInitTabs() {
+  window.addEventListener('beforeunload', e => { if (mcDraftError) { e.preventDefault(); e.returnValue = ''; } });
   document.getElementById('tabDia').addEventListener('click', () => {
+    if (!mcPersistCurrent()) return;
     document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('tabDia').classList.add('active');
@@ -5145,8 +5734,10 @@ function mcInitTabs() {
     document.getElementById('tabCerrado').classList.add('active');
     document.getElementById('panelCerrado').classList.add('active');
     if (!mcLoaded) mcLoadMenus();
+    else { mcRenderLibrary(); mcRenderEditor(); }
   });
   $('mc-new-btn').addEventListener('click', () => {
+    if (!mcPersistCurrent()) return;
     mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: [], drinks: '', language: 'es', parent_id: null, version: 1, tags: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
     mcCurrentId = mcCurrentMenu.id;
     mcRenderLibrary(); mcRenderEditor();
