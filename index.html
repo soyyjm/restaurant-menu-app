@@ -2070,6 +2070,12 @@ kbd {
 
     <p id="dateNotice" class="hint" hidden></p>
 
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+      <button class="btn btn-secondary btn-small" id="copyYesterday">Copiar menú de ayer</button>
+      <button class="btn btn-secondary btn-small" id="copyLastWeek" style="max-width:100%;white-space:normal;">Copiar mismo día de la semana pasada</button>
+    </div>
+    <p class="hint">Respecto a la fecha seleccionada. Se conservan la fecha y el precio actuales.</p>
+
     <!-- QUICK INPUT -->
     <div class="quick-input-section">
       <h2>Añadir plato</h2>
@@ -3332,6 +3338,20 @@ async function clearMenu() {
   toast('Menú vaciado', 'info');
 }
 
+async function copyRelativeMenu(days) {
+  const selected = $('menuDate').value;
+  const date = new Date(`${selected}T12:00:00Z`);
+  if (!selected || !Number.isFinite(date.getTime()) || ![1, 7].includes(days)) {
+    toast('Elige una fecha válida.', 'error'); return;
+  }
+  date.setUTCDate(date.getUTCDate() - days);
+  const source = date.toISOString().slice(0, 10);
+  if (!Object.hasOwn(menuHistory, source)) {
+    toast(`No hay un menú guardado para el ${source}.`, 'info'); return;
+  }
+  await loadFromHistory(source);
+}
+
 async function loadFromHistory(dateStr, restoreDate = false) {
   const hist = menuHistory[dateStr];
   if (!hist) return;
@@ -3733,6 +3753,8 @@ function bindEvents() {
   $('btnPDFBW').addEventListener('click', () => generateDesignPDF('bw'));
   $('btnClear').addEventListener('click', clearMenu);
   $('btnUndo').addEventListener('click', restoreUndo);
+  $('copyYesterday').addEventListener('click', () => copyRelativeMenu(1));
+  $('copyLastWeek').addEventListener('click', () => copyRelativeMenu(7));
   $('btnRetrySync').addEventListener('click', syncPending);
   window.addEventListener('online', syncPending);
 

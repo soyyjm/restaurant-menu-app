@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -288,4 +288,23 @@ test('late file reads cannot replace the latest import review',async()=>{
  await h.api.reviewDailyBackup({size:1,text:async()=>'{invalid'});
  finish(await importFile().text());await older;
  assert.equal(h.el('restoreDailyBackup').hidden,true);h.api.restoreDailyBackup();assert.equal(h.writes.length,0);
+});
+
+for (const [target,source,days] of [['2026-01-01','2025-12-31',1],['2026-03-30','2026-03-23',7],['2026-10-26','2026-10-25',1]]) {
+ test(`relative copy ${days} days from ${target} keeps target price and supports undo`,async()=>{
+  const h=harness({user:false});h.el('menuDate').value=source;h.api.setMenu(menu('Source'));await h.api.saveMenu();
+  h.el('menuDate').value=target;h.el('menuPrice').value='30.00 €';h.api.setMenu(menu('Target'));
+  await h.api.copyRelativeMenu(days);
+  assert.equal(h.api.state().todayMenu.primer[0].spanish,'Source');
+  assert.equal(h.el('menuDate').value,target);assert.equal(h.el('menuPrice').value,'30.00 €');
+  assert.equal(h.api.state().menuHistory[source].primer[0].spanish,'Source');
+  await h.api.restoreUndo();assert.equal(h.api.state().todayMenu.primer[0].spanish,'Target');
+ });
+}
+test('relative copy missing history or cancelled replacement preserves current menu',async()=>{
+ const h=harness({user:false});h.api.setMenu(menu('Keep'));await h.api.copyRelativeMenu(1);
+ assert.equal(h.api.state().todayMenu.primer[0].spanish,'Keep');assert.equal(h.writes.length,0);
+ h.el('menuDate').value='2026-09-05';h.api.setMenu(menu('Source'));await h.api.saveMenu();
+ h.el('menuDate').value='2026-09-06';h.api.setMenu(menu('Keep'));h.context.confirm=()=>false;
+ await h.api.copyRelativeMenu(1);assert.equal(h.api.state().todayMenu.primer[0].spanish,'Keep');
 });
