@@ -2155,6 +2155,11 @@ kbd {
         📅 Historial de Menús
       </button>
       <div class="library-content" id="historyContent">
+        <label for="historyMonth">Buscar por mes</label>
+        <input type="month" id="historyMonth">
+        <button class="btn btn-secondary btn-small" id="searchHistoryMonth">Buscar</button>
+        <button class="btn btn-secondary btn-small" id="recentHistory">Ver recientes</button>
+        <p id="historySearchStatus" role="status" class="hint"></p>
         <div id="historyList"></div>
       </div>
     </div>
@@ -2306,9 +2311,10 @@ kbd {
     <h2>Ajustes</h2>
     <div style="padding:14px;border:1px solid var(--cream);border-radius:var(--radius);margin-bottom:20px;">
       <h3 style="font-size:15px;margin-bottom:8px;">Copia del menú diario</h3>
-      <p style="font-size:12px;margin-bottom:10px;">Biblioteca, favoritos y menús por fecha (incluido el actual). No incluye menús cerrados, ajustes ni claves de acceso.</p>
+      <p style="font-size:12px;margin-bottom:10px;">La copia local incluye las fechas cargadas; la exportación de la nube consulta todas las fechas y añade los borradores pendientes. Incluye la biblioteca y favoritos cargados. No incluye menús cerrados, ajustes ni claves de acceso.</p>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia</button>
+        <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia local</button>
+        <button class="btn btn-secondary btn-small" id="downloadCloudBackup" style="white-space:normal;max-width:100%;">Exportar todo el historial de la nube</button>
         <button class="btn btn-secondary btn-small" id="chooseDailyBackup">Abrir copia…</button>
       </div>
       <input id="dailyBackupFile" type="file" accept=".json,application/json" hidden>
@@ -2640,15 +2646,64 @@ async function init() {
 }
 
 // Backup review is bound to the current account. Import rechecks live state at confirmation.
+let historyConfirmed = new Set();
+let historyFilter = '';
+let historyRequest = 0;
+async function readHistoryCloud({month='', date='', all=false} = {}) {
+  if (!isCloud || !currentUser) throw new Error('Inicia sesión para consultar la nube.');
+  const owner=cacheOwner, generation=authGeneration;
+  const rows=[]; let cursor='';
+  do {
+    let q=applyOwnerFilter(supabase.from('menu_history').select('*')).order('date',{ascending:true}).limit(500);
+    if (date) q=q.eq('date',date);
+    if (month) {
+      const end=new Date(`${month}-01T12:00:00Z`);end.setUTCMonth(end.getUTCMonth()+1);
+      q=q.gte('date',`${month}-01`).lt('date',end.toISOString().slice(0,10));
+    }
+    if (cursor) q=q.gt('date',cursor);
+    const {data,error}=await q.abortSignal(AbortSignal.timeout(15000));
+    if (error || !Array.isArray(data) || owner!==cacheOwner || generation!==authGeneration) throw new Error('No se pudo completar la lectura de la nube.');
+    rows.push(...data);
+    if (!all || data.length<500) return rows;
+    const next=data[data.length-1]?.date;
+    if (!next || next<=cursor) throw new Error('Paginación incompleta.');
+    cursor=next;
+  } while(true);
+}
+function mergeCloudHistory(rows) {
+  for (const h of rows) {
+    if (pendingSaves.menus[h.date]) continue;
+    menuHistory[h.date]=unpackMenu(h.dishes);historyConfirmed.add(h.date);
+    if (h.dishes?._meta) menuMetadata[h.date]=h.dishes._meta;
+  }
+}
+async function findHistoryDate(date) {
+  if (Object.hasOwn(menuHistory,date)) return true;
+  if (!isCloud || !currentUser) throw new Error('Sin conexión a la cuenta: no se puede comprobar esta fecha.');
+  mergeCloudHistory(await readHistoryCloud({date}));
+  return Object.hasOwn(menuHistory,date);
+}
+async function searchHistoryMonth() {
+  const month=$('historyMonth').value;
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) { $('historySearchStatus').textContent='Elige un mes.';return; }
+  const request=++historyRequest;
+  $('historySearchStatus').textContent='Consultando…';
+  try {
+    const rows=await readHistoryCloud({month});
+    if(request!==historyRequest)return;
+    mergeCloudHistory(rows);historyFilter=month;saveLocal();renderHistory();
+    $('historySearchStatus').textContent=`Mes consultado: ${month}. Se conservan los borradores pendientes.`;
+  } catch {if(request===historyRequest)$('historySearchStatus').textContent='No se pudo consultar el mes. No se ha eliminado ningún dato.';}
+}
 let dailyBackupReview = null;
 let dailyBackupReadRevision = 0;
 function dailyImportState() {
   return {library,history:menuHistory,metadata:menuMetadata,favorites:dishPreferences.favorites,activeDate:$('menuDate').value};
 }
-function downloadDailyBackup() {
+function downloadDailyBackup(source = null) {
   try {
-    const history = {...menuHistory,[$('menuDate').value]:todayMenu};
-    const metadata = {...menuMetadata,[$('menuDate').value]:{price:$('menuPrice').value.trim()}};
+    const history = {...(source?.history || menuHistory),[$('menuDate').value]:todayMenu};
+    const metadata = {...(source?.metadata || menuMetadata),[$('menuDate').value]:{price:$('menuPrice').value.trim()}};
     const backup = MenuWorkflows.dailyBackup({format:'menu-daily-backup',version:1,library,
       menus:Object.entries(history).map(([date,dishes])=>({date,dishes,price:String(metadata[date]?.price || '')})),
       favorites:library.filter(d=>(dishPreferences.favorites || []).map(String).includes(String(d.id))).map(d=>MenuWorkflows.key(d.spanish,d.category))});
@@ -2660,6 +2715,22 @@ function downloadDailyBackup() {
     $('dailyBackupSummary').textContent=`Copia preparada: ${backup.library.length} platos y ${backup.menus.length} fechas. Comprueba el archivo en Descargas.`;
   } catch { $('dailyBackupSummary').textContent='No se pudo crear la copia. Revisa las fechas, precios y platos.'; }
 }
+async function downloadCloudBackup() {
+  const owner=cacheOwner, generation=authGeneration;
+  $('downloadCloudBackup').disabled=true;
+  $('dailyBackupSummary').textContent='Leyendo todo el historial…';
+  try {
+    const rows=await readHistoryCloud({all:true});
+    const {data,error}=await applyOwnerFilter(supabase.from('settings').select('*').eq('id',1).maybeSingle()).abortSignal(AbortSignal.timeout(15000));
+    if(error || owner!==cacheOwner || generation!==authGeneration)throw new Error('Incomplete export');
+    const history=Object.fromEntries(rows.map(h=>[h.date,unpackMenu(h.dishes)]));
+    const metadata={...(data?.print_settings?.menu_state_v1?.history || {})};
+    for(const [date,packet] of Object.entries(pendingSaves.menus)){history[date]=unpackMenu(packet);metadata[date]=packet._meta;}
+    downloadDailyBackup({history,metadata});
+  } catch { if(owner===cacheOwner && generation===authGeneration)$('dailyBackupSummary').textContent='No se pudo exportar todo el historial. No se descargó una copia parcial; vuelve a intentarlo.'; }
+  finally{$('downloadCloudBackup').disabled=false;}
+}
+
 async function reviewDailyBackup(file) {
   dailyBackupReview=null; $('restoreDailyBackup').hidden=true;
   const readRevision=++dailyBackupReadRevision;
@@ -2668,6 +2739,7 @@ async function reviewDailyBackup(file) {
   try {
     if (file.size > 5*1024*1024) throw new Error('El archivo supera 5 MB.');
     const data=MenuWorkflows.dailyBackup(JSON.parse(await file.text()));
+    if (isCloud && currentUser) mergeCloudHistory(await readHistoryCloud({all:true}));
     if (owner!==cacheOwner || generation!==authGeneration || readRevision!==dailyBackupReadRevision) return;
     const plan=MenuWorkflows.planDailyImport(data,dailyImportState(),uid);
     dailyBackupReview={data,owner,generation};
@@ -2698,6 +2770,7 @@ function restoreDailyBackup() {
 // ==================== DATA LAYER ====================
 async function loadAll() {
   cacheOwner = currentUser?.id || 'local';
+  historyConfirmed=new Set(readCache('confirmedHistory',[]));historyFilter='';historyRequest++;
   dailyBackupReview=null; $('restoreDailyBackup').hidden=true; $('dailyBackupSummary').textContent='';
   mcRestoreDrafts();
   // Preserve the old cache once. Never hand it to a second account.
@@ -2735,11 +2808,12 @@ async function loadAll() {
 
   try {
     syncUI('syncing', 'Sincronizando...');
-    const [libRes, menuRes, histRes, settRes] = await Promise.allSettled([
+    const [libRes, menuRes, histRes, settRes, todayRes] = await Promise.allSettled([
       applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })).abortSignal(AbortSignal.timeout(15000)),
       applyOwnerFilter(supabase.from('selected_menu').select('*').eq('id', 1).maybeSingle()).abortSignal(AbortSignal.timeout(15000)),
       applyOwnerFilter(supabase.from('menu_history').select('*').order('date', { ascending: false }).limit(60)).abortSignal(AbortSignal.timeout(15000)),
-      applyOwnerFilter(supabase.from('settings').select('*').eq('id', 1).maybeSingle()).abortSignal(AbortSignal.timeout(15000))
+      applyOwnerFilter(supabase.from('settings').select('*').eq('id', 1).maybeSingle()).abortSignal(AbortSignal.timeout(15000)),
+      applyOwnerFilter(supabase.from('menu_history').select('*').eq('date',localDate())).abortSignal(AbortSignal.timeout(15000))
     ]);
 
     if (loadOwner !== cacheOwner || loadRevision !== editRevision) { updateSaveStatus(); return; }
@@ -2773,6 +2847,7 @@ async function loadAll() {
         histRes.value.data.forEach(h => {
           if (pendingSaves.menus[h.date]) return;
           menuHistory[h.date] = unpackMenu(h.dishes);
+          historyConfirmed.add(h.date);
           if (h.dishes?._meta) menuMetadata[h.date] = h.dishes._meta;
         });
       }
@@ -2780,6 +2855,9 @@ async function loadAll() {
       hasCloudError = true;
       console.warn('Cloud load history failed:', histRes.status === 'fulfilled' ? histRes.value.error : histRes.reason);
     }
+
+    if(todayRes.status==='fulfilled' && !todayRes.value.error) mergeCloudHistory(todayRes.value.data || []);
+    else hasCloudError=true;
 
     if (settRes.status === 'fulfilled' && !settRes.value.error) {
       const cloudSettings = settRes.value.data?.print_settings;
@@ -2816,7 +2894,9 @@ async function loadAll() {
 
 function saveLocal() {
   try {
-    const values = { dishPreferences, batchDraft, library, todayMenu, history: menuHistory, metadata: menuMetadata, specialPrices, printSettings,
+    const recent=new Set(Object.keys(menuHistory).sort().reverse().slice(0,90));
+    const cachedHistory=Object.fromEntries(Object.entries(menuHistory).filter(([date])=>recent.has(date) || date===$('menuDate').value || pendingSaves.menus[date] || !historyConfirmed.has(date)));
+    const values = { confirmedHistory:[...historyConfirmed].filter(date=>Object.hasOwn(cachedHistory,date)), dishPreferences, batchDraft, library, todayMenu, history: cachedHistory, metadata: menuMetadata, specialPrices, printSettings,
       draft: { date: $('menuDate').value, price: $('menuPrice').value }, pending: pendingSaves };
     localStorage.setItem(cacheKey('snapshot'), JSON.stringify(values));
     localSaveError = false;
@@ -2896,6 +2976,7 @@ async function syncPending() {
         // Keep failed history writes pending; retries are idempotent.
         for (const [date, packet] of Object.entries(batch.menus)) {
           await checked(supabase.from('menu_history').upsert(withOwner({ date, dishes: unpackMenu(packet), updated_at: new Date().toISOString() }), { onConflict: 'date' }));
+          historyConfirmed.add(date);
         }
         if (Object.keys(batch.menus).length) {
           await checked(supabase.from('selected_menu').upsert(withOwner({ id: 1, dishes: unpackMenu(currentPacket), updated_at: new Date().toISOString() })));
@@ -3347,12 +3428,15 @@ async function clearMenu() {
 
 async function copyRelativeMenu(days) {
   const selected = $('menuDate').value;
+  const sourceRevision=editRevision;
   const date = new Date(`${selected}T12:00:00Z`);
   if (!selected || !Number.isFinite(date.getTime()) || ![1, 7].includes(days)) {
     toast('Elige una fecha válida.', 'error'); return;
   }
   date.setUTCDate(date.getUTCDate() - days);
   const source = date.toISOString().slice(0, 10);
+  try { await findHistoryDate(source); } catch { toast('No se pudo consultar la fecha en la nube. Inténtalo de nuevo.', 'error'); return; }
+  if ($('menuDate').value!==selected || sourceRevision!==editRevision) return;
   if (!Object.hasOwn(menuHistory, source)) {
     toast(`No hay un menú guardado para el ${source}.`, 'info'); return;
   }
@@ -3628,9 +3712,10 @@ function renderLibrary() {
 }
 
 function renderHistory() {
-  const dates = Object.keys(menuHistory).sort().reverse();
+  const available = Object.keys(menuHistory).sort().reverse();
+  const dates = historyFilter ? available.filter(date=>date.startsWith(historyFilter+'-')) : available.slice(0,60);
   if (dates.length === 0) {
-    $('historyList').innerHTML = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">Sin historial aún. Los menús se guardan automáticamente.</p>';
+    $('historyList').innerHTML = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">No hay menús cargados para esta vista. Busca un mes para consultar la nube.</p>';
     return;
   }
   
@@ -3651,6 +3736,9 @@ function renderHistory() {
 // ==================== EVENTS ====================
 function bindEvents() {
   bindBatchEvents();
+  $('searchHistoryMonth').addEventListener('click',searchHistoryMonth);
+  $('recentHistory').addEventListener('click',()=>{historyRequest++;historyFilter='';$('historySearchStatus').textContent='Últimas 60 fechas cargadas. Busca un mes para consultar otras.';renderHistory();});
+  $('downloadCloudBackup').addEventListener('click',downloadCloudBackup);
   $('dailyShortcuts').addEventListener('click', e => {
     const btn = e.target.closest('[data-dish]');
     if (btn) addFromLibrary(Number(btn.dataset.dish));
@@ -4027,6 +4115,11 @@ async function changeMenuDate() {
   if (!date) { $('menuDate').value = activeDate || localDate(); return; }
   if (editingId !== null && !confirm('Hay un plato en edición sin confirmar. ¿Cambiar de fecha y descartar esa edición?')) {
     $('menuDate').value = activeDate; return;
+  }
+  const lookupOwner=cacheOwner, lookupRevision=editRevision;
+  if (!Object.hasOwn(menuHistory,date) && isCloud && currentUser) {
+    try { await findHistoryDate(date); } catch { $('menuDate').value=activeDate;toast('No se pudo consultar la fecha. No se ha cambiado el menú.', 'error');return; }
+    if(lookupOwner!==cacheOwner || lookupRevision!==editRevision || $('menuDate').value!==date)return;
   }
   const previousDate = activeDate || localDate();
   if (date === previousDate) { renderAll(); return; }

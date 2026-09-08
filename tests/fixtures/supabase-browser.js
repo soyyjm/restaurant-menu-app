@@ -18,8 +18,8 @@
   window.supabase = { createClient() { return {
     auth: {getSession:async()=>({data:{session:{user:{id:owner_id,email:'manager@example.invalid'}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},
     from(table) {
-      let op='select',payload,single=false,filters=[],options={};
-      const q={select(){return q;},order(){return q;},limit(){return q;},abortSignal(){return q;},eq(k,v){filters.push([k,v]);return q;},maybeSingle(){single=true;return q;},single(){single=true;return q;},
+      let op='select',payload,single=false,filters=[],options={},sort=null,cap=Infinity;
+      const q={select(){return q;},order(k,o){sort=[k,o?.ascending];return q;},limit(n){cap=n;return q;},gt(k,v){filters.push([k,v,'>']);return q;},gte(k,v){filters.push([k,v,'>=']);return q;},lt(k,v){filters.push([k,v,'<']);return q;},abortSignal(){return q;},eq(k,v){filters.push([k,v]);return q;},maybeSingle(){single=true;return q;},single(){single=true;return q;},
         insert(v){op='insert';payload=v;return q;},update(v){op='update';payload=v;return q;},upsert(v,o={}){op='upsert';payload=v;options=o;return q;},delete(){op='delete';return q;},
         then(resolve,reject){return Promise.resolve().then(()=>{
           let rows=tables[table]||[];
@@ -27,14 +27,14 @@
             window.__fixture.writes.push({table,op});
             if(window.__fixture.rejectWrites)return {error:{message:'Simulated rejection'},data:null};
           }
-          const match=r=>filters.every(([k,v])=>r[k]===v);
+          const match=r=>filters.every(([k,v,op])=>op==='>'?r[k]>v:op==='>='?r[k]>=v:op==='<'?r[k]<v:r[k]===v);
           if(op==='insert'||op==='upsert') {
             const items=Array.isArray(payload)?payload:[payload];
             for(const item of items) {const key=options.onConflict||'id';const i=rows.findIndex(r=>r[key]===item[key]);if(i<0)rows.push(structuredClone(item));else if(op==='upsert')rows[i]={...rows[i],...structuredClone(item)};else return {error:{message:'Duplicate'},data:null};}
             tables[table]=rows;rows=items.map(i=>structuredClone(i));
           } else if(op==='update') {rows=rows.filter(match).map(r=>Object.assign(r,structuredClone(payload)));}
           else if(op==='delete'){tables[table]=rows.filter(r=>!match(r));rows=rows.filter(match);}
-          else rows=rows.filter(match);
+          else {rows=rows.filter(match);if(sort)rows=[...rows].sort((a,b)=>String(a[sort[0]]).localeCompare(String(b[sort[0]]))*(sort[1]?1:-1));rows=rows.slice(0,cap);}
           return {error:null,data:structuredClone(single?(rows[0]||null):rows)};
         }).then(resolve,reject);}
       };return q;

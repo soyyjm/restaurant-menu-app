@@ -22,7 +22,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
   const cloud = { from(table) {
     let op = 'select', payload;
     const q = {
-      select() { return q; }, order() { return q; }, limit() { return q; }, maybeSingle() { return q; }, eq(field,value) { (q.filters ||= []).push([field,value]); return q; }, single() { return q; }, abortSignal() { return q; },
+      select() { return q; }, order() { return q; }, limit() { return q; }, maybeSingle() { return q; }, eq(field,value) { (q.filters ||= []).push([field,value]); return q; }, single() { return q; }, gt(field,value) { (q.filters ||= []).push([field,value]);return q; }, gte() { return q; }, lt() { return q; }, abortSignal() { return q; },
       upsert(data) { op = 'upsert'; payload = JSON.parse(JSON.stringify(data)); return q; },
       delete() { op = 'delete'; return q; },
       insert(data) { op='insert';payload=JSON.parse(JSON.stringify(data));return q; },
@@ -30,7 +30,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
       then(resolve, reject) {
         return (async () => {
           if (op !== 'select') writes.push({ table, op, payload, filters:q.filters });
-          if (response) return response({ table, op, payload });
+          if (response) return response({ table, op, payload, filters:q.filters });
           return { error: failing ? { message: 'simulated rejection' } : null, data: op === 'select' ? (['dishes','menu_history'].includes(table) ? [] : null) : null };
         })().then(resolve, reject);
       }
@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -263,9 +263,9 @@ test('uncertain closed save is confirmed by identical server content without ove
 });
 const importFile = () => ({size:500,text:async()=>JSON.stringify({format:'menu-daily-backup',version:1,library:[{spanish:'Imported',catalan:'Importat',category:'primer'}],favorites:[],menus:[{date:'2026-09-01',price:'19.50 €',dishes:menu('Historical')} ]})});
 test('confirmed import retains active menu, persists history and stays retryable on cloud rejection',async()=>{
- const h=harness({fail:true});h.api.setMenu(menu('Open draft'));
+ const h=harness();h.api.setMenu(menu('Open draft'));
  await h.api.reviewDailyBackup(importFile());assert.equal(h.el('restoreDailyBackup').hidden,false);
- h.api.restoreDailyBackup();await h.api.syncPending();
+ h.setFail(true);h.api.restoreDailyBackup();await h.api.syncPending();
  assert.equal(h.api.state().todayMenu.primer[0].spanish,'Open draft');
  assert.equal(h.api.state().menuHistory['2026-09-01'].primer[0].spanish,'Historical');
  assert.equal(h.api.state().pendingSaves.menus['2026-09-01']._meta.price,'19.50 €');
@@ -333,4 +333,30 @@ test('date switch stays on source when saving the draft fails',async()=>{
  h.context.localStorage.setItem=()=>{throw Error('quota');};
  h.el('menuDate').value='2026-09-10';await h.api.changeMenuDate();
  assert.equal(h.el('menuDate').value,'2026-09-06');assert.equal(h.api.state().todayMenu.primer[0].spanish,'Keep');
+});
+
+test('history cloud reader fetches every page and uses a date cursor',async()=>{
+ let calls=0;
+ const h=harness({response:({filters})=>{
+  calls++;if(calls===1)return {error:null,data:Array.from({length:500},(_,i)=>({date:String(i).padStart(4,'0'),dishes:menu('Old')}))};
+  assert.deepEqual(filters,[['date','0499']]);return {error:null,data:[{date:'2026-09-01',dishes:menu('Last')}]};
+ }});
+ const rows=await h.api.readHistoryCloud({all:true});assert.equal(rows.length,501);assert.equal(calls,2);
+});
+test('cloud history export read rejects partial results when a later page fails',async()=>{
+ let calls=0;const h=harness({response:()=>++calls===1?{data:Array.from({length:500},(_,i)=>({date:String(i).padStart(4,'0')})),error:null}:{data:null,error:{message:'offline'}}});
+ await assert.rejects(h.api.readHistoryCloud({all:true}));
+});
+test('local history cache caps confirmed rows while preserving pending old drafts',async()=>{
+ const h=harness({user:false});h.el('menuDate').value='2020-01-01';h.api.setMenu(menu('Pending'));await h.api.saveMenu();
+ const rows=Array.from({length:120},(_,i)=>({date:new Date(Date.UTC(2025,0,i+1)).toISOString().slice(0,10),dishes:menu('Cloud')}));
+ h.api.mergeCloudHistory(rows);h.api.saveLocal();
+ const stored=JSON.parse(h.saved.get('menu_v3_local_snapshot'));
+ assert.equal(Object.keys(stored.history).length,91);assert.equal(stored.history['2020-01-01'].primer[0].spanish,'Pending');
+ assert.equal(Object.keys(h.api.state().menuHistory).length,121);
+});
+test('looking up an unloaded date retrieves its existing cloud menu',async()=>{
+ const h=harness({response:()=>({error:null,data:[{date:'2020-01-01',dishes:menu('Older cloud menu')}]})});
+ assert.equal(await h.api.findHistoryDate('2020-01-01'),true);
+ assert.equal(h.api.state().menuHistory['2020-01-01'].primer[0].spanish,'Older cloud menu');
 });
