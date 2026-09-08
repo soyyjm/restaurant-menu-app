@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -307,4 +307,30 @@ test('relative copy missing history or cancelled replacement preserves current m
  h.el('menuDate').value='2026-09-05';h.api.setMenu(menu('Source'));await h.api.saveMenu();
  h.el('menuDate').value='2026-09-06';h.api.setMenu(menu('Keep'));h.context.confirm=()=>false;
  await h.api.copyRelativeMenu(1);assert.equal(h.api.state().todayMenu.primer[0].spanish,'Keep');
+});
+
+test('planning opens today after loading without losing future drafts or prices',async()=>{
+ const h=harness({user:false}),today=h.api.localDate(),future=h.api.planningDate(3);
+ h.el('menuDate').value=today;h.api.setMenu(menu('Prepared for today'));h.el('menuPrice').value='18.00 €';await h.api.saveMenu();
+ h.el('menuDate').value=future;h.api.setMenu(menu('Future'));h.el('menuPrice').value='25.00 €';await h.api.saveMenu();
+ await h.api.loadAll();h.api.openPlanningToday();
+ assert.equal(h.el('menuDate').value,today);assert.equal(h.api.state().todayMenu.primer[0].spanish,'Prepared for today');
+ assert.equal(h.el('menuPrice').value,'18.00 €');assert.equal(h.api.state().menuHistory[future].primer[0].spanish,'Future');
+ assert.equal(h.api.state().menuMetadata[future].price,'25.00 €');assert.equal(h.writes.length,0);
+});
+test('planning date arithmetic crosses year and daylight-saving boundaries',()=>{
+ const h=harness();assert.equal(h.api.planningDate(2,'2026-12-31'),'2027-01-02');
+ assert.equal(h.api.planningDate(1,'2026-03-28'),'2026-03-29');
+});
+test('date switch saves current unsaved content before opening a future date',async()=>{
+ const h=harness({user:false});h.el('menuDate').value='2026-09-06';h.api.setMenu(menu('Initial'));await h.api.saveMenu();
+ h.api.setMenu(menu('Latest draft'));h.el('menuDate').value='2026-09-10';await h.api.changeMenuDate();
+ assert.equal(h.api.state().menuHistory['2026-09-06'].primer[0].spanish,'Latest draft');
+ assert.equal(h.api.state().todayMenu.primer.length,0);
+});
+test('date switch stays on source when saving the draft fails',async()=>{
+ const h=harness({user:false});h.api.setMenu(menu('Keep'));await h.api.saveMenu();
+ h.context.localStorage.setItem=()=>{throw Error('quota');};
+ h.el('menuDate').value='2026-09-10';await h.api.changeMenuDate();
+ assert.equal(h.el('menuDate').value,'2026-09-06');assert.equal(h.api.state().todayMenu.primer[0].spanish,'Keep');
 });

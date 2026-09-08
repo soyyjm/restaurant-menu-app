@@ -2061,7 +2061,11 @@ kbd {
         <button class="btn btn-secondary btn-small" id="btnRetrySync" hidden>Reintentar</button>
       </div>
       <div class="date-price-bar">
+        <label for="menuDate">Preparar menú</label>
         <input type="date" id="menuDate">
+        <button class="btn btn-secondary btn-small" id="planToday">Hoy</button>
+        <button class="btn btn-secondary btn-small" id="planTomorrow">Mañana</button>
+        <button class="btn btn-secondary btn-small" id="planAfterTomorrow">Pasado mañana</button>
         <input type="text" id="menuPrice" style="width:90px" placeholder="14.50 €">
         <button class="price-save-btn" id="saveSpecialPrice" title="Guardar precio especial para esta fecha">⭐</button>
         <span class="price-badge" id="priceInfo"></span>
@@ -2616,6 +2620,7 @@ async function init() {
         $('btnUndo').disabled = true;
         await detectOwnerColumns();
         await loadAll();
+        openPlanningToday();
         initSettingsUI(); refreshAuthUI(); renderAll(); renderBatch();
         mcRenderLibrary(); mcRenderEditor();
       }, 0);
@@ -2626,6 +2631,7 @@ async function init() {
   }
 
   await loadAll();
+        openPlanningToday();
   initSettingsUI();
   bindEvents();
   refreshAuthUI();
@@ -2827,6 +2833,7 @@ function stageMenu() {
   const date = $('menuDate').value;
   if (!date) { toast('Elige una fecha', 'error'); return false; }
   const packet = menuPacket(date);
+  activeDate = date;
   menuHistory[date] = unpackMenu(packet);
   menuMetadata[date] = packet._meta;
   pendingSaves.menus[date] = packet;
@@ -3431,8 +3438,11 @@ function renderMenuBuilder() {
 }
 
 function renderPreview() {
-  $('dateNotice').hidden = $('menuDate').value === localDate();
-  $('dateNotice').textContent = `Estás editando el menú del ${$('menuDate').value}. Hoy es ${localDate()}.`;
+  $('dateNotice').hidden = false;
+  const selectedDate = $('menuDate').value;
+  const relative = selectedDate === planningDate(0) ? 'Hoy' : selectedDate === planningDate(1) ? 'Mañana' : selectedDate === planningDate(2) ? 'Pasado mañana' : selectedDate < localDate() ? 'Historial' : 'Planificado';
+  $('dateNotice').textContent = `Preparando: ${selectedDate} · ${relative}`;
+  $('dateNotice').style.fontWeight = '600';
   const price = $('menuPrice').value || '14.50 €';
   const dateVal = $('menuDate').value;
   const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
@@ -3760,6 +3770,9 @@ function bindEvents() {
 
   // Date change
   $('menuDate').addEventListener('change', changeMenuDate);
+  for (const [id,offset] of [['planToday',0],['planTomorrow',1],['planAfterTomorrow',2]]) {
+    $(id).addEventListener('click', () => { $('menuDate').value = planningDate(offset); changeMenuDate(); });
+  }
   $('menuPrice').addEventListener('input', () => { renderPreview(); stageMenu(); });
   $('menuPrice').addEventListener('change', saveMenu);
 
@@ -3988,21 +4001,48 @@ function setupDragDrop() {
 }
 
 // ==================== UTILITIES ====================
+function planningDate(offset, base = localDate()) {
+  const date = new Date(`${base}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + offset);
+  return date.toISOString().slice(0,10);
+}
+
+function openPlanningToday() {
+  const date = localDate();
+  // Preserve dated legacy snapshots before changing the initial view. Never relabel them.
+  if (activeDate && !Object.hasOwn(menuHistory, activeDate)) {
+    menuHistory[activeDate] = JSON.parse(JSON.stringify(todayMenu));
+    menuMetadata[activeDate] = {date:activeDate,price:$('menuPrice').value};
+  }
+  activeDate = date;
+  $('menuDate').value = date;
+  todayMenu = unpackMenu(JSON.parse(JSON.stringify(menuHistory[date] || {})));
+  setDate();
+  if (menuMetadata[date]?.price) $('menuPrice').value = menuMetadata[date].price;
+  saveLocal();
+}
+
 async function changeMenuDate() {
   const date = $('menuDate').value;
   if (!date) { $('menuDate').value = activeDate || localDate(); return; }
   if (editingId !== null && !confirm('Hay un plato en edición sin confirmar. ¿Cambiar de fecha y descartar esa edición?')) {
     $('menuDate').value = activeDate; return;
   }
-  undoMenu = { dishes: JSON.parse(JSON.stringify(todayMenu)), date: activeDate || localDate(), price: $('menuPrice').value };
+  const previousDate = activeDate || localDate();
+  if (date === previousDate) { renderAll(); return; }
+  $('menuDate').value = previousDate;
+  if (!stageMenu()) { renderAll(); return; }
+  $('menuDate').value = date;
+  undoMenu = { dishes: JSON.parse(JSON.stringify(todayMenu)), date: previousDate, price: $('menuPrice').value };
   $('btnUndo').disabled = false;
   activeDate = date;
   editingId = null;
   todayMenu = unpackMenu(JSON.parse(JSON.stringify(menuHistory[date] || {})));
   setDate();
   if (menuMetadata[date]?.price) $('menuPrice').value = menuMetadata[date].price;
-  await saveMenu();
+  saveLocal();
   renderAll();
+  await syncPending();
 }
 
 function setDate() {
