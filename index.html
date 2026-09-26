@@ -1812,6 +1812,7 @@ kbd {
 }
 /* ── Body ── */
 .mcp-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.mcp-body > * { flex-shrink: 0; }
 .mcp-section { margin-bottom: 20px; }
 .mcp-section-header { text-align: center; margin-bottom: 8px; }
 .mcp-section-title {
@@ -1864,11 +1865,95 @@ kbd {
 }
 .mcp-drinks-text {
   font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; font-style: italic; line-height: 1.5;
+  white-space: pre-line;
 }
 /* ── Footer ── */
 .mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
 .mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+/* ── Clásico moderno: neutral default that suits most menus ── */
+.mcp-template-clasico .mcp-page { padding: 70px 88px 44px; }
+.mcp-root.mcp-template-clasico .mcp-page { background: #fbf9f5; }
+.mcp-template-clasico .mcp-corner { display: none; }
+.mcp-root.mcp-template-clasico .mcp-header-box {
+  display: flex; flex-direction: column; align-items: center; border: none; padding: 0; margin-bottom: 30px;
+}
+.mcp-root.mcp-template-clasico .mcp-restaurant {
+  order: 1; font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 10.5px;
+  letter-spacing: 0.34em; color: #6b6259; margin-bottom: 18px;
+}
+.mcp-root.mcp-template-clasico .mcp-title {
+  order: 2; font-family: 'Playfair Display', Georgia, serif; font-weight: 400; font-size: 46px; line-height: 1.12;
+  text-transform: none; letter-spacing: 0; color: #1f1d1a; margin: 0 0 8px; max-width: 600px;
+}
+.mcp-root.mcp-template-clasico .mcp-type-label {
+  order: 3; font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 400; font-size: 15px;
+  text-transform: none; letter-spacing: 0.02em; color: #9a7b4f; margin: 0 0 14px;
+}
+.mcp-root.mcp-template-clasico .mcp-ornament-row { order: 4; width: 140px; margin: 0 0 14px; gap: 10px; }
+.mcp-root.mcp-template-clasico .mcp-ornament-line { background: #cdb99a; }
+.mcp-root.mcp-template-clasico .mcp-ornament-dot { font-size: 5px; color: #9a7b4f; }
+.mcp-root.mcp-template-clasico .mcp-price-row { order: 5; margin: 2px 0 0; }
+.mcp-root.mcp-template-clasico .mcp-header-box .mcp-price-row .mcp-price-badge {
+  background: transparent; border: none; border-radius: 0; padding: 0; flex-direction: column; gap: 3px;
+}
+.mcp-root.mcp-template-clasico .mcp-price-badge .mcp-price {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 28px; letter-spacing: 0; color: #1f1d1a;
+}
+.mcp-root.mcp-template-clasico .mcp-price-badge .mcp-price-label {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-size: 11.5px; letter-spacing: 0.04em; color: #7a736b;
+}
+.mcp-root.mcp-template-clasico .mcp-notes {
+  order: 6; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-style: normal; font-size: 12.5px;
+  line-height: 1.5; color: #7a736b; margin-top: 12px; max-width: 480px;
+}
+.mcp-root.mcp-template-clasico .mcp-section { margin-bottom: 24px; }
+.mcp-root.mcp-template-clasico .mcp-section-header { margin-bottom: 12px; }
+.mcp-root.mcp-template-clasico .mcp-section-title {
+  font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11.5px; letter-spacing: 0.3em; color: #9a7b4f; margin-bottom: 0;
+}
+.mcp-root.mcp-template-clasico .mcp-section-rule { width: 36px; background: #cdb99a; margin-top: 9px; }
+.mcp-root.mcp-template-clasico .mcp-section-mode {
+  font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 13px; color: #8a8279; margin-top: 7px;
+}
+.mcp-root.mcp-template-clasico .mcp-dish-row { padding: 4px 0; gap: 0; }
+.mcp-root.mcp-template-clasico .mcp-bullet-dot { display: none; }
+.mcp-root.mcp-template-clasico .mcp-dish-cell { flex: 0 1 auto; }
+.mcp-root.mcp-template-clasico .mcp-dish {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 400; font-size: 17.5px; line-height: 1.32; color: #222;
+}
+.mcp-root.mcp-template-clasico .mcp-dish-ca,
+.mcp-root.mcp-template-clasico .mcp-dish-en {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-style: normal; font-size: 12.5px; line-height: 1.4; margin-top: 2px;
+}
+.mcp-root.mcp-template-clasico .mcp-dish-ca { color: #6f6a64; }
+.mcp-root.mcp-template-clasico .mcp-dish-en { color: #9a948d; }
+.mcp-root.mcp-template-clasico .mcp-supp {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-weight: 600; font-size: 11.5px; color: #9a7b4f; margin-left: 8px;
+}
+.mcp-root.mcp-template-clasico .mcp-drinks-box {
+  border: none; border-top: 1px solid #e4dccf; background: transparent; padding: 18px 0 0; margin: 10px 60px 0;
+}
+.mcp-root.mcp-template-clasico .mcp-drinks-label {
+  font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 0.3em; color: #9a7b4f; margin-bottom: 6px;
+}
+.mcp-root.mcp-template-clasico .mcp-drinks-text {
+  font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 14.5px; line-height: 1.5; color: #4a4540;
+}
+.mcp-root.mcp-template-clasico .mcp-footer-rule { background: #e4dccf; }
+.mcp-root.mcp-template-clasico .mcp-footer-text {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-size: 10.5px; letter-spacing: 0.14em; color: #8a8279;
+}
+/* B&N: same layout, warm tones become greys */
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-page { background: #fff; }
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-type-label,
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-ornament-dot,
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-section-title,
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-supp,
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-drinks-label { color: #444; }
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-ornament-line,
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-section-rule { background: #999; }
+.mcp-root.mcp-bw.mcp-template-clasico .mcp-price-badge .mcp-price { color: #000; }
 /* ── Carta template (price per dish) ── */
 .mcp-template-carta .mcp-page { padding: 62px 96px 40px; }
 .mcp-root.mcp-template-carta .mcp-page { background: #ffffff; }
@@ -4668,6 +4753,7 @@ const MC_MODE_PRINT = {
   en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
 };
 const MC_TEMPLATES = {
+  clasico: 'Clásico moderno (recomendado)',
   editorial: 'Editorial clásico',
   grupo: 'Grupo claro',
   fiesta: 'Fiesta elegante',
@@ -5726,17 +5812,12 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
       bodyEl.style.transformOrigin = 'top center';
     }
   } else if (bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
-    let occupiedH = 0;
-    allSecEls.forEach((sec, i) => {
-      occupiedH += sec.offsetHeight;
-      if (i < allSecEls.length - 1)
-        occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
-    });
-    const drinksBox = bodyEl.querySelector('.mcp-drinks-box');
-    if (drinksBox)
-      occupiedH += (parseFloat(getComputedStyle(drinksBox).marginTop) || 0) + drinksBox.offsetHeight;
-
-    const surplus = bodyH - occupiedH;
+    // Real content height: bottom edge of the last block (children never shrink, see .mcp-body > *).
+    const contentH = () => {
+      const last = bodyEl.lastElementChild;
+      return last ? last.offsetTop + last.offsetHeight - bodyEl.offsetTop : 0;
+    };
+    const surplus = bodyH - contentH();
     if (surplus > 4 && spacing === 'center') {
       bodyEl.style.justifyContent = 'center';
     } else if (surplus > 4 && spacing === 'auto') {
@@ -5745,7 +5826,7 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
         const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
         el.style.marginBottom = `${base + extra}px`;
       });
-    } else if (surplus < -20) {
+    } else if (surplus < 0) {
       scaled = Math.max(bodyH / (bodyH - surplus), 0.65);
       bodyEl.style.transform      = `scale(${scaled})`;
       bodyEl.style.transformOrigin = 'top center';
@@ -6357,7 +6438,7 @@ function mcInitTabs() {
   });
   $('mc-new-btn').addEventListener('click', () => {
     if (!mcPersistCurrent()) return;
-    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
+    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: ['template:clasico'], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
     mcCurrentId = mcCurrentMenu.id;
     mcRenderLibrary(); mcRenderEditor();
     $('mc-name-input')?.focus();
