@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -373,4 +373,27 @@ test('closed menu prints its own language first and only checks dish translation
  const v=h.api.mcValidateMenu(m);assert.deepEqual(plain(v.missing),['Català: Sopa']);
  m.sections[0].dishes[0].translations={ca:{name:{text:'Sopa CA',source:'Sopa'}}};
  assert.equal(h.api.mcValidateMenu(m).missing.length,0);
+});
+function captureDownloads(h){
+ const files=[];let pending;
+ h.context.Blob=class{constructor(parts){this.text=parts.join('');}};
+ h.context.URL={createObjectURL:b=>{pending=b;return 'blob:test';},revokeObjectURL(){}};
+ h.context.document.body={appendChild(){}};
+ h.context.document.createElement=()=>({click(){files.push({name:this.download,data:JSON.parse(pending.text)});},remove(){}});
+ return files;
+}
+test('closed backup exports every cloud menu plus unsaved drafts',async()=>{
+ const row={...closedMenu(),owner_id:'manager-test'};
+ const h=harness({response:({table,op})=>({error:null,data:table==='menus_cerrados'&&op==='select'?[row]:null})});
+ const files=captureDownloads(h);
+ h.api.setClosed({...plain(closedMenu()),id:'draft-1',name:'Nuevo',_isNew:true},[]);h.api.mcPersistCurrent();
+ await h.api.mcExportBackup();
+ assert.equal(files.length,1);assert.match(files[0].name,/^menus-cerrados-\d{4}-\d{2}-\d{2}\.json$/);
+ assert.equal(files[0].data.source,'cloud');assert.equal(files[0].data.menus[0].owner_id,undefined);
+ assert.equal(files[0].data.drafts[0].name,'Nuevo');
+});
+test('closed backup never downloads a partial copy when the cloud read fails',async()=>{
+ const h=harness({fail:true}),files=captureDownloads(h);
+ await h.api.mcExportBackup();
+ assert.equal(files.length,0);assert.equal(h.el('mc-export-btn').disabled,false);
 });

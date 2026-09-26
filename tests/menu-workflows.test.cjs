@@ -94,3 +94,13 @@ test('large imports avoid ID collisions even when the generator repeats a value'
  assert.equal(result.library[1].id,101);
  assert.equal(result.history['2026-09-05'].primer[0].id,102);
 });
+test('closed backup keeps menu columns and drafts but drops owner and session fields',()=>{
+ const cloud={...base(),name:'Grupos',owner_id:'user-1',updated_at:'2026-09-01T00:00:00Z'};
+ const draft={...base(),id:'new',name:'Borrador',_isNew:true,_baseUpdatedAt:'x'};
+ const b=W.closedBackup([cloud,null,{id:''}],[draft],{exportedAt:'2026-09-26T20:00:00Z',source:'cloud'});
+ assert.equal(b.format,'menus-cerrados-backup');assert.equal(b.source,'cloud');
+ assert.equal(b.menus.length,1);assert.equal(b.menus[0].owner_id,undefined);
+ assert.equal(b.menus[0].sections[0].dishes[0].name,'Sopa');
+ assert.equal(b.drafts[0].name,'Borrador');assert.equal(b.drafts[0]._isNew,undefined);
+ b.menus[0].sections[0].title='changed';assert.equal(cloud.sections[0].title,'Entrantes');
+});

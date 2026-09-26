@@ -1285,6 +1285,13 @@ kbd {
   width: calc(100% - 24px); flex-shrink: 0;
 }
 .mc-library-new-btn:hover { background: var(--terracotta-dark); }
+.mc-library-new-btn { margin-bottom: 4px; }
+.mc-library-export-btn {
+  margin: 0 12px 10px; padding: 6px 0; font: 600 12px var(--font-body); color: var(--ink-soft);
+  background: none; border: none; border-radius: var(--radius); cursor: pointer; flex-shrink: 0;
+}
+.mc-library-export-btn:hover:not(:disabled) { color: var(--terracotta-dark); background: var(--paper-warm); }
+.mc-library-export-btn:disabled { opacity: 0.5; cursor: default; }
 .mc-list-item-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; line-height: 1.3; }
 .mc-list-item-meta { font-size: 11px; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
 .mc-unsaved-dot { color: var(--terracotta-dark); font-weight: 700; }
@@ -2095,6 +2102,7 @@ kbd {
         </div>
         <div class="mc-library-list" id="mc-library-list"></div>
         <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
+        <button class="mc-library-export-btn" id="mc-export-btn" type="button" title="Descarga todos los menús cerrados y los borradores sin guardar en un archivo JSON">⬇ Exportar copia de seguridad</button>
       </div>
       <div class="mc-editor" id="mc-editor-area">
         <div class="mc-editor-empty">
@@ -2173,7 +2181,7 @@ kbd {
     <h2>Ajustes</h2>
     <div style="padding:14px;border:1px solid var(--cream);border-radius:var(--radius);margin-bottom:20px;">
       <h3 style="font-size:15px;margin-bottom:8px;">Copia del menú diario</h3>
-      <p style="font-size:12px;margin-bottom:10px;">La copia local incluye las fechas cargadas; la exportación de la nube consulta todas las fechas y añade los borradores pendientes. Incluye la biblioteca y favoritos cargados. No incluye menús cerrados, ajustes ni claves de acceso.</p>
+      <p style="font-size:12px;margin-bottom:10px;">La copia local incluye las fechas cargadas; la exportación de la nube consulta todas las fechas y añade los borradores pendientes. Incluye la biblioteca y favoritos cargados. No incluye ajustes ni claves de acceso. Los menús cerrados se exportan desde su pestaña (⬇ Exportar copia de seguridad).</p>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia local</button>
         <button class="btn btn-secondary btn-small" id="downloadCloudBackup" style="white-space:normal;max-width:100%;">Exportar todo el historial de la nube</button>
@@ -5697,6 +5705,38 @@ async function mcTranslateOneDish(text, targetLang, sourceLang = 'es') {
   throw new Error('No se pudo traducir este texto');
 }
 
+// Logged in: read every row from the cloud and refuse to save a partial copy.
+// Offline or signed out: export what this device has, and say so.
+async function mcExportBackup() {
+  const btn = $('mc-export-btn');
+  if (!btn || btn.disabled || !mcPersistCurrent()) return;
+  const owner = cacheOwner, generation = authGeneration;
+  btn.disabled = true;
+  try {
+    let menus = mcMenus, source = 'local';
+    if (supabase && currentUser) {
+      const { data, error } = await supabase.from('menus_cerrados').select('*').order('updated_at', { ascending: false }).abortSignal(AbortSignal.timeout(15000));
+      if (owner !== cacheOwner || generation !== authGeneration) return;
+      if (error || !Array.isArray(data)) throw error || new Error('No data');
+      menus = data; source = 'cloud';
+    }
+    const backup = MenuWorkflows.closedBackup(menus, Object.values(mcDrafts), { exportedAt: new Date().toISOString(), source });
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `menus-cerrados-${localDate()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    const n = backup.drafts.length;
+    const drafts = n ? ` y ${n} ${n === 1 ? 'borrador' : 'borradores'} sin guardar` : '';
+    toast(source === 'cloud'
+      ? `Copia descargada: ${backup.menus.length} menús de la nube${drafts}.`
+      : `Copia local descargada (sin sesión en la nube): ${backup.menus.length} menús${drafts}.`, source === 'cloud' ? 'success' : 'info');
+  } catch {
+    if (owner === cacheOwner && generation === authGeneration) toast('No se pudo leer la nube. No se descargó una copia parcial; vuelve a intentarlo.', 'error');
+  } finally { btn.disabled = false; }
+}
+
 function mcBindEditorEvents() {
   const area = $('mc-editor-area');
   area.addEventListener('click', e => {
@@ -5801,6 +5841,7 @@ function mcInitTabs() {
     $('mc-name-input')?.focus();
   });
   mcBindEditorEvents();
+  $('mc-export-btn').addEventListener('click', mcExportBackup);
   // Close open ⋯ menus when clicking elsewhere.
   document.addEventListener('click', e => {
     document.querySelectorAll('details.mc-menu[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });

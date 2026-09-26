@@ -112,6 +112,18 @@
     const favorites = [...new Set(list(input.favorites || [],10000).map(v=>string(v,600)))].filter(k=>available.has(k));
     return {format:'menu-daily-backup',version:1,library,menus,favorites};
   }
+  // Closed-menu backups keep only the table's business columns (no owner/session fields).
+  const CLOSED_FIELDS = ['id','name','type','occasion','price','price_label','min_people','notes','sections','drinks','language','parent_id','version','tags','created_at','updated_at'];
+  function closedBackup(menus, drafts, meta) {
+    const pick = m => Object.fromEntries(CLOSED_FIELDS.filter(k => m[k] !== undefined).map(k => [k, clone(m[k])]));
+    const valid = m => !!m && typeof m.id === 'string' && m.id && Array.isArray(m.sections || []);
+    return {
+      format: 'menus-cerrados-backup', version: 1,
+      exported_at: meta.exportedAt, source: meta.source,
+      menus: (menus || []).filter(valid).map(pick),
+      drafts: (drafts || []).filter(valid).map(pick)
+    };
+  }
   function planDailyImport(file, state, nextId) {
     const backup = dailyBackup(file);
     const library = clone(state.library), history = clone(state.history), metadata = clone(state.metadata);
@@ -145,7 +157,7 @@
     }
     return {library,history,metadata,favorites:[...favorites],packets,addedDishes,skippedDishes,addedMenus,skippedMenus};
   }
-  const api = { dailyBackup, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
+  const api = { dailyBackup, closedBackup, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MenuWorkflows = api;
 })(typeof globalThis === 'undefined' ? this : globalThis);
