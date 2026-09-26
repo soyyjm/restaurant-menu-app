@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcRenderPreview, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -359,4 +359,18 @@ test('looking up an unloaded date retrieves its existing cloud menu',async()=>{
  const h=harness({response:()=>({error:null,data:[{date:'2020-01-01',dishes:menu('Older cloud menu')}]})});
  assert.equal(await h.api.findHistoryDate('2020-01-01'),true);
  assert.equal(h.api.state().menuHistory['2020-01-01'].primer[0].spanish,'Older cloud menu');
+});
+test('closed save is not blocked by warnings, only by errors',async()=>{
+ const h=harness(),m={...closedMenu(),price:null,drinks:''};h.context.confirm=()=>false;
+ h.api.setClosed({...plain(m),name:'Sin precio'},[m]);await h.api.mcSaveMenu();
+ assert.equal(h.writes.filter(w=>w.table==='menus_cerrados').length,1);
+ const empty={...closedMenu(),id:'closed-3',name:''};h.api.setClosed(plain(empty),[]);await h.api.mcSaveMenu();
+ assert.equal(h.writes.filter(w=>w.table==='menus_cerrados').length,1);
+});
+test('closed menu prints its own language first and only checks dish translations',()=>{
+ const h=harness(),m={...closedMenu(),tags:['langs:ca-es']};
+ assert.deepEqual(plain(h.api.mcGetDisplayLangs(m)),['es','ca']);
+ const v=h.api.mcValidateMenu(m);assert.deepEqual(plain(v.missing),['Català: Sopa']);
+ m.sections[0].dishes[0].translations={ca:{name:{text:'Sopa CA',source:'Sopa'}}};
+ assert.equal(h.api.mcValidateMenu(m).missing.length,0);
 });

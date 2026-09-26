@@ -25,6 +25,9 @@
     const item = di == null ? section : section?.dishes?.[di];
     if (!item) return '';
     if (lang === sourceLang) return item[field] || '';
+    // Inline translations are only valid for the exact source text they were written for.
+    const inline = item.translations?.[lang]?.[field];
+    if (inline?.text && inline.source === item[field]) return inline.text;
     const candidates = menus.filter(m => m.id !== menu.id && family(m) === family(menu) && version(m) === version(menu) && (m.language || 'es') === lang);
     const items = candidates.flatMap(m => (m.sections || []).flatMap(s =>
       (di == null ? [s] : (s.dishes || [])).map(i => ({ menu: m, item: i }))));

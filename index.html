@@ -1243,7 +1243,7 @@ kbd {
    MENÚS CERRADOS — Layout
    ========================================== */
 .mc-layout {
-  display: grid; grid-template-columns: 300px 1fr;
+  display: grid; grid-template-columns: 280px 1fr;
   height: calc(100vh - 45px); overflow: hidden; background: var(--paper);
 }
 .mc-library {
@@ -1258,62 +1258,44 @@ kbd {
   margin-bottom: 10px; color: var(--ink);
 }
 .mc-library-search {
-  width: 100%; padding: 7px 10px; font-family: var(--font-body); font-size: 13px;
+  width: 100%; padding: 8px 10px; font-family: var(--font-body); font-size: 13px;
   border: 1px solid var(--cream); border-radius: var(--radius);
-  background: var(--paper); outline: none; margin-bottom: 8px; color: var(--ink);
+  background: var(--paper); outline: none; margin-bottom: 10px; color: var(--ink);
 }
 .mc-library-search:focus { border-color: var(--terracotta); }
-.mc-library-tools {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;
-}
-.mc-library-select {
-  min-width: 0; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink-soft); outline: none;
-}
-.mc-library-tag-filter {
-  grid-column: 1 / -1; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink-soft); outline: none;
-}
-.mc-library-count {
-  margin-top: 8px; font-size: 11px; color: var(--ink-faint);
-}
 .mc-type-filters { display: flex; flex-wrap: wrap; gap: 4px; }
 .mc-type-chip {
-  padding: 3px 9px; font-size: 11px; font-weight: 600; border-radius: 20px;
+  padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 20px;
   border: 1px solid var(--cream); background: var(--paper); color: var(--ink-faint);
   cursor: pointer; transition: all var(--transition); font-family: var(--font-body);
 }
 .mc-type-chip.active { background: var(--terracotta); border-color: var(--terracotta); color: white; }
-.mc-library-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.mc-library-foot {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  margin-top: 10px; font-size: 11px; color: var(--ink-faint);
+}
+.mc-archived-toggle { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; white-space: nowrap; }
+.mc-archived-toggle input { accent-color: var(--terracotta); }
+.mc-library-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+.mc-library-empty { padding: 24px 16px; font-size: 13px; color: var(--ink-faint); text-align: center; }
 .mc-library-new-btn {
-  margin: 10px 12px; padding: 9px 0; font-family: var(--font-body); font-size: 13px;
+  margin: 10px 12px; padding: 10px 0; font-family: var(--font-body); font-size: 13px;
   font-weight: 600; background: var(--terracotta); color: white; border: none;
   border-radius: var(--radius); cursor: pointer; transition: background var(--transition);
   width: calc(100% - 24px); flex-shrink: 0;
 }
 .mc-library-new-btn:hover { background: var(--terracotta-dark); }
-.mc-list-item {
-  padding: 11px 16px; cursor: pointer; border-left: 3px solid transparent;
-  transition: background var(--transition), border-color var(--transition);
-}
-.mc-list-item:hover { background: var(--paper-warm); }
-.mc-list-item.active { background: var(--terracotta-light); border-left-color: var(--terracotta); }
-.mc-list-item-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.3; }
-.mc-list-item-meta { font-size: 11px; color: var(--ink-faint); display: flex; gap: 8px; align-items: center; }
+.mc-list-item-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; line-height: 1.3; }
+.mc-list-item-meta { font-size: 11px; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.mc-unsaved-dot { color: var(--terracotta-dark); font-weight: 700; }
 .mc-family-item {
   border-left: 3px solid transparent; border-bottom: 1px solid var(--paper-warm);
   padding: 10px 12px 10px 13px;
 }
-.mc-family-item.active {
-  background: var(--terracotta-light); border-left-color: var(--terracotta);
-}
+.mc-family-item.active { background: var(--terracotta-light); border-left-color: var(--terracotta); }
 .mc-family-head { cursor: pointer; }
 .mc-family-head:hover .mc-list-item-name { color: var(--terracotta-dark); }
-.mc-family-variants {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
-}
+.mc-family-variants { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 .mc-variant-chip {
   font-family: var(--font-body); font-size: 10px; font-weight: 800;
   padding: 3px 7px; border: 1px solid var(--cream); border-radius: 999px;
@@ -1331,11 +1313,6 @@ kbd {
 .mc-type-badge.tapas { background: var(--terracotta-light); color: var(--terracotta-dark); }
 .mc-type-badge.degustacion { background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream); }
 .mc-type-badge.otro { background: var(--cream); color: var(--ink-faint); }
-.mc-version-tag {
-  font-size: 10px; font-weight: 600; padding: 1px 6px;
-  background: var(--paper-warm); border: 1px solid var(--cream);
-  border-radius: 10px; color: var(--ink-faint);
-}
 .mc-status-badge {
   font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 999px;
   text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
@@ -1344,163 +1321,86 @@ kbd {
 .mc-status-badge.revisar { background: #fff4cf; color: #7a5a00; }
 .mc-status-badge.listo { background: var(--olive-light); color: var(--olive-dark); }
 .mc-status-badge.archivado { background: #ececec; color: #777; }
-.mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 24px 30px 46px; }
-.mc-editor-shell {
-  display: grid; grid-template-columns: minmax(520px, 1fr) 360px; gap: 28px; align-items: start;
-}
-.mc-form-pane { min-width: 0; }
-.mc-preview-pane {
-  position: sticky; top: 24px; align-self: start;
-}
-.mc-preview-toolbar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px; gap: 10px;
-}
-.mc-preview-mobile-actions { display: none; }
-.mc-preview-title {
-  font-size: 12px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--ink-faint);
-}
-.mc-preview-card {
-  background: #f5f0e6; border: 1px solid rgba(180,140,56,0.28);
-  box-shadow: var(--shadow-md); min-height: 510px; padding: 28px 30px;
-  color: var(--ink); overflow: hidden;
-}
-.mc-preview-card.template-grupo { background: #f7f4ef; border-color: #d8cfc1; }
-.mc-preview-card.template-fiesta { background: #f5efe3; border-color: rgba(122,46,59,0.25); }
-.mc-preview-card.template-tapas { background: #fffaf4; border-color: rgba(196,101,42,0.30); }
-.mc-preview-card.template-minimal { background: white; border-color: #ddd; }
-.mc-preview-card.template-marinero { background: #fff8ec; border-color: rgba(198,151,63,0.46); box-shadow: 0 8px 0 #083f46; }
-.template-marinero .mc-preview-restaurant { color: #083f46; letter-spacing: 0.16em; }
-.template-marinero .mc-preview-name { color: #073f47; font-size: 34px; }
-.template-marinero .mc-preview-pill { border-color: rgba(198,151,63,0.55); background: white; color: #073f47; }
-.template-marinero .mc-preview-section { border: 1px solid rgba(198,151,63,0.32); border-radius: 12px; padding: 12px 14px; background: rgba(255,255,255,0.62); }
-.template-marinero .mc-preview-section-title { color: #073f47; }
-.template-marinero .mc-preview-dish { font-size: 19px; }
-.mc-preview-restaurant {
-  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-  font-weight: 800; text-align: center; color: var(--ink-faint); margin-bottom: 10px;
-}
-.mc-preview-name {
-  font-family: var(--font-display); font-size: 32px; line-height: 1.05;
-  font-weight: 800; text-align: center; color: var(--ink); margin-bottom: 8px;
-}
-.template-tapas .mc-preview-name { font-size: 28px; text-align: left; }
-.template-minimal .mc-preview-name { font-size: 26px; text-align: left; font-family: var(--font-body); }
-.mc-preview-meta {
-  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
-  font-size: 12px; color: var(--ink-soft); margin-bottom: 16px;
-}
-.template-tapas .mc-preview-meta,
-.template-minimal .mc-preview-meta { justify-content: flex-start; }
-.mc-preview-pill {
-  border: 1px solid rgba(20,17,13,0.16); border-radius: 999px;
-  padding: 4px 10px; background: rgba(255,255,255,0.45);
-}
-.mc-preview-notes {
-  font-size: 13px; line-height: 1.45; color: var(--ink-faint);
-  text-align: center; margin-bottom: 18px; font-style: italic;
-}
-.template-tapas .mc-preview-notes,
-.template-minimal .mc-preview-notes { text-align: left; }
-.mc-preview-section { margin: 18px 0; }
-.mc-preview-section-title {
-  font-size: 12px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 0.12em; color: var(--terracotta-dark); text-align: center;
-  margin-bottom: 4px;
-}
-.template-grupo .mc-preview-section-title { color: var(--olive-dark); }
-.template-fiesta .mc-preview-section-title { color: var(--wine); }
-.template-tapas .mc-preview-section-title,
-.template-minimal .mc-preview-section-title { text-align: left; }
-.mc-preview-section-sub {
-  font-size: 12px; font-style: italic; color: var(--ink-faint);
-  text-align: center; margin-bottom: 9px;
-}
-.template-tapas .mc-preview-section-sub,
-.template-minimal .mc-preview-section-sub { text-align: left; }
-.mc-preview-dish {
-  font-family: var(--font-display); font-size: 19px; line-height: 1.25;
-  text-align: center; margin: 8px 0; color: var(--ink);
-}
-.template-grupo .mc-preview-dish { font-size: 18px; }
-.template-tapas .mc-preview-dish,
-.template-minimal .mc-preview-dish {
-  font-family: var(--font-body); font-size: 14px; line-height: 1.4; text-align: left;
-  padding-left: 14px; position: relative;
-}
-.template-tapas .mc-preview-dish::before,
-.template-minimal .mc-preview-dish::before {
-  content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor;
-  position: absolute; left: 0; top: 0.75em;
-}
-.mc-preview-dish small {
-  display: block; font-family: var(--font-body); font-size: 12px; line-height: 1.35;
-  color: var(--ink-faint); margin-top: 2px;
-}
-.mc-preview-supp { font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--terracotta-dark); }
-.mc-preview-drinks {
-  margin-top: 18px; border: 1px solid rgba(20,17,13,0.14);
-  padding: 12px 14px; font-size: 13px; line-height: 1.45; text-align: center;
-}
-.template-tapas .mc-preview-drinks,
-.template-minimal .mc-preview-drinks { text-align: left; }
+
+/* Editor */
+.mc-editor { display: flex; flex-direction: column; overflow-y: auto; padding: 0 30px 46px; }
 .mc-editor-empty {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; height: 100%; color: var(--ink-faint);
   font-size: 14px; gap: 12px; text-align: center;
 }
 .mc-editor-empty-icon { font-size: 40px; opacity: 0.35; }
-.mc-editor-header {
-  display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
-  margin-bottom: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--cream);
+.mc-topbar {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px;
+  padding: 12px 0; margin-bottom: 14px; background: var(--paper); border-bottom: 1px solid var(--cream);
 }
-.mc-editor-header-main { flex: 1 1 100%; min-width: 0; order: 1; }
-.mc-editor-title-input {
-  width: 100%; font-family: var(--font-display); font-size: 26px; font-weight: 700;
-  color: var(--ink); background: none; border: none; border-bottom: 2px solid transparent;
-  padding: 2px 0; outline: none; transition: border-color var(--transition); margin-bottom: 12px;
+.mc-topbar-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+.mc-save-badge {
+  font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
 }
-.mc-editor-title-input:focus { border-bottom-color: var(--terracotta); }
-.mc-editor-meta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.mc-meta-field { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
-.mc-meta-field label { font-weight: 600; white-space: nowrap; }
-.mc-meta-input {
-  font-family: var(--font-body); font-size: 13px; padding: 5px 8px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink); outline: none;
-}
-.mc-meta-input:focus { border-color: var(--terracotta); }
-.mc-meta-select {
-  font-family: var(--font-body); font-size: 12px; font-weight: 600;
-  padding: 5px 8px; border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink); outline: none; cursor: pointer;
-}
-.mc-editor-actions { display: flex; gap: 8px; flex-shrink: 0; justify-content: flex-end; width: 100%; order: 2; }
-.mc-flow-nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px; }
-.mc-flow-nav button, .mc-mobile-back { font: 600 12px var(--font-body); padding: 8px 11px; color: var(--ink-soft); background: white; border: 1px solid var(--cream); border-radius: var(--radius); cursor: pointer; }
-.mc-flow-nav button:hover, .mc-mobile-back:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
-.mc-step { scroll-margin-top: 100px; }
-.mc-step-heading { margin: 20px 0 12px; font: 700 17px var(--font-display); color: var(--ink); }
-.mc-mobile-back { display: none; margin-bottom: 12px; }
-.mc-library-advanced { margin: 6px 0; }
-.mc-library-advanced summary { font: 600 12px var(--font-body); color: var(--ink-soft); cursor: pointer; padding: 6px 0; }
-.mc-library-advanced[open] summary { margin-bottom: 8px; }
-.mc-extra-options { margin: 14px 0 20px; padding: 10px 12px; border: 1px solid var(--cream); border-radius: var(--radius); background: white; }
-.mc-extra-options summary { font: 600 13px var(--font-body); color: var(--ink-soft); cursor: pointer; }
-.mc-extra-options[open] summary { margin-bottom: 14px; }
+.mc-save-badge::before { content: '● '; }
+.mc-save-badge.ok { background: var(--olive-light); color: var(--olive-dark); }
+.mc-save-badge.ok::before { content: '✓ '; }
+.mc-save-badge.pending { background: #fff4cf; color: #7a5a00; }
+.mc-save-badge.error { background: var(--wine-light); color: var(--wine); white-space: normal; }
 .mc-btn {
   padding: 8px 14px; font-family: var(--font-body); font-size: 13px; font-weight: 600;
   border-radius: var(--radius); border: none; cursor: pointer; transition: background var(--transition);
+  white-space: nowrap;
 }
+.mc-btn:disabled { opacity: 0.55; cursor: default; }
 .mc-btn-save { background: var(--olive); color: white; }
 .mc-btn-save:hover { background: var(--olive-dark); }
-.mc-btn-dup { background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream) !important; }
-.mc-btn-dup:hover { background: var(--cream); }
-.mc-btn-del { background: var(--wine-light); color: var(--wine); }
-.mc-btn-del:hover { background: #ecd0d5; }
+.mc-btn-dup { background: white; color: var(--ink-soft); border: 1px solid var(--cream); }
+.mc-btn-dup:hover { background: var(--paper-warm); }
+.mc-jump-preview { display: none; }
+.mc-mobile-back {
+  display: none; font: 600 12px var(--font-body); padding: 8px 11px; color: var(--ink-soft);
+  background: white; border: 1px solid var(--cream); border-radius: var(--radius); cursor: pointer;
+}
+/* ⋯ dropdown menus (editor and sections) */
+.mc-menu { position: relative; }
+.mc-menu > summary { list-style: none; cursor: pointer; user-select: none; }
+.mc-menu > summary::-webkit-details-marker { display: none; }
+.mc-menu-list {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; min-width: 220px;
+  display: flex; flex-direction: column; padding: 4px; background: white;
+  border: 1px solid var(--cream); border-radius: var(--radius); box-shadow: var(--shadow-md);
+}
+.mc-menu-list button {
+  text-align: left; font: 500 13px var(--font-body); color: var(--ink); background: none;
+  border: none; border-radius: 4px; padding: 8px 10px; cursor: pointer;
+}
+.mc-menu-list button:hover:not(:disabled) { background: var(--paper-warm); }
+.mc-menu-list button:disabled { opacity: 0.4; cursor: default; }
+.mc-menu-list button.danger { color: var(--wine); }
+.mc-menu-list button[hidden] { display: none; }
+
+.mc-editor-shell {
+  display: grid; grid-template-columns: minmax(480px, 1fr) 400px; gap: 28px; align-items: start;
+}
+.mc-form-pane { min-width: 0; }
+.mc-editor-title-input {
+  width: 100%; font-family: var(--font-display); font-size: 26px; font-weight: 700;
+  color: var(--ink); background: none; border: none; border-bottom: 2px solid var(--cream);
+  padding: 2px 0 4px; outline: none; transition: border-color var(--transition); margin-bottom: 14px;
+}
+.mc-editor-title-input:focus { border-bottom-color: var(--terracotta); }
+.mc-editor-meta-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.mc-meta-field {
+  display: flex; flex-direction: column; gap: 5px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); min-width: 0;
+}
+.mc-meta-input, .mc-meta-select {
+  width: 100%; font: 400 14px var(--font-body); padding: 7px 9px; text-transform: none; letter-spacing: 0;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink); outline: none;
+}
+.mc-meta-select { cursor: pointer; }
+.mc-meta-input:focus, .mc-meta-select:focus { border-color: var(--terracotta); }
 .mc-version-family {
-  margin-top: 10px; font-size: 11px; color: var(--ink-faint);
+  margin: -4px 0 14px; font-size: 11px; color: var(--ink-faint);
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
 .mc-version-sibling {
@@ -1510,28 +1410,120 @@ kbd {
 }
 .mc-version-sibling:hover { border-color: var(--terracotta); color: var(--terracotta); }
 .mc-version-sibling.current { background: var(--terracotta-light); border-color: var(--terracotta); color: var(--terracotta-dark); font-weight: 600; }
-.mc-control-panel {
-  display: grid; grid-template-columns: minmax(170px, 0.7fr) 1fr;
-  gap: 14px; align-items: start; margin: 0 0 18px; padding: 14px;
-  background: white; border: 1px solid var(--cream); border-radius: var(--radius-lg);
+.mc-field-label {
+  display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-faint); margin-bottom: 5px;
 }
+.mc-label-hint { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.mc-help-text { font-size: 12px; color: var(--ink-faint); margin: 8px 0; line-height: 1.4; }
+.mc-notes-input, .mc-drinks-input {
+  width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: white; color: var(--ink); resize: vertical; outline: none; margin-bottom: 14px;
+}
+.mc-notes-input:focus, .mc-drinks-input:focus { border-color: var(--terracotta); }
+.mc-extra-options {
+  margin: 0 0 22px; padding: 10px 12px; border: 1px solid var(--cream);
+  border-radius: var(--radius); background: white;
+}
+.mc-extra-options summary { font: 600 13px var(--font-body); color: var(--ink-soft); cursor: pointer; }
+.mc-extra-options[open] summary { margin-bottom: 12px; }
+.mc-extra-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Sections and dishes */
+.mc-sections-title { margin: 0 0 10px; font: 700 18px var(--font-display); color: var(--ink); }
+.mc-section-block {
+  border: 1px solid var(--cream); border-radius: var(--radius-lg);
+  margin-bottom: 10px; background: white;
+}
+.mc-section-block.collapsed .mc-section-dishes { display: none; }
+.mc-section-head {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  background: var(--paper-warm); border-bottom: 1px solid var(--cream);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.mc-section-block.collapsed .mc-section-head { border-bottom: none; border-radius: var(--radius-lg); }
+.mc-section-toggle {
+  width: 26px; height: 26px; border: 1px solid var(--cream); border-radius: 4px;
+  background: white; color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
+  font-size: 11px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.mc-section-toggle:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
+.mc-section-title-input {
+  flex: 1; font-family: var(--font-body); font-size: 14px; font-weight: 700; padding: 5px 6px;
+  background: none; border: 1px solid transparent; border-radius: 4px; color: var(--ink); outline: none; min-width: 0;
+}
+.mc-section-title-input:hover { border-color: var(--cream); }
+.mc-section-title-input:focus { border-color: var(--terracotta); background: white; }
+.mc-section-count { font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+.mc-section-mode-select {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 6px;
+  border: 1px solid var(--cream); border-radius: 4px; background: white;
+  color: var(--ink-soft); outline: none; cursor: pointer; flex-shrink: 0;
+}
+.mc-section-tool {
+  font-family: var(--font-body); font-size: 14px; font-weight: 700; padding: 3px 9px;
+  border: 1px solid var(--cream); border-radius: 4px; background: white;
+  color: var(--ink-soft); cursor: pointer; flex-shrink: 0; line-height: 1.2;
+}
+.mc-section-tool:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
+.mc-section-dishes { padding: 8px 10px 10px; }
+.mc-section-subtitle-input {
+  width: 100%; font-family: var(--font-body); font-size: 12px; font-style: italic; padding: 4px 6px; margin-bottom: 6px;
+  background: none; border: 1px solid transparent; border-radius: 4px; color: var(--ink-soft); outline: none;
+}
+.mc-section-subtitle-input:hover { border-color: var(--cream); }
+.mc-section-subtitle-input:focus { border-color: var(--terracotta); background: white; }
+.mc-paste-panel { margin-bottom: 8px; padding: 8px; background: var(--paper); border: 1px dashed var(--cream); border-radius: var(--radius); }
+.mc-paste-panel textarea {
+  width: 100%; font: 13px var(--font-body); padding: 8px; border: 1px solid var(--cream);
+  border-radius: var(--radius); resize: vertical; margin-bottom: 6px;
+}
+.mc-paste-actions { display: flex; gap: 6px; }
+.mc-dish-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.mc-dish-name-input, .mc-dish-tr-input, .mc-dish-supp-input {
+  font-family: var(--font-body); font-size: 13px; padding: 7px 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius);
+  background: var(--paper); color: var(--ink); outline: none; min-width: 0;
+}
+.mc-dish-name-input { flex: 1.2; }
+.mc-dish-tr-input { flex: 1; font-style: italic; color: var(--ink-soft); }
+.mc-dish-tr-input.missing { border-color: rgba(122,46,59,0.55); background: var(--wine-light); }
+.mc-dish-tr-input.stale { border-color: #d9b44a; background: #fff8e0; }
+.mc-dish-supp-input { width: 72px; flex: 0 0 72px; font-size: 12px; text-align: center; color: var(--ink-soft); }
+.mc-dish-name-input:focus, .mc-dish-tr-input:focus, .mc-dish-supp-input:focus { border-color: var(--terracotta); background: white; }
+.mc-dish-remove {
+  background: none; border: none; color: #aaa; cursor: pointer;
+  font-size: 15px; padding: 4px 6px; flex-shrink: 0; line-height: 1; border-radius: 3px;
+}
+.mc-dish-remove:hover { color: var(--wine); background: var(--terracotta-light); }
+.mc-add-dish-btn, .mc-add-section-btn {
+  font-family: var(--font-body); font-size: 12px; padding: 6px 10px; background: none;
+  border: 1px dashed var(--cream); border-radius: var(--radius); color: var(--ink-faint);
+  cursor: pointer; width: 100%; margin-top: 3px; transition: all var(--transition);
+}
+.mc-add-section-btn { font-size: 13px; font-weight: 600; padding: 9px; margin: 0 0 22px; color: var(--ink-soft); }
+.mc-add-dish-btn:hover, .mc-add-section-btn:hover { border-color: var(--terracotta); color: var(--terracotta); background: var(--terracotta-light); }
+
+/* Print panel + A4 preview */
+.mc-preview-pane {
+  position: sticky; top: 70px; align-self: start; min-width: 0;
+  max-height: calc(100vh - 130px); overflow-y: auto; padding-bottom: 4px;
+}
+.mc-print-panel {
+  padding: 14px; margin-bottom: 14px; background: white;
+  border: 1px solid var(--cream); border-radius: var(--radius-lg);
+}
+.mc-print-grid { display: grid; gap: 12px; margin-bottom: 12px; }
 .mc-language-toggles { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .mc-check-pill {
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
-  font-size: 12px; font-weight: 700; color: var(--ink-soft);
-  padding: 6px 9px; border: 1px solid var(--cream); border-radius: 999px;
-  background: var(--paper);
+  font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: none; letter-spacing: 0;
+  padding: 6px 10px; border: 1px solid var(--cream); border-radius: 999px; background: var(--paper);
 }
 .mc-check-pill input { accent-color: var(--terracotta); }
-.mc-help-text { font-size: 11px; color: var(--ink-faint); margin-top: 7px; line-height: 1.35; }
-.mc-tag-input {
-  width: 100%; font-family: var(--font-body); font-size: 12px; padding: 7px 9px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: var(--paper); color: var(--ink); outline: none;
-}
-.mc-tag-input:focus { border-color: var(--terracotta); background: white; }
 .mc-qa-panel {
-  margin: 0 0 18px; padding: 11px 13px; border-radius: var(--radius);
+  margin: 0 0 12px; padding: 10px 12px; border-radius: var(--radius);
   border: 1px solid var(--cream); background: var(--paper-warm);
   font-size: 12px; line-height: 1.45; color: var(--ink-soft);
 }
@@ -1542,117 +1534,38 @@ kbd {
 .mc-qa-panel ul { margin: 4px 0 0 16px; }
 .mc-qa-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .mc-qa-action {
-  font-family: var(--font-body); font-size: 11px; font-weight: 800; padding: 5px 8px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700; padding: 6px 10px;
   border: 1px solid var(--cream); border-radius: 999px; background: white;
   color: var(--ink-soft); cursor: pointer;
 }
-.mc-qa-action:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
-.mc-field-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 6px;
+.mc-qa-action:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta-dark); }
+.mc-pdf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mc-pdf-row .btn { justify-content: center; }
+.mc-preview-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 10px; }
+.mc-preview-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+.mc-a4-frame {
+  position: relative; width: 100%; overflow: hidden; cursor: zoom-in;
+  box-shadow: var(--shadow-md); border: 1px solid var(--cream); background: white;
 }
-.mc-notes-row { margin-bottom: 18px; }
-.mc-notes-input {
-  width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink-soft); resize: vertical; outline: none;
+.mc-a4-frame.shrunk::after {
+  content: attr(data-note); position: absolute; left: 0; right: 0; bottom: 0; padding: 6px 8px;
+  font: 600 11px var(--font-body); color: #7a5a00; background: #fff4cf; text-align: center;
 }
-.mc-notes-input:focus { border-color: var(--terracotta); }
-.mc-sections-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+.mc-a4-page { width: 794px; height: 1123px; transform-origin: top left; pointer-events: none; }
+.mc-zoom-overlay {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  background: rgba(20,17,13,0.72); cursor: zoom-out;
 }
-.mc-sections-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
-.mc-add-section-btn {
-  font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 12px;
-  background: var(--paper-warm); color: var(--ink-soft); border: 1px solid var(--cream);
-  border-radius: var(--radius); cursor: pointer;
-}
-.mc-add-section-btn:hover { background: var(--cream); }
-.mc-section-block {
-  border: 1px solid var(--cream); border-radius: var(--radius-lg);
-  margin-bottom: 10px; background: white; overflow: hidden;
-}
-.mc-section-block.collapsed .mc-section-dishes { display: none; }
-.mc-section-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px; background: var(--paper-warm); border-bottom: 1px solid var(--cream);
-}
-.mc-section-block.collapsed .mc-section-head { border-bottom: none; }
-.mc-section-toggle {
-  width: 24px; height: 24px; border: 1px solid var(--cream); border-radius: 4px;
-  background: white; color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
-  font-size: 12px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
-}
-.mc-section-toggle:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
-.mc-section-title-input {
-  flex: 1; font-family: var(--font-body); font-size: 13px; font-weight: 700;
-  background: none; border: none; color: var(--ink); outline: none; min-width: 0;
-}
-.mc-section-subtitle-input {
-  flex: 1; font-family: var(--font-body); font-size: 12px; font-style: italic;
-  background: none; border: none; color: var(--ink-faint); outline: none; min-width: 0;
-}
-.mc-section-mode-select {
-  font-family: var(--font-body); font-size: 11px; font-weight: 600; padding: 3px 6px;
-  border: 1px solid var(--cream); border-radius: 4px; background: white;
-  color: var(--ink-soft); outline: none; cursor: pointer; flex-shrink: 0;
-}
-.mc-section-tool {
-  font-family: var(--font-body); font-size: 11px; font-weight: 700; padding: 4px 7px;
-  border: 1px solid var(--cream); border-radius: 4px; background: white;
-  color: var(--ink-faint); cursor: pointer; flex-shrink: 0;
-}
-.mc-section-tool:hover { border-color: var(--terracotta); color: var(--terracotta-dark); }
-.mc-section-tool:disabled { opacity: 0.35; cursor: default; }
-.mc-section-remove {
-  background: none; border: none; color: var(--ink-faint); cursor: pointer;
-  font-size: 17px; line-height: 1; padding: 2px; flex-shrink: 0;
-}
-.mc-section-remove:hover { color: var(--wine); }
-.mc-section-dishes { padding: 8px 12px 10px; }
-.mc-dish-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-.mc-dish-name-input {
-  flex: 1; font-family: var(--font-body); font-size: 13px; padding: 6px 8px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: var(--paper); color: var(--ink); outline: none; min-width: 0;
-}
-.mc-dish-name-input:focus { border-color: var(--terracotta); background: white; }
-.mc-dish-supp-input {
-  width: 78px; font-family: var(--font-body); font-size: 12px; padding: 6px 8px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: var(--paper); color: var(--ink-soft); outline: none; text-align: center; flex-shrink: 0;
-}
-.mc-dish-supp-input:focus { border-color: var(--terracotta); }
-.mc-dish-remove {
-  background: none; border: none; color: #aaa; cursor: pointer;
-  font-size: 15px; padding: 3px 6px; flex-shrink: 0; line-height: 1; border-radius: 3px;
-}
-.mc-dish-remove:hover { color: var(--wine); background: var(--terracotta-light); }
-.mc-add-dish-btn {
-  font-family: var(--font-body); font-size: 12px; padding: 5px 10px; background: none;
-  border: 1px dashed var(--cream); border-radius: var(--radius); color: var(--ink-faint);
-  cursor: pointer; width: 100%; margin-top: 3px; transition: all var(--transition);
-}
-.mc-add-dish-btn:hover { border-color: var(--terracotta); color: var(--terracotta); background: var(--terracotta-light); }
-.mc-drinks-row { margin-top: 6px; margin-bottom: 20px; }
-.mc-drinks-input {
-  width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px;
-  border: 1px solid var(--cream); border-radius: var(--radius);
-  background: white; color: var(--ink); resize: vertical; outline: none;
-}
-.mc-drinks-input:focus { border-color: var(--terracotta); }
-.mc-pdf-row {
-  display: flex; gap: 8px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--cream);
-}
+.mc-zoom-box { overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
 
 /* ==========================================
    MENÚS CERRADOS — PDF TEMPLATE (card style)
    ========================================== */
 #mc-pdf-template {
   position: fixed; left: -9999px; top: 0; width: 794px; height: 1123px;
-  overflow: hidden; font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
-  box-sizing: border-box; pointer-events: none;
+  overflow: hidden; pointer-events: none;
 }
+.mcp-root { font-family: 'DM Sans', 'Helvetica Neue', sans-serif; box-sizing: border-box; }
 .mcp-page {
   position: relative; width: 794px; height: 1123px; display: flex; flex-direction: column;
   box-sizing: border-box; overflow: hidden; padding: 44px 60px 36px;
@@ -1663,66 +1576,66 @@ kbd {
 .mcp-template-minimal .mcp-page { padding: 46px 54px 34px; }
 .mcp-template-marinero .mcp-page { padding: 62px 70px 46px; }
 /* ── Color theme ── */
-#mc-pdf-template.mcp-color .mcp-page          { background: #f5f0e6; }
-#mc-pdf-template.mcp-color .mcp-corner        { border-color: rgba(180,140,56,0.55); }
-#mc-pdf-template.mcp-color .mcp-header-box    { border-color: rgba(180,140,56,0.30); }
-#mc-pdf-template.mcp-color .mcp-restaurant    { color: #4a3a24; }
-#mc-pdf-template.mcp-color .mcp-ornament-line { background: rgba(180,140,56,0.45); }
-#mc-pdf-template.mcp-color .mcp-ornament-dot  { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-title         { color: #1a1008; }
-#mc-pdf-template.mcp-color .mcp-type-label    { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-price-badge   { background: #1a1008; }
-#mc-pdf-template.mcp-color .mcp-notes         { color: #8a7a62; }
-#mc-pdf-template.mcp-color .mcp-section-title { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-section-rule  { background: rgba(180,140,56,0.35); }
-#mc-pdf-template.mcp-color .mcp-section-mode  { color: #9a8a72; }
-#mc-pdf-template.mcp-color .mcp-bullet-dot    { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-dish          { color: #1a1008; }
-#mc-pdf-template.mcp-color .mcp-dish-ca       { color: #5a4a32; }
-#mc-pdf-template.mcp-color .mcp-dish-en       { color: #8a7a62; }
-#mc-pdf-template.mcp-color .mcp-supp          { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-drinks-box    { border-color: rgba(180,140,56,0.28); background: rgba(255,255,255,0.18); }
-#mc-pdf-template.mcp-color .mcp-drinks-label  { color: #b89040; }
-#mc-pdf-template.mcp-color .mcp-drinks-text   { color: #5a4a32; }
-#mc-pdf-template.mcp-color .mcp-footer-rule   { background: rgba(180,140,56,0.22); }
-#mc-pdf-template.mcp-color .mcp-footer-text   { color: #c0a878; }
+.mcp-root.mcp-color .mcp-page          { background: #f5f0e6; }
+.mcp-root.mcp-color .mcp-corner        { border-color: rgba(180,140,56,0.55); }
+.mcp-root.mcp-color .mcp-header-box    { border-color: rgba(180,140,56,0.30); }
+.mcp-root.mcp-color .mcp-restaurant    { color: #4a3a24; }
+.mcp-root.mcp-color .mcp-ornament-line { background: rgba(180,140,56,0.45); }
+.mcp-root.mcp-color .mcp-ornament-dot  { color: #b89040; }
+.mcp-root.mcp-color .mcp-title         { color: #1a1008; }
+.mcp-root.mcp-color .mcp-type-label    { color: #b89040; }
+.mcp-root.mcp-color .mcp-price-badge   { background: #1a1008; }
+.mcp-root.mcp-color .mcp-notes         { color: #8a7a62; }
+.mcp-root.mcp-color .mcp-section-title { color: #b89040; }
+.mcp-root.mcp-color .mcp-section-rule  { background: rgba(180,140,56,0.35); }
+.mcp-root.mcp-color .mcp-section-mode  { color: #9a8a72; }
+.mcp-root.mcp-color .mcp-bullet-dot    { color: #b89040; }
+.mcp-root.mcp-color .mcp-dish          { color: #1a1008; }
+.mcp-root.mcp-color .mcp-dish-ca       { color: #5a4a32; }
+.mcp-root.mcp-color .mcp-dish-en       { color: #8a7a62; }
+.mcp-root.mcp-color .mcp-supp          { color: #b89040; }
+.mcp-root.mcp-color .mcp-drinks-box    { border-color: rgba(180,140,56,0.28); background: rgba(255,255,255,0.18); }
+.mcp-root.mcp-color .mcp-drinks-label  { color: #b89040; }
+.mcp-root.mcp-color .mcp-drinks-text   { color: #5a4a32; }
+.mcp-root.mcp-color .mcp-footer-rule   { background: rgba(180,140,56,0.22); }
+.mcp-root.mcp-color .mcp-footer-text   { color: #c0a878; }
 /* ── B&W theme ── */
-#mc-pdf-template.mcp-bw .mcp-page          { background: #ffffff; }
-#mc-pdf-template.mcp-bw .mcp-corner        { border-color: rgba(0,0,0,0.28); }
-#mc-pdf-template.mcp-bw .mcp-header-box    { border-color: rgba(0,0,0,0.18); }
-#mc-pdf-template.mcp-bw .mcp-restaurant    { color: #1a1a1a; }
-#mc-pdf-template.mcp-bw .mcp-ornament-line { background: rgba(0,0,0,0.28); }
-#mc-pdf-template.mcp-bw .mcp-ornament-dot  { color: #333; }
-#mc-pdf-template.mcp-bw .mcp-title         { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-type-label    { color: #555; }
-#mc-pdf-template.mcp-bw .mcp-price-badge   { background: transparent; border: 2px solid #000; }
-#mc-pdf-template.mcp-bw .mcp-price-badge .mcp-price       { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-price-badge .mcp-price-label { color: rgba(0,0,0,0.65); }
-#mc-pdf-template.mcp-bw .mcp-notes         { color: #666; }
-#mc-pdf-template.mcp-bw .mcp-section-title { color: #1a1a1a; }
-#mc-pdf-template.mcp-bw .mcp-section-rule  { background: rgba(0,0,0,0.20); }
-#mc-pdf-template.mcp-bw .mcp-section-mode  { color: #888; }
-#mc-pdf-template.mcp-bw .mcp-bullet-dot    { color: #999; }
-#mc-pdf-template.mcp-bw .mcp-dish          { color: #000; }
-#mc-pdf-template.mcp-bw .mcp-dish-ca       { color: #444; }
-#mc-pdf-template.mcp-bw .mcp-dish-en       { color: #888; }
-#mc-pdf-template.mcp-bw .mcp-supp          { color: #444; }
-#mc-pdf-template.mcp-bw .mcp-drinks-box    { border-color: rgba(0,0,0,0.15); background: transparent; }
-#mc-pdf-template.mcp-bw .mcp-drinks-label  { color: #1a1a1a; }
-#mc-pdf-template.mcp-bw .mcp-drinks-text   { color: #333; }
-#mc-pdf-template.mcp-bw .mcp-footer-rule   { background: rgba(0,0,0,0.14); }
-#mc-pdf-template.mcp-bw .mcp-footer-text   { color: #999; }
+.mcp-root.mcp-bw .mcp-page          { background: #ffffff; }
+.mcp-root.mcp-bw .mcp-corner        { border-color: rgba(0,0,0,0.28); }
+.mcp-root.mcp-bw .mcp-header-box    { border-color: rgba(0,0,0,0.18); }
+.mcp-root.mcp-bw .mcp-restaurant    { color: #1a1a1a; }
+.mcp-root.mcp-bw .mcp-ornament-line { background: rgba(0,0,0,0.28); }
+.mcp-root.mcp-bw .mcp-ornament-dot  { color: #333; }
+.mcp-root.mcp-bw .mcp-title         { color: #000; }
+.mcp-root.mcp-bw .mcp-type-label    { color: #555; }
+.mcp-root.mcp-bw .mcp-price-badge   { background: transparent; border: 2px solid #000; }
+.mcp-root.mcp-bw .mcp-price-badge .mcp-price       { color: #000; }
+.mcp-root.mcp-bw .mcp-price-badge .mcp-price-label { color: rgba(0,0,0,0.65); }
+.mcp-root.mcp-bw .mcp-notes         { color: #666; }
+.mcp-root.mcp-bw .mcp-section-title { color: #1a1a1a; }
+.mcp-root.mcp-bw .mcp-section-rule  { background: rgba(0,0,0,0.20); }
+.mcp-root.mcp-bw .mcp-section-mode  { color: #888; }
+.mcp-root.mcp-bw .mcp-bullet-dot    { color: #999; }
+.mcp-root.mcp-bw .mcp-dish          { color: #000; }
+.mcp-root.mcp-bw .mcp-dish-ca       { color: #444; }
+.mcp-root.mcp-bw .mcp-dish-en       { color: #888; }
+.mcp-root.mcp-bw .mcp-supp          { color: #444; }
+.mcp-root.mcp-bw .mcp-drinks-box    { border-color: rgba(0,0,0,0.15); background: transparent; }
+.mcp-root.mcp-bw .mcp-drinks-label  { color: #1a1a1a; }
+.mcp-root.mcp-bw .mcp-drinks-text   { color: #333; }
+.mcp-root.mcp-bw .mcp-footer-rule   { background: rgba(0,0,0,0.14); }
+.mcp-root.mcp-bw .mcp-footer-text   { color: #999; }
 
 /* ── Marinero premium template ── */
-#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-page {
+.mcp-root.mcp-template-marinero.mcp-color .mcp-page {
   background: linear-gradient(#0a4248 0 29%, #fff7e9 29% 100%);
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-page { background: #fff; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-page { background: #fff; }
 .mcp-template-marinero .mcp-page::before {
   content: ""; position: absolute; inset: 56px 56px 42px; border: 2px solid #cf9b3e;
   border-radius: 26px; pointer-events: none; z-index: 1;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-page::before { border-color: #111; border-radius: 0; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-page::before { border-color: #111; border-radius: 0; }
 .mcp-template-marinero .mcp-corner { display: none; }
 .mcp-template-marinero .mcp-header-box {
   position: relative; z-index: 2; display: flex; flex-direction: column; border: 0;
@@ -1731,8 +1644,8 @@ kbd {
 .mcp-template-marinero .mcp-restaurant {
   order: 1; color: #fff1d7; font-size: 15px; letter-spacing: 0.07em; margin: 2px 0 26px;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-restaurant { color: #fff1d7; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-restaurant { color: #666; }
+.mcp-root.mcp-template-marinero.mcp-color .mcp-restaurant { color: #fff1d7; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-restaurant { color: #666; }
 .mcp-template-marinero .mcp-ornament-row {
   order: 3; position: relative; height: 34px; margin: -14px auto 6px; width: 72%;
   opacity: 0.45;
@@ -1742,42 +1655,42 @@ kbd {
   border-radius: 50%; transform: translateY(14px);
 }
 .mcp-template-marinero .mcp-ornament-dot { display: none; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-ornament-line { border-color: rgba(0,0,0,0.34); }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-ornament-line { border-color: rgba(0,0,0,0.34); }
 .mcp-template-marinero .mcp-title {
   order: 2; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 72px; font-weight: 700;
   line-height: 0.92; letter-spacing: 0; text-transform: none; color: #fffaf0; margin: 0;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-title { color: #fffaf0; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-title { color: #111; font-size: 58px; }
+.mcp-root.mcp-template-marinero.mcp-color .mcp-title { color: #fffaf0; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-title { color: #111; font-size: 58px; }
 .mcp-template-marinero .mcp-notes {
   order: 4; display: block !important; color: #ffe0ad; font-size: 18px; font-style: normal;
   margin: 0 0 18px; letter-spacing: 0;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-color .mcp-notes { color: #ffe0ad; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-notes { color: #666; }
+.mcp-root.mcp-template-marinero.mcp-color .mcp-notes { color: #ffe0ad; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-notes { color: #666; }
 .mcp-template-marinero .mcp-price-row { order: 5; margin: 0 0 12px; }
 .mcp-template-marinero .mcp-price-badge {
   background: #fffaf2 !important; border: 3px solid #cf9b3e; border-radius: 26px;
   padding: 12px 50px; box-shadow: 5px 5px 0 #0b0b0b;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-price-badge {
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-price-badge {
   border-color: #111; box-shadow: none; background: #fff !important; border-radius: 8px;
 }
 .mcp-template-marinero .mcp-price { color: #073f47 !important; font-size: 34px; letter-spacing: 0.02em; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-price { color: #111 !important; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-price { color: #111 !important; }
 .mcp-template-marinero .mcp-price-label { display: none; }
 .mcp-template-marinero .mcp-type-label {
   order: 6; display: block !important; color: #8b6630 !important; font-size: 14px;
   letter-spacing: 0.06em; margin: 4px 0 0;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-type-label { color: #666 !important; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-type-label { color: #666 !important; }
 .mcp-template-marinero .mcp-body { position: relative; z-index: 2; padding: 0 48px 0; }
 .mcp-template-marinero .mcp-section {
   position: relative; border: 1.5px solid #ead2a8; background: rgba(255,255,255,0.64);
   border-radius: 22px; padding: 24px 34px 18px; margin-bottom: 18px;
   box-shadow: 5px 5px 0 #0b0b0b;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-section {
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-section {
   border-color: #999; box-shadow: none; border-radius: 0; background: #fff;
 }
 .mcp-template-marinero .mcp-section-header { margin: -12px 0 8px; }
@@ -1786,12 +1699,12 @@ kbd {
   padding: 7px 18px; color: #073f47 !important; background: #fffaf2; font-size: 12.5px;
   letter-spacing: 0.04em; margin: 0;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-section-title { border-color: #111; color: #111 !important; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-section-title { border-color: #111; color: #111 !important; }
 .mcp-template-marinero .mcp-section-rule { display: none; }
 .mcp-template-marinero .mcp-section-mode { display: none; }
 .mcp-template-marinero .mcp-dish-row { padding: 0; gap: 16px; }
 .mcp-template-marinero .mcp-bullet-dot { color: #c7963d !important; font-size: 13px; }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-bullet-dot { color: #777 !important; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-bullet-dot { color: #777 !important; }
 .mcp-template-marinero .mcp-dish {
   font-size: 32px; font-weight: 700; line-height: 1.04; color: #171717 !important;
 }
@@ -1802,12 +1715,12 @@ kbd {
   color: #8b6630; font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 22px; font-style: italic; text-align: center; margin: -8px 0 10px;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-marinero-connector { color: #666; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-marinero-connector { color: #666; }
 .mcp-template-marinero .mcp-drinks-box {
   border-color: #cf9b3e; border-radius: 16px; padding: 9px 20px; margin-top: 0;
   background: rgba(255,255,255,0.42);
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-drinks-box { border-color: #111; border-radius: 0; }
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-drinks-box { border-color: #111; border-radius: 0; }
 .mcp-template-marinero .mcp-drinks-label {
   color: #073f47 !important; font-size: 16px; letter-spacing: 0; text-transform: none;
 }
@@ -1820,7 +1733,7 @@ kbd {
   display: inline-block; background: #073f47; color: #fff7e9 !important; border-radius: 16px;
   padding: 12px 76px; font-size: 16px; letter-spacing: 0.04em;
 }
-#mc-pdf-template.mcp-template-marinero.mcp-bw .mcp-footer-text {
+.mcp-root.mcp-template-marinero.mcp-bw .mcp-footer-text {
   background: transparent; color: #111 !important; border-radius: 0; padding: 0;
 }
 /* ── Corner brackets ── */
@@ -1925,10 +1838,13 @@ kbd {
 .mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
 .mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
-@media (max-width: 1120px) {
+@media (max-width: 1180px) {
+  .mc-editor-shell { grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; }
+  .mc-editor { padding: 0 20px 40px; }
+}
+@media (max-width: 980px) {
   .mc-editor-shell { grid-template-columns: 1fr; }
-  .mc-preview-pane { position: static; }
-  .mc-preview-card { min-height: 0; }
+  .mc-preview-pane { position: static; max-width: 520px; max-height: none; overflow: visible; }
 }
 @media (max-width: 820px) {
   body { overflow-x: hidden; }
@@ -1958,92 +1874,43 @@ kbd {
     border-top: 1px solid var(--cream);
   }
 
+  #panelCerrado { overflow: visible; }
   .mc-layout {
     display: block; height: auto; min-height: calc(100vh - 45px); overflow: visible;
   }
   .mc-library {
     border-right: none; border-bottom: 1px solid var(--cream);
-    height: min(64vh, 560px); min-height: 410px; max-height: none; overflow-x: hidden;
+    height: min(70vh, 600px); min-height: 410px; overflow-x: hidden;
   }
   .mc-layout.mc-mobile-editing .mc-library { display: none; }
   .mc-layout.mc-mobile-editing .mc-mobile-back { display: inline-block; }
   .mc-library-top { padding: 14px 12px 10px; }
-  .mc-library-tools { grid-template-columns: 1fr 1fr; }
-  .mc-type-filters {
-    flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px;
-    scrollbar-width: none;
-  }
+  .mc-type-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
   .mc-type-filters::-webkit-scrollbar { display: none; }
   .mc-type-chip { flex-shrink: 0; }
-  .mc-library-list { min-height: 150px; overflow-x: hidden; }
-  .mc-family-item { overflow-x: hidden; }
-  .mc-list-item-meta { flex-wrap: wrap; row-gap: 4px; }
   .mc-library-new-btn { position: sticky; bottom: 8px; z-index: 5; }
 
-  .mc-editor { padding: 16px 12px 96px; overflow: visible; }
-  .mc-editor-shell { display: flex; flex-direction: column; gap: 18px; }
-  .mc-preview-pane { order: 2; position: static; }
-  .mc-preview-toolbar { margin-top: 2px; }
-  .mc-preview-card {
-    padding: 20px 18px; min-height: 0; max-height: 42vh; overflow-y: auto;
-  }
-  .mc-preview-name { font-size: 27px; }
-  .mc-preview-dish { font-size: 17px; }
-  .mc-preview-dish small { font-size: 12px; }
+  .mc-editor { padding: 0 12px 40px; overflow: visible; }
+  .mc-topbar { top: 43px; flex-wrap: wrap; row-gap: 8px; padding: 8px 0; }
+  .mc-editor input, .mc-editor textarea, .mc-editor select { scroll-margin-top: 170px; }
+  .mc-topbar-actions { width: 100%; margin-left: 0; }
+  .mc-topbar-actions .mc-btn-save { flex: 1; }
+  .mc-topbar-actions .mc-btn { padding: 8px 10px; }
+  .mc-save-badge { order: 2; }
+  .mc-jump-preview { display: inline-block; }
+  .mc-editor-title-input { font-size: 22px; }
+  .mc-editor-meta-row { grid-template-columns: 1fr 1fr; }
+  .mc-editor-meta-row .mc-meta-field:first-child { grid-column: 1 / -1; }
+  .mc-extra-grid { grid-template-columns: 1fr; }
+  .mc-preview-pane { max-width: none; }
 
-  .mc-editor-actions {
-    position: sticky; top: 43px; z-index: 25; background: var(--paper);
-    padding: 8px 0; border-bottom: 1px solid var(--cream);
-  }
-  .mc-editor-actions .mc-btn { flex: 1; justify-content: center; }
-  .mc-editor-title-input { font-size: 24px; }
-  .mc-editor-header-main { order: 1; }
-  .mc-editor-actions { order: 2; }
-  .mc-editor-meta-row { display: grid; grid-template-columns: 1fr 1fr; align-items: end; }
-  .mc-meta-field { flex-direction: column; align-items: stretch; gap: 4px; }
-  .mc-meta-input,
-  .mc-meta-select,
-  .mc-meta-field input[style],
-  .mc-meta-field select {
-    width: 100% !important;
-  }
-  .mc-control-panel { grid-template-columns: 1fr; padding: 12px; }
-  .mc-language-toggles { gap: 6px; }
-  .mc-check-pill { flex: 1; justify-content: center; min-width: 92px; }
-
-  .mc-section-head { flex-wrap: wrap; gap: 6px; }
-  .mc-section-title-input { flex: 1 1 calc(100% - 32px); font-size: 14px; }
-  .mc-section-subtitle-input { flex: 1 1 100%; order: 2; }
-  .mc-section-mode-select { flex: 1 1 150px; order: 3; }
-  .mc-section-tool,
-  .mc-section-remove { order: 4; }
-  .mc-section-dishes { padding: 8px; }
-  .mc-dish-row {
-    display: grid; grid-template-columns: minmax(0, 1fr) 70px 30px;
-    gap: 6px; align-items: center;
-  }
-  .mc-dish-name-input { font-size: 14px; padding: 8px; }
-  .mc-dish-supp-input { width: 70px !important; padding: 8px 6px; }
-  .mc-add-dish-btn { padding: 8px 10px; }
-
-  .mc-pdf-row {
-    position: sticky; bottom: 0; z-index: 25; flex-direction: column;
-    background: var(--paper); padding: 12px 0 0; margin-top: 18px;
-  }
-  .mc-pdf-row .btn { flex: 1; justify-content: center; }
-}
-@media (max-width: 520px) {
-  .mc-library { height: min(68vh, 570px); }
-  .mc-layout.mc-mobile-editing .mc-library { display: none; }
-  .mc-layout.mc-mobile-editing .mc-mobile-back { display: inline-block; }
-  .mc-library-tools { grid-template-columns: 1fr 1fr; }
-  .mc-editor-meta-row { grid-template-columns: 1fr; }
-  .mc-preview-card { max-height: 50vh; }
-  .mc-pdf-row > div { width: 100%; }
-  .mc-pdf-row > div:first-child,
-  .mc-pdf-row > div:last-child { display: grid !important; grid-template-columns: 1fr 1fr; }
-  .mc-preview-toolbar { flex-wrap: wrap; }
-  .mc-preview-mobile-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+  .mc-section-head { flex-wrap: wrap; }
+  .mc-section-title-input { flex: 1 1 calc(100% - 80px); }
+  .mc-section-mode-select { flex: 1 1 auto; }
+  .mc-dish-row.has-tr { flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px dashed var(--paper-warm); }
+  .mc-dish-row.has-tr .mc-dish-name-input { flex: 1 1 calc(100% - 120px); }
+  .mc-dish-row.has-tr .mc-dish-tr-input { flex: 1 1 100%; order: 3; }
+  .mc-dish-name-input, .mc-dish-tr-input { font-size: 16px; }
 }
 .shortcut-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .shortcut-list button { white-space: normal; text-align: left; }
@@ -2053,8 +1920,6 @@ kbd {
 .batch-row input[type="text"] { width: 100%; min-width: 0; padding: 8px; font: inherit; }
 .batch-row small { grid-column: 2 / -1; }
 .library-item .favorite-toggle { border: 0; background: none; color: var(--terracotta); padding: 8px; cursor: pointer; }
-.mc-map-row { display: block; font-size: 12px; margin: 10px 0; }
-.mc-map-row select { display: block; width: 100%; min-width: 0; padding: 8px; margin-top: 4px; }
 @media (max-width: 600px) { .batch-row { grid-template-columns: 24px minmax(0,1fr); } .batch-row input[data-field="catalan"] { grid-column: 2; } }
 </style>
 </head>
@@ -2213,35 +2078,7 @@ kbd {
       <div class="mc-library">
         <div class="mc-library-top">
           <div class="mc-library-title">Menús Cerrados</div>
-          <p class="mc-help-text">Elige un menú para editarlo o crea uno nuevo.</p>
-          <input class="mc-library-search" id="mc-search" type="text" placeholder="Buscar menús...">
-          <details class="mc-library-advanced" id="mc-library-advanced">
-            <summary>Más filtros</summary>
-          <div class="mc-library-tools">
-            <select class="mc-library-select" id="mc-price-filter">
-              <option value="all">Todos los precios</option>
-              <option value="under20">Hasta 20€</option>
-              <option value="20-30">20€ - 30€</option>
-              <option value="30-45">30€ - 45€</option>
-              <option value="over45">Más de 45€</option>
-              <option value="noprice">Sin precio</option>
-            </select>
-            <select class="mc-library-select" id="mc-lang-filter">
-              <option value="all">Todos idiomas</option>
-              <option value="es">Español</option>
-              <option value="ca">Català</option>
-              <option value="en">English</option>
-            </select>
-            <select class="mc-library-select" id="mc-status-filter">
-              <option value="all">Todos estados</option>
-              <option value="borrador">Borrador</option>
-              <option value="revisar">Revisar</option>
-              <option value="listo">Listo</option>
-              <option value="archivado">Archivado</option>
-            </select>
-            <input class="mc-library-tag-filter" id="mc-tag-filter" type="text" placeholder="Filtrar por etiqueta...">
-          </div>
-          </details>
+          <input class="mc-library-search" id="mc-search" type="search" placeholder="Buscar por nombre o plato…">
           <div class="mc-type-filters" id="mc-type-filters">
             <button class="mc-type-chip active" data-type="all">Todos</button>
             <button class="mc-type-chip" data-type="grupos">Grupos</button>
@@ -2251,7 +2088,10 @@ kbd {
             <button class="mc-type-chip" data-type="degustacion">Degust.</button>
             <button class="mc-type-chip" data-type="otro">Otro</button>
           </div>
-          <div class="mc-library-count" id="mc-library-count"></div>
+          <div class="mc-library-foot">
+            <span class="mc-library-count" id="mc-library-count"></span>
+            <label class="mc-archived-toggle"><input type="checkbox" id="mc-show-archived"> Mostrar archivados</label>
+          </div>
         </div>
         <div class="mc-library-list" id="mc-library-list"></div>
         <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
@@ -2295,7 +2135,7 @@ kbd {
 </div>
 
 <!-- MC PDF TEMPLATE (off-screen, populated by JS before capture) -->
-<div id="mc-pdf-template">
+<div id="mc-pdf-template" class="mcp-root">
   <div class="mcp-page">
     <div class="mcp-corner mcp-corner-tl"></div>
     <div class="mcp-corner mcp-corner-tr"></div>
@@ -4685,11 +4525,17 @@ async function generatePDF() {
 //   created_at TIMESTAMPTZ DEFAULT NOW(),
 //   updated_at TIMESTAMPTZ DEFAULT NOW()
 // );
-// ALTER TABLE menus_cerrados ENABLE ROW LEVEL SECURITY;
-// CREATE POLICY "Allow all" ON menus_cerrados FOR ALL USING (true);
+// Row-level security: see supabase/002_rls_strict_requires_auth.sql.
+// Dish translations live inline: dish.translations[lang].name = { text, source }.
+// Older menus may still have separate CA/EN rows in the same family; MenuWorkflows.translatedField reads both.
 
 const MC_TYPES = { grupos:'Grupos', festivo:'Festivo', infantil:'Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'Otro' };
 const MC_MODES = { shared:'Para compartir', choose_one:'A elegir 1', choose_many:'A elegir varios', fixed:'Lista fija' };
+const MC_MODE_PRINT = {
+  es: { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' },
+  ca: { shared:'(per compartir)', choose_one:'(a triar un)', choose_many:'(a triar diversos)', fixed:'' },
+  en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
+};
 const MC_TEMPLATES = {
   editorial: 'Editorial clásico',
   grupo: 'Grupo claro',
@@ -4701,22 +4547,29 @@ const MC_TEMPLATES = {
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
 const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:'];
+// Starting sections for a new menu, by type: [title, mode].
+const MC_PRESETS = {
+  grupos: [['Entrantes', 'shared'], ['Principal', 'choose_one'], ['Postre', 'choose_one']],
+  festivo: [['Aperitivo', 'shared'], ['Entrantes', 'shared'], ['Principal', 'choose_one'], ['Postre', 'fixed']],
+  infantil: [['Primero', 'choose_one'], ['Segundo', 'choose_one'], ['Postre', 'choose_one']],
+  tapas: [['Tapas', 'shared'], ['Postre', 'fixed']],
+  degustacion: [['Aperitivo', 'fixed'], ['Entrante', 'fixed'], ['Pescado', 'fixed'], ['Carne', 'fixed'], ['Postre', 'fixed']],
+  otro: [['Primero', 'choose_one'], ['Segundo', 'choose_one'], ['Postre', 'choose_one']]
+};
 
 let mcMenus = [];
 let mcCurrentId = null;
 let mcCurrentMenu = null;
 let mcFilterType = 'all';
-let mcFilterPrice = 'all';
-let mcFilterLang = 'all';
-let mcFilterStatus = 'all';
-let mcFilterTag = '';
+let mcShowArchived = false;
 let mcLoaded = false;
 let mcCollapsedSections = new Set();
 let mcDrafts = {};
 let mcDraftError = false;
 let mcSavingIds = new Set();
-let mcMappingsOpen = false;
 let mcViewBaselines = {};
+let mcEditTimer = null;
+let mcTranslating = false;
 
 function mcWriteDrafts() {
   try {
@@ -4758,15 +4611,20 @@ function mcRenderDraftStatus() {
   const status = $('mc-draft-status');
   if (!status || !mcCurrentMenu) return;
   const cloud = mcMenus.find(m => m.id === mcCurrentId);
-  const conflict = cloud && mcDrafts[mcCurrentId]?._baseUpdatedAt && cloud.updated_at !== mcDrafts[mcCurrentId]._baseUpdatedAt;
-  status.textContent = mcDraftError ? 'No se pudo guardar el borrador · no cierres esta página'
-    : conflict ? 'La versión en la nube ha cambiado. Conserva este borrador como nueva versión o descártalo.'
-    : mcDrafts[mcCurrentId] ? 'Borrador guardado en este dispositivo · pendiente de Guardar en la nube'
-    : 'Sin cambios pendientes';
-  if ($('mc-discard-draft')) $('mc-discard-draft').hidden = !mcDrafts[mcCurrentId];
+  const draft = mcDrafts[mcCurrentId];
+  const conflict = cloud && draft?._baseUpdatedAt && cloud.updated_at !== draft._baseUpdatedAt;
+  const [state, text] = mcDraftError ? ['error', 'No se pudo guardar en este dispositivo · no cierres la página']
+    : conflict ? ['error', 'Otra persona cambió este menú · duplícalo o descarta tus cambios']
+    : mcCurrentMenu._isNew ? ['pending', 'Nuevo · sin guardar en la nube']
+    : draft ? ['pending', 'Cambios sin guardar en la nube']
+    : ['ok', 'Guardado en la nube'];
+  status.className = `mc-save-badge ${state}`;
+  status.textContent = text;
+  status.title = state === 'pending' ? 'Los cambios están a salvo en este dispositivo. Pulsa Guardar para subirlos a la nube.' : '';
+  if ($('mc-discard-draft')) $('mc-discard-draft').hidden = !draft;
 }
 function mcDiscardDraft() {
-  if (!mcCurrentId || !confirm('¿Descartar este borrador local y volver a la versión guardada?')) return;
+  if (!mcCurrentId || !confirm('¿Descartar los cambios sin guardar y volver a la versión de la nube?')) return;
   delete mcDrafts[mcCurrentId];
   const saved = mcMenus.find(m => m.id === mcCurrentId);
   mcCurrentMenu = saved ? { ...MenuWorkflows.clone(saved), _baseUpdatedAt: saved.updated_at } : null;
@@ -4822,22 +4680,17 @@ function mcGetTemplate(menu) {
   return 'editorial';
 }
 
+// The menu's own language always prints first; the others are extra lines under each dish.
 function mcGetDisplayLangs(menu) {
-  const saved = mcTagValue(menu, 'langs:', '');
-  if (saved) return saved.split('-').filter(l => MC_LANG_LABELS[l]);
-  return [menu?.language || 'es'];
+  const source = menu?.language || 'es';
+  const saved = mcTagValue(menu, 'langs:', '').split('-');
+  return [source, ...Object.keys(MC_LANG_LABELS).filter(l => l !== source && saved.includes(l))];
 }
 
-function mcPriceMatches(menu, filter) {
-  const price = Number.parseFloat(menu.price);
-  if (filter === 'all') return true;
-  if (filter === 'noprice') return !price;
-  if (!price) return false;
-  if (filter === 'under20') return price <= 20;
-  if (filter === '20-30') return price > 20 && price <= 30;
-  if (filter === '30-45') return price > 30 && price <= 45;
-  if (filter === 'over45') return price > 45;
-  return true;
+function mcPresetSections(type) {
+  return (MC_PRESETS[type] || MC_PRESETS.otro).map(([title, mode]) => ({
+    id: mcUUID(), title, subtitle: '', mode, dishes: [{ id: mcUUID(), name: '', supplement: null }]
+  }));
 }
 
 function mcMenuSearchText(menu) {
@@ -4846,11 +4699,6 @@ function mcMenuSearchText(menu) {
     ...(sec.dishes || []).map(d => d.name)
   ].join(' ')).join(' ');
   return [menu.name, menu.type, menu.occasion, menu.notes, menu.drinks, sectionText, mcGetStatus(menu), ...mcRawTags(menu)].join(' ').toLowerCase();
-}
-
-function mcFindFamilyMenu(menu, lang) {
-  const matches = mcMenus.filter(m => m.id !== menu.id && mcFamilyId(m) === mcFamilyId(menu) && MenuWorkflows.version(m) === MenuWorkflows.version(menu) && (m.language || 'es') === lang);
-  return matches.length === 1 ? matches[0] : null;
 }
 
 function mcFamilyId(menu) {
@@ -4881,82 +4729,33 @@ function mcSelectMenuById(id) {
   mcCurrentMenu = MenuWorkflows.clone(m);
   if (!mcCurrentMenu._isNew && !mcCurrentMenu._baseUpdatedAt) mcCurrentMenu._baseUpdatedAt = m.updated_at;
   mcCurrentId = m.id;
-  mcMappingsOpen = false;
   mcWriteDrafts(); mcRenderEditor(); mcRenderLibrary();
 }
 
-function mcLangDishName(menu, lang, si, di, fallback = '') {
+function mcLangDishName(menu, lang, si, di) {
   return MenuWorkflows.translatedField(menu, mcMenus, lang, si, di, 'name');
 }
 
-function mcLangSectionText(menu, lang, si, field, fallback = '') {
-  return MenuWorkflows.translatedField(menu, mcMenus, lang, si, null, field);
-}
-
-function mcHasDishTranslation(menu, lang, si, di) {
-  return !!mcLangDishName(menu, lang, si, di);
-}
-
-function mcHasSectionTranslation(menu, lang, si, field) {
-  return !!mcLangSectionText(menu, lang, si, field);
-}
-
-function mcValidateMenu(menu, langs = [menu?.language || 'es']) {
+function mcValidateMenu(menu, langs = mcGetDisplayLangs(menu)) {
   const errors = [];
   const warnings = [];
   const missing = [];
   const sections = menu.sections || [];
-  const nonEmptySections = sections.filter(sec => (sec.dishes || []).some(d => d.name));
-  const emptyDishCount = sections.reduce((sum, sec) => sum + (sec.dishes || []).filter(d => !d.name).length, 0);
+  const source = menu.language || 'es';
 
   if (!menu.name || !menu.name.trim()) errors.push('Falta el nombre del menú.');
-  if (nonEmptySections.length === 0) errors.push('El menú no tiene platos.');
-  if (!menu.price) warnings.push('No tiene precio definido.');
-  if (!menu.drinks || !menu.drinks.trim()) warnings.push('No hay bebidas incluidas o condiciones de bebida.');
-  if (!menu.min_people && menu.type === 'grupos') warnings.push('Es un menú de grupos sin mínimo de personas.');
-  if (emptyDishCount > 0) warnings.push(`Hay ${emptyDishCount} línea(s) de plato vacía(s); se ignorarán al guardar/imprimir.`);
+  if (!sections.some(sec => (sec.dishes || []).some(d => d.name))) errors.push('El menú no tiene platos.');
+  if (!menu.price) warnings.push('No tiene precio.');
+  if (!menu.drinks || !menu.drinks.trim()) warnings.push('No indica bebidas incluidas.');
+  if (!menu.min_people && menu.type === 'grupos') warnings.push('Menú de grupos sin mínimo de personas.');
 
-  langs.forEach(lang => {
-    if (!MC_LANG_LABELS[lang]) return;
-    if (lang === (menu.language || 'es')) return;
-    sections.forEach((sec, si) => {
-      if (sec.subtitle && !mcHasSectionTranslation(menu, lang, si, 'subtitle')) missing.push(`${MC_LANG_LABELS[lang]}: ${sec.subtitle}`);
-      if (sec.title && !mcHasSectionTranslation(menu, lang, si, 'title')) {
-        missing.push(`${MC_LANG_LABELS[lang]}: sección "${sec.title}"`);
-      }
-      (sec.dishes || []).forEach((d, di) => {
-        if (d.name && !mcHasDishTranslation(menu, lang, si, di)) {
-          missing.push(`${MC_LANG_LABELS[lang]}: ${d.name}`);
-        }
-      });
-    });
+  langs.filter(lang => lang !== source && MC_LANG_LABELS[lang]).forEach(lang => {
+    sections.forEach((sec, si) => (sec.dishes || []).forEach((d, di) => {
+      if (d.name && !mcLangDishName(menu, lang, si, di)) missing.push(`${MC_LANG_LABELS[lang]}: ${d.name}`);
+    }));
   });
 
-  if (missing.length > 0) {
-    warnings.push(`Faltan traducciones para ${missing.length} elemento(s).`);
-  }
-
   return { errors, warnings, missing };
-}
-
-function mcValidationMessage(validation) {
-  const parts = [];
-  if (validation.errors.length) parts.push('Errores:\n- ' + validation.errors.join('\n- '));
-  if (validation.warnings.length) parts.push('Avisos:\n- ' + validation.warnings.join('\n- '));
-  if (validation.missing.length) parts.push('Traducciones pendientes:\n- ' + validation.missing.slice(0, 8).join('\n- ') + (validation.missing.length > 8 ? `\n- ... y ${validation.missing.length - 8} más` : ''));
-  return parts.join('\n\n');
-}
-
-function mcConfirmValidation(action, validation) {
-  if (action.includes('PDF') && validation.missing.length) { alert('Completa las correspondencias o selecciona solo el idioma original antes de generar el PDF.'); return false; }
-  if (validation.errors.length) {
-    alert(`No se puede ${action} todavía:\n\n${mcValidationMessage(validation)}`);
-    return false;
-  }
-  if (validation.warnings.length || validation.missing.length) {
-    return confirm(`Antes de ${action}, revisa esto:\n\n${mcValidationMessage(validation)}\n\n¿Continuar igualmente?`);
-  }
-  return true;
 }
 
 async function mcLoadMenus() {
@@ -4985,8 +4784,9 @@ async function mcSaveMenu() {
   if (!mcCurrentMenu || mcSavingIds.has(mcCurrentId)) return;
   if (!mcPersistCurrent()) return;
   const snapshot = MenuWorkflows.clone(mcCurrentMenu);
-  const validation = mcValidateMenu(snapshot, mcGetDisplayLangs(snapshot));
-  if (!mcConfirmValidation('guardar', validation)) return;
+  // Only real errors block saving; warnings stay visible in the review panel.
+  const validation = mcValidateMenu(snapshot);
+  if (validation.errors.length) { toast(`No se puede guardar: ${validation.errors.join(' ')}`, 'error'); return; }
   if (!currentUser || !supabase) { toast('Borrador local conservado. Inicia sesión para guardarlo en la nube.', 'info'); return; }
   const id = snapshot.id;
   const owner = cacheOwner;
@@ -5028,7 +4828,7 @@ async function mcSaveMenu() {
     mcWriteDrafts(); mcRenderLibrary();
     toast(mcDrafts[id] ? 'Versión guardada; tus cambios posteriores siguen en el borrador local.' : 'Menú guardado en la nube', 'success');
   } catch {
-    toast('La nube no confirmó el guardado. El borrador se conserva. Si otra persona cambió el menú, crea una nueva versión.', 'error');
+    toast('La nube no confirmó el guardado. El borrador se conserva. Si otra persona cambió el menú, duplícalo.', 'error');
   } finally {
     mcSavingIds.delete(id);
     if (mcCurrentId === id && $('mc-save-btn')) $('mc-save-btn').disabled = false;
@@ -5055,7 +4855,7 @@ async function mcDeleteMenu() {
 
 function mcDuplicateMenu() {
   if (!mcCurrentMenu || !mcPersistCurrent()) return;
-  const base = { ...mcCurrentMenu, ...mcGatherFromEditor() };
+  const base = MenuWorkflows.clone(mcCurrentMenu);
   const parentId = base.parent_id || (base._isNew ? null : base.id);
   const family = [...mcMenus.filter(m => !mcDrafts[m.id]), ...Object.values(mcDrafts)].filter(m => m.id === parentId || (parentId && m.parent_id === parentId));
   const maxVer = Math.max(...family.map(m => m.version || 1), base.version || 1);
@@ -5068,7 +4868,7 @@ function mcDuplicateMenu() {
     price_label: base.price_label,
     min_people: base.min_people,
     notes: base.notes,
-    sections: JSON.parse(JSON.stringify(base.sections || [])),
+    sections: base.sections || [],
     drinks: base.drinks,
     language: base.language || 'es',
     parent_id: parentId,
@@ -5080,22 +4880,19 @@ function mcDuplicateMenu() {
   };
   mcCurrentMenu = newMenu; mcCurrentId = newMenu.id;
   mcRenderEditor();
-  toast(`Duplicado como v${newMenu.version} — edita y guarda para confirmar`, 'info');
+  toast(`Copia creada (v${newMenu.version}) · cambia lo necesario y pulsa Guardar`, 'info');
 }
 
 function mcRenderLibrary() {
   const list = $('mc-library-list');
   if (!list) return;
   const combined = [...mcMenus.filter(m => !mcDrafts[m.id]), ...Object.values(mcDrafts)];
-  let filtered = combined;
-  if (mcFilterType !== 'all') filtered = filtered.filter(m => m.type === mcFilterType);
-  if (mcFilterPrice !== 'all') filtered = filtered.filter(m => mcPriceMatches(m, mcFilterPrice));
-  if (mcFilterLang !== 'all') filtered = filtered.filter(m => (m.language || 'es') === mcFilterLang);
-  if (mcFilterStatus !== 'all') filtered = filtered.filter(m => mcGetStatus(m) === mcFilterStatus);
-  if (mcFilterTag) filtered = filtered.filter(m => mcRawTags(m).some(t => t.toLowerCase().includes(mcFilterTag)));
   const q = $('mc-search')?.value.trim().toLowerCase();
-  if (q) filtered = filtered.filter(m => mcMenuSearchText(m).includes(q));
-  const countEl = $('mc-library-count');
+  const archived = combined.filter(m => mcGetStatus(m) === 'archivado').length;
+  const filtered = combined.filter(m =>
+    (mcFilterType === 'all' || m.type === mcFilterType) &&
+    (mcShowArchived || mcGetStatus(m) !== 'archivado' || m.id === mcCurrentId) &&
+    (!q || mcMenuSearchText(m).includes(q)));
   const familyMap = new Map();
   filtered.forEach(m => {
     const fid = mcFamilyId(m);
@@ -5107,27 +4904,28 @@ function mcRenderLibrary() {
     return (langOrder[a.language || 'es'] ?? 9) - (langOrder[b.language || 'es'] ?? 9)
       || (a.version || 1) - (b.version || 1);
   }));
-  if (countEl) countEl.textContent = `${families.length} familias · ${filtered.length} de ${combined.length} menús`;
+  const countEl = $('mc-library-count');
+  if (countEl) countEl.textContent = `${families.length} menús${archived && !mcShowArchived ? ` · ${archived} archivados ocultos` : ''}`;
   if (filtered.length === 0) {
-    list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--ink-faint);text-align:center">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
+    list.innerHTML = '<div class="mc-library-empty">' + (mcLoaded ? 'Sin resultados' : 'Cargando…') + '</div>';
     return;
   }
   list.innerHTML = families.map(members => {
     const rep = mcPickRepresentative(members);
     const familyActive = members.some(m => m.id === mcCurrentId);
-    const badge = `<span class="mc-type-badge ${rep.type}">${MC_TYPES[rep.type] || rep.type}</span>`;
+    const status = mcGetStatus(rep);
     const prices = [...new Set(members.map(m => m.price ? `${parseFloat(m.price).toFixed(2)}€` : 'Sin precio'))];
     const price = prices.length === 1 ? prices[0] : `${prices[0]} +`;
-    const tmpl = MC_TEMPLATES[mcGetTemplate(rep)] || '';
-    const status = mcGetStatus(rep);
-    const rawTags = mcRawTags(rep).slice(0, 2).map(t => `<span>#${esc(t)}</span>`).join('');
-    const variants = members.map(m => `<button class="mc-variant-chip${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}" title="${esc(m.name || '')}">${mcVariantLabel(m)}${mcDrafts[m.id] ? ' · borrador' : ''}</button>`).join('');
+    const unsaved = members.some(m => mcDrafts[m.id]) ? '<span class="mc-unsaved-dot" title="Cambios sin guardar en la nube">● sin guardar</span>' : '';
+    const variants = members.length > 1
+      ? `<div class="mc-family-variants">${members.map(m => `<button type="button" class="mc-variant-chip${m.id === mcCurrentId ? ' active' : ''}" data-id="${m.id}" title="${esc(m.name || '')}">${mcVariantLabel(m)}${mcDrafts[m.id] ? ' ●' : ''}</button>`).join('')}</div>`
+      : '';
     return `<div class="mc-family-item${familyActive ? ' active' : ''}">
       <div class="mc-family-head" data-id="${rep.id}">
-        <div class="mc-list-item-name">${esc(rep.name || 'Sin nombre')} ${members.length > 1 ? `<span class="mc-version-tag">${members.length} versiones</span>` : ''}</div>
-        <div class="mc-list-item-meta">${badge}<span class="mc-status-badge ${status}">${MC_STATUSES[status]}</span><span>${price}</span>${tmpl ? `<span>${esc(tmpl)}</span>` : ''}${rawTags}</div>
+        <div class="mc-list-item-name">${esc(rep.name || 'Sin nombre')}</div>
+        <div class="mc-list-item-meta"><span class="mc-type-badge ${rep.type}">${MC_TYPES[rep.type] || rep.type}</span><span>${price}</span>${status !== 'borrador' ? `<span class="mc-status-badge ${status}">${MC_STATUSES[status]}</span>` : ''}${unsaved}</div>
       </div>
-      <div class="mc-family-variants">${variants}</div>
+      ${variants}
     </div>`;
   }).join('');
   list.querySelectorAll('.mc-family-head, .mc-variant-chip').forEach(el => {
@@ -5141,336 +4939,321 @@ function mcRenderLibrary() {
 function mcRenderEditor() {
   const area = $('mc-editor-area');
   if (!area) return;
+  clearTimeout(mcEditTimer); mcEditTimer = null;
   document.querySelector('.mc-layout')?.classList.toggle('mc-mobile-editing', !!mcCurrentMenu);
   if (!mcCurrentMenu) {
     area.innerHTML = `<div class="mc-editor-empty"><div class="mc-editor-empty-icon">📋</div><div>Selecciona un menú o crea uno nuevo</div></div>`;
     return;
   }
   const m = mcCurrentMenu;
-  const parentId = m.parent_id || m.id;
-  const siblings = !m._isNew ? mcMenus.filter(s => s.id === parentId || s.parent_id === parentId) : [];
+  const source = m.language || 'es';
+  const siblings = m._isNew ? [] : mcFamilyMembers(m);
   const vFamily = siblings.length > 1
-    ? `<div class="mc-version-family">Versiones: ${siblings.map(s => {
-        const lbl = (s.language && s.language !== 'es') ? s.language.toUpperCase() : (s.language === 'es' ? 'ES' : `v${s.version||1}`);
-        return `<span class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">${lbl}</span>`;
-      }).join('')}</div>` : '';
-
+    ? `<div class="mc-version-family">Versiones: ${siblings.map(s => `<button type="button" class="mc-version-sibling${s.id === m.id ? ' current' : ''}" data-id="${s.id}">${mcVariantLabel(s)}</button>`).join('')}</div>`
+    : '';
   const selectedTemplate = mcGetTemplate(m);
   const selectedLangs = mcGetDisplayLangs(m);
   const selectedStatus = mcGetStatus(m);
   const selectedTags = mcRawTags(m).join(', ');
+  const suggestions = source === 'es'
+    ? [...new Set(library.map(d => d.spanish).filter(Boolean))].map(name => `<option value="${esc(name)}">`).join('')
+    : '';
 
   area.innerHTML = `
-    <button class="mc-mobile-back" id="mc-back-to-list" type="button">← Volver a los menús</button>
-    <nav class="mc-flow-nav" aria-label="Pasos de edición">
-      <button type="button" data-target="mc-details-step">1 · Datos</button>
-      <button type="button" data-target="mc-content-step">2 · Platos</button>
-      <button type="button" data-target="mc-output-step">3 · Vista y PDF</button>
-    </nav>
+    <div class="mc-topbar">
+      <button class="mc-mobile-back" id="mc-back-to-list" type="button">← Menús</button>
+      <span id="mc-draft-status" class="mc-save-badge" role="status"></span>
+      <div class="mc-topbar-actions">
+        <button class="mc-btn mc-btn-save" id="mc-save-btn" type="button">💾 Guardar</button>
+        <button class="mc-btn mc-btn-dup" id="mc-dup-btn" type="button" title="Crear una copia editable (nueva versión)">⧉ Duplicar</button>
+        <button class="mc-btn mc-btn-dup mc-jump-preview" id="mc-jump-preview" type="button">Vista previa ↓</button>
+        <details class="mc-menu">
+          <summary class="mc-btn mc-btn-dup" title="Más acciones" aria-label="Más acciones">⋯</summary>
+          <div class="mc-menu-list">
+            <button type="button" id="mc-discard-draft" hidden>Descartar cambios sin guardar</button>
+            <button type="button" id="mc-translate-ca-btn">Crear copia traducida al catalán</button>
+            <button type="button" id="mc-translate-en-btn">Crear copia traducida al inglés</button>
+            ${!m._isNew ? '<button type="button" id="mc-del-btn" class="danger">Eliminar menú</button>' : ''}
+          </div>
+        </details>
+      </div>
+    </div>
     <div class="mc-editor-shell">
     <div class="mc-form-pane">
-    <h2 class="mc-step-heading">1 · Datos del menú</h2>
-    <div class="mc-editor-header mc-step" id="mc-details-step">
-      <div class="mc-editor-header-main">
-        <input class="mc-editor-title-input" id="mc-name-input" value="${esc(m.name || '')}" placeholder="Nombre del menú...">
-        <div class="mc-editor-meta-row">
-          <div class="mc-meta-field"><label>Tipo</label>
-            <select class="mc-meta-select" id="mc-type-select">
-              ${Object.entries(MC_TYPES).map(([k,v]) => `<option value="${k}"${m.type===k?' selected':''}>${v}</option>`).join('')}
-            </select></div>
-          <div class="mc-meta-field"><label>Estado</label>
+      <input class="mc-editor-title-input" id="mc-name-input" value="${esc(m.name || '')}" placeholder="Nombre del menú (ej: Menú de Navidad)" aria-label="Nombre del menú">
+      <div class="mc-editor-meta-row">
+        <label class="mc-meta-field">Tipo
+          <select class="mc-meta-select" id="mc-type-select">
+            ${Object.entries(MC_TYPES).map(([k,v]) => `<option value="${k}"${m.type===k?' selected':''}>${v}</option>`).join('')}
+          </select></label>
+        <label class="mc-meta-field">Precio €
+          <input class="mc-meta-input mc-price-input" id="mc-price-input" type="number" step="0.5" min="0" inputmode="decimal" value="${m.price||''}" placeholder="0.00"></label>
+        <label class="mc-meta-field">Mín. personas
+          <input class="mc-meta-input mc-people-input" id="mc-min-people-input" type="number" min="1" inputmode="numeric" value="${m.min_people||''}"></label>
+      </div>
+      ${vFamily}
+      <label class="mc-field-label" for="mc-notes-input">Condiciones <span class="mc-label-hint">· se imprimen bajo el precio</span></label>
+      <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
+      <details class="mc-extra-options">
+        <summary>Más opciones <span class="mc-label-hint">· estado, texto del precio, subtítulo, etiquetas</span></summary>
+        <div class="mc-extra-grid">
+          <label class="mc-meta-field">Estado
             <select class="mc-meta-select" id="mc-status-select">
               ${Object.entries(MC_STATUSES).map(([k,v]) => `<option value="${k}"${selectedStatus===k?' selected':''}>${v}</option>`).join('')}
-            </select></div>
-          <div class="mc-meta-field"><label>Precio</label>
-            <input class="mc-meta-input" id="mc-price-input" type="number" step="0.5" min="0" value="${m.price||''}" style="width:72px" placeholder="€"></div>
-          <div class="mc-meta-field"><label>Etiqueta precio</label>
-            <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label||'por persona (IVA incluido)')}" style="width:210px"></div>
-          <div class="mc-meta-field"><label>Mín. personas</label>
-            <input class="mc-meta-input" id="mc-min-people-input" type="number" min="1" value="${m.min_people||''}" style="width:58px"></div>
+            </select></label>
+          <label class="mc-meta-field">Texto junto al precio
+            <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label||'por persona (IVA incluido)')}"></label>
+          <label class="mc-meta-field">Subtítulo (solo plantilla Marinero)
+            <input class="mc-meta-input" id="mc-occasion-input" value="${esc(m.occasion||'')}" placeholder="Entrante + Principal + Postre"></label>
+          <label class="mc-meta-field">Etiquetas internas
+            <input class="mc-meta-input" id="mc-tags-input" value="${esc(selectedTags)}" placeholder="navidad, empresa, 2026"></label>
         </div>
-        ${vFamily}
-      </div>
-      <div class="mc-editor-actions">
-        <button class="mc-btn mc-btn-save" id="mc-save-btn">💾 Guardar</button>
-        <button class="mc-btn mc-btn-dup" id="mc-dup-btn" title="Crear nueva versión">⊕ Versión</button>
-        ${!m._isNew ? `<button class="mc-btn mc-btn-del" id="mc-del-btn" title="Eliminar">🗑</button>` : ''}
-      </div>
-    </div>
-    <p id="mc-draft-status" class="mc-help-text" role="status"></p>
-    <button class="btn btn-secondary btn-small" id="mc-discard-draft" hidden>Descartar borrador local</button>
-    <details class="mc-extra-options"${m.notes || selectedTags ? ' open' : ''}>
-      <summary>Notas y etiquetas</summary>
-    <div class="mc-notes-row">
-      <div class="mc-field-label">Condiciones / Notas</div>
-      <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
-    </div>
-    <div class="mc-notes-row">
-      <div class="mc-field-label">Etiquetas</div>
-      <input class="mc-tag-input" id="mc-tags-input" value="${esc(selectedTags)}" placeholder="Ej: navidad, empresa, sin marisco, 2026">
-    </div>
-    </details>
-    <div class="mc-control-panel">
-      <div>
-        <div class="mc-field-label">Plantilla de impresión</div>
-        <select class="mc-meta-select" id="mc-template-select" style="width:100%">
-          ${Object.entries(MC_TEMPLATES).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
-        </select>
-        <div class="mc-help-text">Cada tipo de menú puede tener una voz visual distinta sin mezclarlo con el Menú del Día.</div>
-      </div>
-      <div>
-        <div class="mc-field-label">Idiomas visibles</div>
-        <div class="mc-language-toggles">
-          ${Object.entries(MC_LANG_LABELS).map(([k,v]) => `<label class="mc-check-pill"><input class="mc-lang-check" type="checkbox" value="${k}"${selectedLangs.includes(k)?' checked':''}>${v}</label>`).join('')}
-        </div>
-        <div class="mc-help-text">Por defecto se imprime un solo idioma. Marca varios para una versión bilingüe o trilingüe.</div>
-      </div>
-    </div>
-    <button class="btn btn-secondary btn-small" id="mc-mappings-toggle">Revisar correspondencias de idiomas</button>
-    <div id="mc-mappings" hidden></div>
-    <h2 class="mc-step-heading mc-step" id="mc-content-step">2 · Platos y bebidas</h2>
-    <div class="mc-sections-header">
-      <div class="mc-sections-title">Secciones del menú</div>
-      <button class="mc-add-section-btn" id="mc-add-section-btn">+ Añadir sección</button>
-    </div>
-    <div id="mc-sections-container">${(m.sections||[]).map((s,i) => mcRenderSection(s,i)).join('')}</div>
-    <div class="mc-drinks-row">
-      <div class="mc-field-label">Bebidas incluidas</div>
+      </details>
+
+      <h3 class="mc-sections-title">Platos</h3>
+      <div id="mc-sections-container"></div>
+      <button class="mc-add-section-btn" id="mc-add-section-btn" type="button">+ Añadir sección</button>
+      <datalist id="mc-dish-suggestions">${suggestions}</datalist>
+
+      <label class="mc-field-label" for="mc-drinks-input">Bebidas incluidas</label>
       <textarea class="mc-drinks-input" id="mc-drinks-input" rows="2" placeholder="Ej: Una botella de vino por cada 4 personas · Agua y refrescos">${esc(m.drinks||'')}</textarea>
     </div>
-    <h2 class="mc-step-heading mc-step" id="mc-output-step">3 · Revisar e imprimir</h2>
-    <div id="mc-qa-panel"></div>
-    <div class="mc-pdf-row">
-      <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
-        <button class="btn btn-pdf-color" id="mc-pdf-color-btn">🎨 PDF Color</button>
-        <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn">◑ PDF B&N</button>
+
+    <aside class="mc-preview-pane" id="mc-output-step">
+      <div class="mc-print-panel">
+        <div class="mc-print-grid">
+          <label class="mc-meta-field">Plantilla
+            <select class="mc-meta-select" id="mc-template-select">
+              ${Object.entries(MC_TEMPLATES).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
+            </select></label>
+          <div class="mc-meta-field">Traducción bajo cada plato
+            <div class="mc-language-toggles">
+              ${Object.entries(MC_LANG_LABELS).filter(([k]) => k !== source).map(([k,v]) => `<label class="mc-check-pill"><input class="mc-lang-check" type="checkbox" value="${k}"${selectedLangs.includes(k)?' checked':''}>${v}</label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div id="mc-qa-panel"></div>
+        <div class="mc-pdf-row">
+          <button class="btn btn-pdf-color" id="mc-pdf-color-btn" type="button">🎨 PDF Color</button>
+          <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn" type="button">◑ PDF B&amp;N</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button class="btn btn-secondary" id="mc-translate-ca-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al catalán">+ Versión CA</button>
-        <button class="btn btn-secondary" id="mc-translate-en-btn" style="font-size:12px;padding:6px 10px;" title="Crear versión traducida al inglés">+ Versión EN</button>
-      </div>
-    </div>
-    </div>
-    <aside class="mc-preview-pane">
       <div class="mc-preview-toolbar">
-        <div class="mc-preview-title">Vista previa</div>
-        <button class="btn btn-secondary" id="mc-preview-refresh" style="font-size:12px;padding:6px 10px;">Actualizar</button>
+        <div class="mc-preview-title">Vista previa · A4</div>
+        <button class="btn btn-secondary btn-small" id="mc-preview-zoom" type="button">Ampliar</button>
       </div>
-      <div id="mc-live-preview"></div>
+      <div class="mc-a4-frame" id="mc-live-preview" title="Pulsa para ampliar"></div>
     </aside>
     </div>`;
 
-  $('mc-save-btn').addEventListener('click', mcSaveMenu);
-  $('mc-back-to-list').addEventListener('click', () => {
-    if (!mcPersistCurrent()) return;
-    document.querySelector('.mc-layout')?.classList.remove('mc-mobile-editing');
-    $('mc-library-list')?.scrollIntoView({ block: 'start' });
-  });
-  area.querySelectorAll('.mc-flow-nav [data-target]').forEach(btn => btn.addEventListener('click', () => {
-    $(btn.dataset.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }));
   $('mc-save-btn').disabled = mcSavingIds.has(mcCurrentId);
-  $('mc-discard-draft').addEventListener('click', mcDiscardDraft);
-  $('mc-mappings-toggle').addEventListener('click', () => { mcMappingsOpen = !mcMappingsOpen; mcRenderMappings(); });
-  $('mc-dup-btn').addEventListener('click', mcDuplicateMenu);
-  const delBtn = $('mc-del-btn');
-  if (delBtn) delBtn.addEventListener('click', mcDeleteMenu);
-  $('mc-add-section-btn').addEventListener('click', () => {
-    mcCurrentMenu.sections = mcGatherSections();
-    mcCurrentMenu.sections.push({ id: mcUUID(), title: 'Nueva sección', subtitle: '', mode: 'choose_one', dishes: [{ id: mcUUID(), name: '', supplement: null }] });
-    mcRefreshSections();
-    mcUpdatePreview();
-  });
-  $('mc-pdf-color-btn').addEventListener('click', () => mcGeneratePDF('color'));
-  $('mc-pdf-bw-btn').addEventListener('click', () => mcGeneratePDF('bw'));
-  $('mc-preview-refresh').addEventListener('click', mcUpdatePreview);
-  area.querySelectorAll('input, textarea, select').forEach(el => {
-    el.addEventListener('input', mcUpdatePreview);
-    el.addEventListener('change', mcUpdatePreview);
-  });
-  $('mc-translate-ca-btn').addEventListener('click', () => mcTranslateAll('ca'));
-  $('mc-translate-en-btn').addEventListener('click', () => mcTranslateAll('en'));
-  area.querySelectorAll('.mc-version-sibling').forEach(el => {
-    el.addEventListener('click', () => {
-      mcSelectMenuById(el.dataset.id);
-    });
-  });
-  mcBindSectionEvents();
+  mcRefreshSections();
   if (!mcDrafts[mcCurrentId] && !mcCurrentMenu._isNew) mcViewBaselines[mcCurrentId] = MenuWorkflows.clone({ ...mcCurrentMenu, ...mcGatherFromEditor() });
-  mcUpdatePreview();
+  mcFlushEditor();
 }
 
-function mcRenderSection(sec, si) {
+function mcRenderSection(menu, sec, si, count, extraLangs) {
   const collapsed = mcCollapsedSections.has(sec.id);
+  const named = (sec.dishes || []).filter(d => d.name).length;
+  const defaultSub = MC_MODE_PRINT[menu.language || 'es']?.[sec.mode] || '';
   return `<div class="mc-section-block${collapsed ? ' collapsed' : ''}" data-si="${si}">
     <div class="mc-section-head">
-      <button class="mc-section-toggle" data-si="${si}" title="${collapsed ? 'Expandir sección' : 'Contraer sección'}">${collapsed ? '▶' : '▼'}</button>
-      <input class="mc-section-title-input" value="${esc(sec.title||'')}" placeholder="Nombre de la sección..." data-si="${si}">
-      <input class="mc-section-subtitle-input" value="${esc(sec.subtitle||'')}" placeholder="(subtítulo)" data-si="${si}">
-      <select class="mc-section-mode-select" data-si="${si}">
+      <button type="button" class="mc-section-toggle" data-si="${si}" title="${collapsed ? 'Expandir sección' : 'Contraer sección'}">${collapsed ? '▶' : '▼'}</button>
+      <input class="mc-section-title-input" value="${esc(sec.title||'')}" placeholder="Nombre de la sección" data-si="${si}" aria-label="Nombre de la sección">
+      ${collapsed ? `<span class="mc-section-count">${named} platos</span>` : ''}
+      <select class="mc-section-mode-select" data-si="${si}" aria-label="Cómo se eligen los platos">
         ${Object.entries(MC_MODES).map(([k,v]) => `<option value="${k}"${sec.mode===k?' selected':''}>${v}</option>`).join('')}
       </select>
-      <button class="mc-section-tool mc-section-up" data-si="${si}" title="Subir sección"${si === 0 ? ' disabled' : ''}>↑</button>
-      <button class="mc-section-tool mc-section-down" data-si="${si}" title="Bajar sección">↓</button>
-      <button class="mc-section-tool mc-section-duplicate" data-si="${si}" title="Duplicar sección">Copiar</button>
-      <button class="mc-section-tool mc-section-paste" data-si="${si}" title="Pegar varios platos">Pegar</button>
-      <button class="mc-section-remove" data-si="${si}">×</button>
+      <details class="mc-menu">
+        <summary class="mc-section-tool" title="Más acciones de la sección" aria-label="Más acciones de la sección">⋯</summary>
+        <div class="mc-menu-list">
+          <button type="button" class="mc-section-up" data-si="${si}"${si === 0 ? ' disabled' : ''}>↑ Subir</button>
+          <button type="button" class="mc-section-down" data-si="${si}"${si >= count - 1 ? ' disabled' : ''}>↓ Bajar</button>
+          <button type="button" class="mc-section-duplicate" data-si="${si}">Duplicar sección</button>
+          <button type="button" class="mc-section-paste" data-si="${si}">Pegar lista de platos</button>
+          <button type="button" class="mc-section-remove danger" data-si="${si}">Eliminar sección</button>
+        </div>
+      </details>
     </div>
     <div class="mc-section-dishes">
-      ${(sec.dishes||[]).map((d,di) => mcRenderDish(d,si,di)).join('')}
-      <button class="mc-add-dish-btn" data-si="${si}">+ Añadir plato</button>
+      <input class="mc-section-subtitle-input" value="${esc(sec.subtitle||'')}" placeholder="${defaultSub ? `Subtítulo opcional · si lo dejas vacío se imprime “${esc(defaultSub)}”` : 'Subtítulo opcional'}" data-si="${si}" aria-label="Subtítulo de la sección">
+      <div class="mc-paste-panel" data-si="${si}" hidden>
+        <textarea rows="4" placeholder="Un plato por línea. Suplemento opcional:&#10;Chuletón a la brasa | +6"></textarea>
+        <div class="mc-paste-actions">
+          <button type="button" class="btn btn-primary btn-small mc-paste-add" data-si="${si}">Añadir platos</button>
+          <button type="button" class="btn btn-secondary btn-small mc-paste-cancel" data-si="${si}">Cancelar</button>
+        </div>
+      </div>
+      ${(sec.dishes||[]).map((d,di) => mcRenderDish(menu, d, si, di, extraLangs)).join('')}
+      <button type="button" class="mc-add-dish-btn" data-si="${si}">+ Añadir plato</button>
     </div>
   </div>`;
 }
 
-function mcRenderDish(d, si, di) {
+function mcRenderDish(menu, d, si, di, extraLangs) {
   const suppVal = d.supplement ? `+${d.supplement}€` : '';
-  return `<div class="mc-dish-row" data-si="${si}" data-di="${di}">
-    <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato..." data-si="${si}" data-di="${di}" style="flex:1;">
-    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl.€" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50€)" style="width:64px;flex-shrink:0;">
-    <button class="mc-dish-remove" data-si="${si}" data-di="${di}">✕</button>
+  const listAttr = (menu.language || 'es') === 'es' ? ' list="mc-dish-suggestions"' : '';
+  const translations = extraLangs.map(lang => {
+    const current = d.name ? mcLangDishName(menu, lang, si, di) : '';
+    const inline = d.translations?.[lang]?.name;
+    const text = current || inline?.text || '';
+    const src = current ? d.name : (inline?.source || '');
+    const cls = text && !current ? ' stale' : (d.name && !text ? ' missing' : '');
+    const title = text && !current ? `Traducción de «${inline.source}». Revísala: el plato ha cambiado.` : MC_LANG_LABELS[lang];
+    return `<input class="mc-dish-tr-input${cls}" data-lang="${lang}" data-src="${esc(src)}" value="${esc(text)}" placeholder="${MC_LANG_LABELS[lang]}" lang="${lang}" title="${esc(title)}" aria-label="${MC_LANG_LABELS[lang]}">`;
+  }).join('');
+  return `<div class="mc-dish-row${extraLangs.length ? ' has-tr' : ''}" data-si="${si}" data-di="${di}">
+    <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato" data-si="${si}" data-di="${di}"${listAttr} lang="${menu.language || 'es'}" aria-label="Nombre del plato">
+    ${translations}
+    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl. €" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50)" aria-label="Suplemento">
+    <button type="button" class="mc-dish-remove" data-si="${si}" data-di="${di}" title="Quitar plato" aria-label="Quitar plato">✕</button>
   </div>`;
 }
 
 function mcRefreshSections() {
   const c = $('mc-sections-container');
-  if (c) {
-    c.innerHTML = (mcCurrentMenu.sections||[]).map((s,i) => mcRenderSection(s,i)).join('');
-    c.querySelectorAll('.mc-section-down').forEach(btn => {
-      btn.disabled = parseInt(btn.dataset.si) >= (mcCurrentMenu.sections || []).length - 1;
-    });
-    mcBindSectionEvents();
-    c.querySelectorAll('input, select').forEach(el => {
-      el.addEventListener('input', mcUpdatePreview);
-      el.addEventListener('change', mcUpdatePreview);
-    });
-  }
+  if (!c || !mcCurrentMenu) return;
+  const extraLangs = mcActiveDisplayLangs().slice(1);
+  const sections = mcCurrentMenu.sections || [];
+  c.innerHTML = sections.map((s, i) => mcRenderSection(mcCurrentMenu, s, i, sections.length, extraLangs)).join('')
+    || '<p class="mc-help-text">Sin secciones todavía. Pulsa “+ Añadir sección”.</p>';
 }
 
 function mcGatherSections() {
   const c = $('mc-sections-container');
   if (!c || !mcCurrentMenu) return mcCurrentMenu?.sections || [];
   return Array.from(c.querySelectorAll('.mc-section-block')).map((block, si) => {
+    const prevSection = mcCurrentMenu.sections?.[si] || {};
     const dishes = Array.from(block.querySelectorAll('.mc-dish-row')).map((row, di) => {
       const name    = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
       const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
-      const prev = mcCurrentMenu.sections?.[si]?.dishes?.[di];
-      return MenuWorkflows.editTranslatedItem(prev || {}, { id: prev?.id || mcUUID(), name, supplement: parseFloat(suppRaw.replace(',', '.')) || null });
+      const prev = prevSection.dishes?.[di] || {};
+      const translations = MenuWorkflows.clone(prev.translations || {});
+      row.querySelectorAll('.mc-dish-tr-input').forEach(input => {
+        const lang = input.dataset.lang, text = input.value.trim();
+        const entry = { ...(translations[lang] || {}) };
+        if (text && input.dataset.src) entry.name = { text, source: input.dataset.src };
+        else delete entry.name;
+        if (Object.keys(entry).length) translations[lang] = entry; else delete translations[lang];
+      });
+      const fields = { id: prev.id || mcUUID(), name, supplement: parseFloat(suppRaw.replace(',', '.')) || null };
+      if (Object.keys(translations).length || prev.translations) fields.translations = translations;
+      return MenuWorkflows.editTranslatedItem(prev, fields);
     });
-    return MenuWorkflows.editTranslatedItem(mcCurrentMenu.sections?.[si] || {}, {
-      id: mcCurrentMenu.sections?.[si]?.id || mcUUID(),
+    return MenuWorkflows.editTranslatedItem(prevSection, {
+      id: prevSection.id || mcUUID(),
       title: block.querySelector('.mc-section-title-input')?.value.trim() || '',
       subtitle: block.querySelector('.mc-section-subtitle-input')?.value.trim() || '',
-      title_ca: mcCurrentMenu.sections?.[si]?.title_ca || null,
-      title_en: mcCurrentMenu.sections?.[si]?.title_en || null,
-      subtitle_ca: mcCurrentMenu.sections?.[si]?.subtitle_ca || null,
-      subtitle_en: mcCurrentMenu.sections?.[si]?.subtitle_en || null,
       mode: block.querySelector('.mc-section-mode-select')?.value || 'choose_one',
       dishes
     });
   });
 }
 
-function mcBindSectionEvents() {
-  const c = $('mc-sections-container');
-  if (!c) return;
-  c.querySelectorAll('.mc-section-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const si = parseInt(btn.dataset.si);
-      mcCurrentMenu.sections = mcGatherSections();
-      const id = mcCurrentMenu.sections?.[si]?.id;
-      if (!id) return;
-      if (mcCollapsedSections.has(id)) mcCollapsedSections.delete(id);
-      else mcCollapsedSections.add(id);
-      mcRefreshSections();
-    });
-  });
-  c.querySelectorAll('.mc-section-up, .mc-section-down').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      const si = parseInt(btn.dataset.si);
-      const delta = btn.classList.contains('mc-section-up') ? -1 : 1;
-      mcCurrentMenu.sections = mcGatherSections();
-      const target = si + delta;
-      if (target < 0 || target >= mcCurrentMenu.sections.length) return;
-      const [section] = mcCurrentMenu.sections.splice(si, 1);
-      mcCurrentMenu.sections.splice(target, 0, section);
-      mcRefreshSections();
-      mcUpdatePreview();
-    });
-  });
-  c.querySelectorAll('.mc-section-duplicate').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const si = parseInt(btn.dataset.si);
-      mcCurrentMenu.sections = mcGatherSections();
-      const copy = JSON.parse(JSON.stringify(mcCurrentMenu.sections[si] || {}));
-      copy.id = mcUUID();
-      delete copy.language_links; delete copy.translation_source;
-      copy.title = copy.title ? `${copy.title} copia` : 'Sección copia';
-      copy.dishes = (copy.dishes || []).map(d => { const item = { ...d, id: mcUUID() }; delete item.language_links; delete item.translation_source; return item; });
-      mcCurrentMenu.sections.splice(si + 1, 0, copy);
-      mcRefreshSections();
-      mcUpdatePreview();
-    });
-  });
-  c.querySelectorAll('.mc-section-paste').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const si = parseInt(btn.dataset.si);
-      const text = prompt('Pega una lista de platos, uno por línea. Puedes añadir suplemento con | +4.50');
-      if (!text) return;
-      const newDishes = text.split('\n')
-        .map(line => line.trim())
-        .filter(Boolean)
-        .map(line => {
-          const parts = line.split('|').map(p => p.trim());
-          const suppRaw = (parts[1] || '').replace(/^\+/, '').replace('€', '').replace(',', '.').trim();
-          return { id: mcUUID(), name: parts[0], supplement: parseFloat(suppRaw) || null };
-        });
-      if (!newDishes.length) return;
-      mcCurrentMenu.sections = mcGatherSections();
-      mcCurrentMenu.sections[si].dishes = [...(mcCurrentMenu.sections[si].dishes || []), ...newDishes];
-      mcRefreshSections();
-      mcUpdatePreview();
-    });
-  });
-  c.querySelectorAll('.mc-section-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      mcCurrentMenu.sections = mcGatherSections();
-      mcCurrentMenu.sections.splice(parseInt(btn.dataset.si), 1);
-      mcRefreshSections();
-      mcUpdatePreview();
-    });
-  });
-  c.querySelectorAll('.mc-add-dish-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const si = parseInt(btn.dataset.si);
-      mcCurrentMenu.sections = mcGatherSections();
-      mcCurrentMenu.sections[si].dishes.push({ id: mcUUID(), name: '', supplement: null });
-      mcRefreshSections();
-      setTimeout(() => {
-        const inputs = c.querySelectorAll(`.mc-section-block[data-si="${si}"] .mc-dish-name-input`);
-        if (inputs.length) inputs[inputs.length - 1].focus();
-      }, 40);
-      mcUpdatePreview();
-    });
-  });
-  c.querySelectorAll('.mc-dish-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      mcCurrentMenu.sections = mcGatherSections();
-      mcCurrentMenu.sections[parseInt(btn.dataset.si)].dishes.splice(parseInt(btn.dataset.di), 1);
-      mcRefreshSections();
-      mcUpdatePreview();
-    });
+function mcNewDish() {
+  return { id: mcUUID(), name: '', supplement: null };
+}
+
+function mcFocusDish(si, di) {
+  const inputs = $('mc-sections-container')?.querySelectorAll(`.mc-section-block[data-si="${si}"] .mc-dish-name-input`) || [];
+  const target = inputs[di == null ? inputs.length - 1 : di];
+  if (target) target.focus();
+}
+
+// Structural edits to sections/dishes. Always start from what is on screen.
+function mcSectionAction(action, si, di) {
+  mcCurrentMenu.sections = mcGatherSections();
+  const sections = mcCurrentMenu.sections;
+  const sec = sections[si];
+  if (!sec && action !== 'add-section') return;
+  let focus = null;
+  if (action === 'toggle') {
+    if (mcCollapsedSections.has(sec.id)) mcCollapsedSections.delete(sec.id);
+    else mcCollapsedSections.add(sec.id);
+  } else if (action === 'up' || action === 'down') {
+    const target = si + (action === 'up' ? -1 : 1);
+    if (target < 0 || target >= sections.length) return;
+    sections.splice(target, 0, ...sections.splice(si, 1));
+  } else if (action === 'duplicate') {
+    const copy = MenuWorkflows.clone(sec);
+    copy.id = mcUUID();
+    delete copy.language_links; delete copy.translation_source;
+    copy.title = copy.title ? `${copy.title} (copia)` : 'Sección (copia)';
+    copy.dishes = (copy.dishes || []).map(d => { const item = { ...d, id: mcUUID() }; delete item.language_links; delete item.translation_source; return item; });
+    sections.splice(si + 1, 0, copy);
+  } else if (action === 'remove') {
+    const named = (sec.dishes || []).filter(d => d.name).length;
+    if (named && !confirm(`¿Eliminar la sección «${sec.title || 'sin nombre'}» y sus ${named} platos?`)) return;
+    sections.splice(si, 1);
+  } else if (action === 'add-section') {
+    sections.push({ id: mcUUID(), title: '', subtitle: '', mode: 'choose_one', dishes: [mcNewDish()] });
+    mcRefreshSections(); mcScheduleFlush();
+    const titles = $('mc-sections-container').querySelectorAll('.mc-section-title-input');
+    titles[titles.length - 1]?.focus();
+    return;
+  } else if (action === 'add-dish') {
+    sec.dishes.push(mcNewDish());
+    mcCollapsedSections.delete(sec.id);
+    focus = [si, null];
+  } else if (action === 'insert-dish') {
+    sec.dishes.splice(di + 1, 0, mcNewDish());
+    focus = [si, di + 1];
+  } else if (action === 'remove-dish') {
+    sec.dishes.splice(di, 1);
+  } else if (action === 'paste') {
+    const text = $('mc-sections-container').querySelector(`.mc-paste-panel[data-si="${si}"] textarea`)?.value || '';
+    const pasted = text.split('\n').map(line => line.trim()).filter(Boolean).map(line => {
+      const parts = line.split('|').map(p => p.trim());
+      const suppRaw = (parts[1] || '').replace(/^\+/, '').replace('€', '').replace(',', '.').trim();
+      return { id: mcUUID(), name: parts[0], supplement: parseFloat(suppRaw) || null };
+    }).filter(d => d.name);
+    if (!pasted.length) return;
+    // Replace trailing empty rows so pasted dishes don't sit under blank lines.
+    while (sec.dishes.length && !sec.dishes[sec.dishes.length - 1].name) sec.dishes.pop();
+    sec.dishes.push(...pasted);
+    toast(`${pasted.length} platos añadidos`, 'success');
+  }
+  mcRefreshSections();
+  if (focus) mcFocusDish(...focus);
+  mcFlushEditor();
+}
+
+function mcMarkStaleTranslations(row) {
+  if (!row) return;
+  const name = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
+  row.querySelectorAll('.mc-dish-tr-input').forEach(input => {
+    input.classList.toggle('stale', !!input.value.trim() && input.dataset.src !== name);
+    input.classList.toggle('missing', !!name && !input.value.trim());
   });
 }
 
+// Choosing a known dish from the daily-menu library brings its Catalan name along.
+function mcFillFromLibrary(nameInput) {
+  const name = nameInput.value.trim();
+  if (!name || (mcCurrentMenu?.language || 'es') !== 'es') return;
+  const hit = library.find(d => (d.spanish || '').trim().toLowerCase() === name.toLowerCase());
+  const ca = nameInput.closest('.mc-dish-row')?.querySelector('.mc-dish-tr-input[data-lang="ca"]');
+  if (!hit?.catalan || !ca || (ca.value.trim() && !ca.classList.contains('stale'))) return;
+  ca.value = hit.catalan;
+  ca.dataset.src = name;
+  ca.classList.remove('stale', 'missing');
+}
+
+function mcApplyPresetIfUntouched(type) {
+  const sections = mcGatherSections();
+  const presetTitles = new Set(Object.values(MC_PRESETS).flat().map(([title]) => title));
+  const untouched = sections.every(s => !(s.dishes || []).some(d => d.name) && !s.subtitle && (!s.title || presetTitles.has(s.title)));
+  if (!untouched) return;
+  mcCurrentMenu.sections = mcPresetSections(type);
+  mcRefreshSections();
+}
+
 function mcActiveDisplayLangs() {
-  const checked = Array.from(document.querySelectorAll('.mc-lang-check:checked')).map(el => el.value);
-  if (checked.length) return checked;
-  const base = mcCurrentMenu?.language || 'es';
-  const fallback = document.querySelector(`.mc-lang-check[value="${base}"]`) || document.querySelector('.mc-lang-check[value="es"]');
-  if (fallback) fallback.checked = true;
-  return [base];
+  const source = mcCurrentMenu?.language || 'es';
+  const checks = Array.from(document.querySelectorAll('.mc-lang-check'));
+  if (!checks.length) return mcGetDisplayLangs(mcCurrentMenu);
+  const checked = new Set(checks.filter(el => el.checked).map(el => el.value));
+  return [source, ...Object.keys(MC_LANG_LABELS).filter(l => l !== source && checked.has(l))];
 }
 
 function mcGatherFromEditor() {
@@ -5478,6 +5261,7 @@ function mcGatherFromEditor() {
   const gathered = {
     name: $('mc-name-input') ? $('mc-name-input').value.trim() : mcCurrentMenu.name,
     type: $('mc-type-select')?.value || mcCurrentMenu.type,
+    occasion: $('mc-occasion-input') ? ($('mc-occasion-input').value.trim() || null) : (mcCurrentMenu.occasion ?? null),
     price: parseFloat($('mc-price-input')?.value) || null,
     price_label: $('mc-price-label-input')?.value.trim() || 'por persona (IVA incluido)',
     min_people: parseInt($('mc-min-people-input')?.value) || null,
@@ -5495,270 +5279,270 @@ function mcGatherFromEditor() {
   return gathered;
 }
 
-function mcRenderPreview(menu, langs, template) {
-  const isMarineroPreview = template === 'marinero';
-  const typeLabel = MC_TYPES[menu.type] || menu.type || '';
-  const price = menu.price ? `${parseFloat(menu.price).toFixed(2)}€` : '';
-  const langNames = langs.map(l => MC_LANG_LABELS[l]).join(' · ');
-  const sections = (menu.sections || []).map((sec, si) => {
-    const title = mcLangSectionText(menu, langs[0], si, 'title', sec.title) || sec.title;
-    const subtitle = mcLangSectionText(menu, langs[0], si, 'subtitle', sec.subtitle) || sec.subtitle || (isMarineroPreview ? '' : MC_MODES[sec.mode]) || '';
-    const dishes = (sec.dishes || []).map((d, di) => {
-      if (!d.name) return '';
-      const lines = langs.map((lang, li) => {
-        const name = mcLangDishName(menu, lang, si, di, d.name) || (li === 0 ? '[Traducción pendiente]' : '');
-        return name ? `${li === 0 ? esc(name) : `<small>${esc(name)}</small>`}` : '';
-      }).join('');
-      const supp = d.supplement ? ` <span class="mc-preview-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
-      return `<div class="mc-preview-dish">${lines}${supp}</div>`;
-    }).join('');
-    if (!title && !dishes) return '';
-    return `<div class="mc-preview-section">
-      ${title ? `<div class="mc-preview-section-title">${esc(title)}</div>` : ''}
-      ${subtitle ? `<div class="mc-preview-section-sub">${esc(subtitle)}</div>` : ''}
-      ${dishes}
-    </div>`;
-  }).join('');
-  return `<div class="mc-preview-card template-${template}">
-    <div class="mc-preview-restaurant">Restaurante Sol</div>
-    <div class="mc-preview-name">${esc(menu.name || 'Nuevo menú')}</div>
-    <div class="mc-preview-meta">
-      ${typeLabel ? `<span class="mc-preview-pill">${esc(typeLabel)}</span>` : ''}
-      ${price ? `<span class="mc-preview-pill">${price}</span>` : ''}
-      ${menu.min_people ? `<span class="mc-preview-pill">Mín. ${menu.min_people} personas</span>` : ''}
-      <span class="mc-preview-pill">${esc(langNames)}</span>
-    </div>
-    ${menu.notes ? `<div class="mc-preview-notes">${esc(menu.notes)}</div>` : ''}
-    ${sections || '<div class="mc-preview-notes">Añade secciones y platos para ver la composición.</div>'}
-    ${menu.drinks ? `<div class="mc-preview-drinks"><strong>${isMarineroPreview ? esc(menu.drinks.split('\n')[0] || '') : 'Bebidas incluidas'}</strong><br>${esc(isMarineroPreview ? menu.drinks.split('\n').slice(1).join('\n') : menu.drinks)}</div>` : ''}
-  </div>`;
+// Typing only schedules work; the draft, review panel and preview refresh once typing pauses.
+function mcScheduleFlush() {
+  clearTimeout(mcEditTimer);
+  mcEditTimer = setTimeout(mcFlushEditor, 300);
 }
 
-function mcUpdatePreview() {
-  const preview = $('mc-live-preview');
-  if (!preview || !mcCurrentMenu) return;
-  const menu = { ...mcCurrentMenu, ...mcGatherFromEditor() };
-  Object.assign(mcCurrentMenu, menu);
+function mcFlushEditor() {
+  clearTimeout(mcEditTimer); mcEditTimer = null;
+  if (!mcCurrentMenu || !$('mc-name-input')) return;
   mcPersistCurrent();
-  const template = $('mc-template-select')?.value || mcGetTemplate(menu);
-  const langs = mcActiveDisplayLangs();
-  preview.innerHTML = mcRenderPreview(menu, langs, template);
-  mcRenderQualityPanel(menu, langs);
-  mcRenderMappings();
+  mcRenderQualityPanel(mcCurrentMenu);
+  mcRenderLivePreview();
 }
 
-function mcRenderMappings() {
-  const panel = $('mc-mappings');
-  if (!panel || !mcCurrentMenu) return;
-  panel.hidden = !mcMappingsOpen;
-  if (!mcMappingsOpen) return;
-  const menu = mcCurrentMenu;
-  const rows = [];
-  for (const lang of mcActiveDisplayLangs().filter(l=>l !== (menu.language || 'es'))) {
-    const targets = mcMenus.filter(m => m.id !== menu.id && mcFamilyId(m) === mcFamilyId(menu) && MenuWorkflows.version(m) === MenuWorkflows.version(menu) && (m.language || 'es') === lang);
-    (menu.sections || []).forEach((sec,si) => {
-      const fields = [{item:sec,di:null,field:'title'}, {item:sec,di:null,field:'subtitle'}, ...(sec.dishes||[]).map((item,di)=>({item,di,field:'name'}))];
-      fields.forEach(({item,di,field}) => {
-        if (!item[field] || MenuWorkflows.translatedField(menu,mcMenus,lang,si,di,field)) return;
-        const choices = targets.flatMap(m=>(m.sections||[]).flatMap(s=>(di===null?[s]:(s.dishes||[])).filter(i=>i[field]&&i.id).map(i=>({menu:m,item:i}))));
-        const options = choices.map(x=>`<option value="${esc(JSON.stringify([x.menu.id,x.item.id]))}">${esc(x.menu.name)} · ${esc(x.item[field])}</option>`).join('');
-        rows.push(`<label class="mc-map-row">${esc(item[field])} → ${lang.toUpperCase()}<select data-lang="${lang}" data-si="${si}" data-di="${di===null?'':di}" data-field="${field}"><option value="">Selecciona la traducción correspondiente</option>${options}</select></label>`);
-      });
-    });
-  }
-  panel.innerHTML = '<p class="hint">Elige cada correspondencia por su texto. Solo se ofrecen versiones de la misma familia y número de versión. Si no existe una traducción, crea una versión CA/EN.</p>' + (rows.join('') || '<p class="hint">No hay correspondencias pendientes en los idiomas seleccionados.</p>');
-  panel.querySelectorAll('select').forEach(el=>el.addEventListener('change',()=>{
-    if (!el.value) return;
-    const [menuId,itemId] = JSON.parse(el.value);
-    const targetMenu = mcMenus.find(m=>m.id===menuId);
-    const section = mcCurrentMenu.sections[Number(el.dataset.si)];
-    const source = el.dataset.di==='' ? section : section.dishes[Number(el.dataset.di)];
-    const candidates = (targetMenu?.sections||[]).flatMap(s=>el.dataset.di===''?[s]:(s.dishes||[])).filter(i=>i.id===itemId);
-    if (candidates.length!==1) return;
-    const field = el.dataset.field;
-    source.language_links = {...source.language_links, [`${el.dataset.lang}:${field}`]:{menuId,itemId,sourceText:source[field],targetText:candidates[0][field]}};
-    mcUpdatePreview();
-  }));
-}
-
-function mcRenderQualityPanel(menu, langs) {
+function mcRenderQualityPanel(menu) {
   const panel = $('mc-qa-panel');
   if (!panel) return;
-  const validation = mcValidateMenu(menu, langs);
+  const validation = mcValidateMenu(menu);
+  const status = mcGetStatus(menu);
   if (!validation.errors.length && !validation.warnings.length && !validation.missing.length) {
-    panel.innerHTML = '<div class="mc-qa-panel ok"><strong>Revisión</strong>Listo para guardar o imprimir.<div class="mc-qa-actions"><button class="mc-qa-action" data-status="listo">Marcar listo</button></div></div>';
-    mcBindQualityActions();
+    const action = status === 'listo' ? '' : '<div class="mc-qa-actions"><button type="button" class="mc-qa-action" data-status="listo">Marcar como listo</button></div>';
+    panel.innerHTML = `<div class="mc-qa-panel ok"><strong>Revisión</strong>Todo listo para imprimir.${action}</div>`;
     return;
   }
-  const items = [
-    ...validation.errors.map(t => `<li>${esc(t)}</li>`),
-    ...validation.warnings.map(t => `<li>${esc(t)}</li>`),
-    ...validation.missing.slice(0, 5).map(t => `<li>${esc(t)}</li>`)
-  ].join('');
-  const more = validation.missing.length > 5 ? `<li>... y ${validation.missing.length - 5} traducciones más</li>` : '';
-  const cls = validation.errors.length ? 'error' : 'warn';
-  const suggested = validation.missing.length ? '<button class="mc-qa-action" data-status="revisar">Marcar revisar</button>' : '';
-  panel.innerHTML = `<div class="mc-qa-panel ${cls}"><strong>Revisión antes de imprimir</strong><ul>${items}${more}</ul>${suggested ? `<div class="mc-qa-actions">${suggested}</div>` : ''}</div>`;
-  mcBindQualityActions();
+  const items = [...validation.errors, ...validation.warnings].map(t => `<li>${esc(t)}</li>`).join('');
+  const missing = validation.missing.length ? `<li><b>${validation.missing.length === 1 ? 'Falta 1 traducción' : `Faltan ${validation.missing.length} traducciones`}</b> (casillas en rojo o amarillo). Sin ellas no se genera el PDF.</li>` : '';
+  const translate = validation.missing.length
+    ? `<div class="mc-qa-actions"><button type="button" class="mc-qa-action" id="mc-qa-translate"${mcTranslating ? ' disabled' : ''}>${mcTranslating ? 'Traduciendo…' : '🔄 Traducir automáticamente'}</button></div>`
+    : '';
+  const cls = validation.errors.length || validation.missing.length ? 'error' : 'warn';
+  panel.innerHTML = `<div class="mc-qa-panel ${cls}"><strong>Antes de imprimir</strong><ul>${items}${missing}</ul>${translate}</div>`;
 }
 
-function mcBindQualityActions() {
-  document.querySelectorAll('.mc-qa-action[data-status]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const statusSelect = $('mc-status-select');
-      if (!statusSelect) return;
-      statusSelect.value = btn.dataset.status;
-      mcUpdatePreview();
+async function mcTranslateMissing() {
+  if (mcTranslating || !mcCurrentMenu) return;
+  const source = mcCurrentMenu.language || 'es';
+  const jobs = Array.from(document.querySelectorAll('#mc-sections-container .mc-dish-tr-input'))
+    .filter(input => !input.value.trim() || input.classList.contains('stale'))
+    .map(input => ({ input, name: input.closest('.mc-dish-row')?.querySelector('.mc-dish-name-input')?.value.trim() }))
+    .filter(job => job.name);
+  if (!jobs.length) return;
+  const menuId = mcCurrentId;
+  let failed = 0;
+  mcTranslating = true;
+  mcRenderQualityPanel(mcCurrentMenu);
+  toast(`Traduciendo ${jobs.length} platos…`, 'info');
+  for (const job of jobs) {
+    try {
+      const lang = job.input.dataset.lang;
+      const known = lang === 'ca' && source === 'es' ? library.find(d => (d.spanish || '').trim().toLowerCase() === job.name.toLowerCase())?.catalan : '';
+      const text = known || await mcTranslateOneDish(job.name, lang, source);
+      const nameNow = job.input.closest('.mc-dish-row')?.querySelector('.mc-dish-name-input')?.value.trim();
+      // Skip rows that were removed or renamed while the request was running.
+      if (mcCurrentId !== menuId || !job.input.isConnected || nameNow !== job.name) continue;
+      job.input.value = text;
+      job.input.dataset.src = job.name;
+      job.input.classList.remove('stale', 'missing');
+    } catch { failed++; }
+  }
+  mcTranslating = false;
+  if (mcCurrentId === menuId) mcFlushEditor();
+  toast(failed ? `${failed} platos sin traducir. Escríbelos a mano.` : 'Traducciones añadidas · revísalas antes de imprimir', failed ? 'error' : 'success');
+}
+
+// Fills the off-screen A4 template. The live preview and the PDF both use it.
+function mcFillPdfTemplate(m, langs, template, colorMode) {
+  const primaryLang = langs[0] || (m.language || 'es');
+  const isMarineroTemplate = template === 'marinero';
+  const tpl = $('mc-pdf-template');
+  tpl.className = `mcp-root ${colorMode === 'color' ? 'mcp-color' : 'mcp-bw'} mcp-template-${template}`;
+
+  // Header
+  $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
+  $('mcp-title').textContent = m.name || '';
+  const typeLabelsMap = {
+    es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
+    ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
+    en: { grupos:'For Groups', festivo:'Festive Menu', infantil:"Children's Menu", tapas:'Tapas', degustacion:'Tasting Menu', otro:'' }
+  };
+  const typeEl = $('mcp-type-label');
+  typeEl.textContent = isMarineroTemplate
+    ? (m.occasion || 'Entrante + Principal + Postre')
+    : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
+  typeEl.style.display = (isMarineroTemplate || (m.type && m.type !== 'otro')) ? 'block' : 'none';
+
+  const priceRow = $('mcp-price-row');
+  if (m.price) {
+    const priceText = parseFloat(m.price).toFixed(2);
+    $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
+    $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
+    priceRow.style.display = 'flex';
+  } else {
+    priceRow.style.display = 'none';
+  }
+  const notesEl = $('mcp-notes');
+  notesEl.textContent = m.notes || '';
+  notesEl.style.display = m.notes ? 'block' : 'none';
+
+  // Body sections
+  let bodyHtml = '';
+  for (let si = 0; si < (m.sections || []).length; si++) {
+    const sec = m.sections[si];
+    if (!sec.title && !(sec.dishes || []).some(d => d.name)) continue;
+    const sub = sec.subtitle || (MC_MODE_PRINT[primaryLang] || MC_MODE_PRINT.es)[sec.mode] || '';
+    bodyHtml += `<div class="mcp-section">
+      <div class="mcp-section-header">
+        <div class="mcp-section-title">${esc(sec.title || '')}</div>
+        <div class="mcp-section-rule"></div>
+        ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
+      </div>`;
+    for (const [di, d] of (sec.dishes || []).entries()) {
+      if (!d.name) continue;
+      const lineHtml = langs.map((displayLang, li) => {
+        const text = li === 0 ? d.name : mcLangDishName(m, displayLang, si, di);
+        if (!text) return '';
+        const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
+        return `<span class="${cls}">${esc(text)}</span>`;
+      }).join('');
+      const suppHtml = d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
+      bodyHtml += `<div class="mcp-dish-row">
+        <span class="mcp-bullet-dot">●</span>
+        <div class="mcp-dish-cell">${lineHtml}</div>
+        ${suppHtml}
+        <span class="mcp-bullet-dot">●</span>
+      </div>`;
+    }
+    bodyHtml += '</div>';
+    if (isMarineroTemplate && sec.subtitle) {
+      bodyHtml += `<div class="mcp-marinero-connector">${esc(sec.subtitle)}</div>`;
+    }
+  }
+  if (m.drinks) {
+    const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
+    bodyHtml += `<div class="mcp-drinks-box">
+      <div class="mcp-drinks-label">${isMarineroTemplate ? esc(m.drinks.split('\n')[0] || '') : (drinksLabelMap[primaryLang] || 'Bebidas incluidas')}</div>
+      <div class="mcp-drinks-text">${esc(isMarineroTemplate ? m.drinks.split('\n').slice(1).join('\n') : m.drinks)}</div>
+    </div>`;
+  }
+  $('mcp-body').innerHTML = bodyHtml;
+  $('mcp-body').style.transform = '';
+
+  // Footer note
+  $('mcp-footer-text').textContent = isMarineroTemplate
+    ? 'HORARIO DE MENÚ · 13:00 - 16:00'
+    : m.min_people
+    ? `Mínimo ${m.min_people} personas · Restaurante Sol`
+    : 'Restaurante Sol · Barcelona';
+}
+
+// Smart fill: spread spare height between dishes, or shrink the body when it overflows.
+function mcFitPdfBody(isMarineroTemplate) {
+  const bodyEl = $('mcp-body');
+  const bodyH  = bodyEl.offsetHeight;
+  const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
+  const allDishEls = Array.from(bodyEl.querySelectorAll('.mcp-dish-row'));
+  let scaled = 1;
+
+  if (isMarineroTemplate) {
+    const overflow = bodyEl.scrollHeight - bodyEl.offsetHeight;
+    if (overflow > 2) {
+      scaled = Math.max(bodyEl.offsetHeight / bodyEl.scrollHeight, 0.82);
+      bodyEl.style.transform = `scale(${scaled})`;
+      bodyEl.style.transformOrigin = 'top center';
+    }
+  } else if (bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
+    let occupiedH = 0;
+    allSecEls.forEach((sec, i) => {
+      occupiedH += sec.offsetHeight;
+      if (i < allSecEls.length - 1)
+        occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
     });
-  });
+    const drinksBox = bodyEl.querySelector('.mcp-drinks-box');
+    if (drinksBox)
+      occupiedH += (parseFloat(getComputedStyle(drinksBox).marginTop) || 0) + drinksBox.offsetHeight;
+
+    const surplus = bodyH - occupiedH;
+    if (surplus > 4) {
+      const extra = surplus / allDishEls.length;
+      allDishEls.forEach(el => {
+        const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
+        el.style.marginBottom = `${base + extra}px`;
+      });
+    } else if (surplus < -20) {
+      scaled = Math.max(bodyH / (bodyH - surplus), 0.65);
+      bodyEl.style.transform      = `scale(${scaled})`;
+      bodyEl.style.transformOrigin = 'top center';
+    }
+  }
+  return scaled;
+}
+
+function mcRenderLivePreview() {
+  const frame = $('mc-live-preview');
+  if (!frame || !mcCurrentMenu) return;
+  const template = mcGetTemplate(mcCurrentMenu);
+  mcFillPdfTemplate(mcCurrentMenu, mcGetDisplayLangs(mcCurrentMenu), template, 'color');
+  const scaled = mcFitPdfBody(template === 'marinero');
+  const tpl = $('mc-pdf-template');
+  const page = tpl.querySelector('.mcp-page').cloneNode(true);
+  // The clone must not steal the template's element ids.
+  page.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  const root = document.createElement('div');
+  root.className = tpl.className + ' mc-a4-page';
+  root.appendChild(page);
+  frame.replaceChildren(root);
+  mcScalePreview();
+  const note = scaled < 0.9 ? `El contenido no cabe en una página: se reduce al ${Math.round(scaled * 100)}%.` : '';
+  frame.dataset.note = note;
+  frame.classList.toggle('shrunk', !!note);
+}
+
+function mcScalePreview() {
+  const frame = $('mc-live-preview');
+  const page = frame?.firstElementChild;
+  if (!page) return;
+  const scale = (frame.clientWidth || 360) / 794;
+  page.style.transform = `scale(${scale})`;
+  frame.style.height = `${Math.round(1123 * scale)}px`;
+}
+
+function mcOpenPreviewZoom() {
+  mcFlushEditor();
+  const source = $('mc-live-preview')?.firstElementChild;
+  if (!source) return;
+  const page = source.cloneNode(true);
+  const scale = Math.min((window.innerWidth - 32) / 794, (window.innerHeight - 32) / 1123, 1.25);
+  page.style.transform = `scale(${scale})`;
+  const overlay = document.createElement('div');
+  overlay.className = 'mc-zoom-overlay';
+  overlay.title = 'Pulsa para cerrar';
+  const box = document.createElement('div');
+  box.className = 'mc-zoom-box';
+  box.style.width = `${794 * scale}px`;
+  box.style.height = `${1123 * scale}px`;
+  box.appendChild(page);
+  overlay.appendChild(box);
+  const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  overlay.addEventListener('click', close);
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(overlay);
 }
 
 async function mcGeneratePDF(colorMode) {
   if (!mcCurrentMenu) return;
   if (!window.html2canvas || !window.jspdf) { toast('Error: librerías PDF no cargadas', 'error'); return; }
-  const m = { ...mcCurrentMenu, ...mcGatherFromEditor() };
-  const langs = mcActiveDisplayLangs();
-  const primaryLang = langs[0] || (m.language || 'es');
-  const template = $('mc-template-select')?.value || mcGetTemplate(m);
-  const isMarineroTemplate = template === 'marinero';
+  mcPersistCurrent();
+  const m = MenuWorkflows.clone(mcCurrentMenu);
+  const langs = mcGetDisplayLangs(m);
+  const template = mcGetTemplate(m);
   const validation = mcValidateMenu(m, langs);
-  if (!mcConfirmValidation('imprimir/generar PDF', validation)) return;
+  if (validation.errors.length) { toast(validation.errors.join(' '), 'error'); return; }
+  if (validation.missing.length) {
+    mcRenderQualityPanel(m);
+    toast(`${validation.missing.length === 1 ? 'Falta 1 traducción' : `Faltan ${validation.missing.length} traducciones`}. Complétalas (casillas en rojo o amarillo) o desmarca el idioma.`, 'error');
+    return;
+  }
   try {
     toast('Generando PDF…', 'info');
-    const tpl = $('mc-pdf-template');
-    const pageEl = tpl.querySelector('.mcp-page');
-    tpl.className = `${colorMode === 'color' ? 'mcp-color' : 'mcp-bw'} mcp-template-${template}`;
-
-    // Header
-    $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
-    $('mcp-title').textContent = m.name || '';
-    const typeLabelsMap = {
-      es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
-      ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
-      en: { grupos:'For Groups', festivo:'Festive Menu', infantil:"Children's Menu", tapas:'Tapas', degustacion:'Tasting Menu', otro:'' }
-    };
-    const typeEl = $('mcp-type-label');
-    typeEl.textContent = isMarineroTemplate
-      ? (m.occasion || 'Entrante + Principal + Postre')
-      : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
-    typeEl.style.display = (isMarineroTemplate || (m.type && m.type !== 'otro')) ? 'block' : 'none';
-
-    const priceRow = $('mcp-price-row');
-    if (m.price) {
-      const priceText = parseFloat(m.price).toFixed(2);
-      $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
-      $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
-      priceRow.style.display = 'flex';
-    } else {
-      priceRow.style.display = 'none';
-    }
-    const notesEl = $('mcp-notes');
-    notesEl.textContent = m.notes || '';
-    notesEl.style.display = m.notes ? 'block' : 'none';
-
-    // Body sections
-    let bodyHtml = '';
-    const modeLabels = {
-      es: { shared:'(para compartir)', choose_one:'(a elegir uno)', choose_many:'(a elegir varios)', fixed:'' },
-      ca: { shared:'(per compartir)', choose_one:'(a triar un)', choose_many:'(a triar diversos)', fixed:'' },
-      en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
-    };
-
-    for (let si = 0; si < (m.sections || []).length; si++) {
-      const sec = m.sections[si];
-      const secTitle = mcLangSectionText(m, primaryLang, si, 'title', sec.title) || sec.title;
-      const secSubBase = mcLangSectionText(m, primaryLang, si, 'subtitle', sec.subtitle) || sec.subtitle;
-      const sub = secSubBase || (modeLabels[primaryLang] || modeLabels.es)[sec.mode] || '';
-      bodyHtml += `<div class="mcp-section">
-        <div class="mcp-section-header">
-          <div class="mcp-section-title">${esc(secTitle)}</div>
-          <div class="mcp-section-rule"></div>
-          ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
-        </div>`;
-      for (const [di, d] of (sec.dishes || []).entries()) {
-        if (!d.name) continue;
-        const lineHtml = langs.map((displayLang, li) => {
-          const text = mcLangDishName(m, displayLang, si, di, d.name) || (li === 0 ? '[Traducción pendiente]' : '');
-          if (!text) return '';
-          const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
-          return `<span class="${cls}">${esc(text)}</span>`;
-        }).join('');
-        const suppHtml = d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
-        bodyHtml += `<div class="mcp-dish-row">
-          <span class="mcp-bullet-dot">●</span>
-          <div class="mcp-dish-cell">${lineHtml}</div>
-          ${suppHtml}
-          <span class="mcp-bullet-dot">●</span>
-        </div>`;
-      }
-      bodyHtml += '</div>';
-      if (isMarineroTemplate && secSubBase) {
-        bodyHtml += `<div class="mcp-marinero-connector">${esc(secSubBase)}</div>`;
-      }
-    }
-    if (m.drinks) {
-      const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
-      bodyHtml += `<div class="mcp-drinks-box">
-        <div class="mcp-drinks-label">${isMarineroTemplate ? esc(m.drinks.split('\n')[0] || '') : (drinksLabelMap[primaryLang] || 'Bebidas incluidas')}</div>
-        <div class="mcp-drinks-text">${esc(isMarineroTemplate ? m.drinks.split('\n').slice(1).join('\n') : m.drinks)}</div>
-      </div>`;
-    }
-    $('mcp-body').innerHTML = bodyHtml;
-
-    // Footer note
-    $('mcp-footer-text').textContent = isMarineroTemplate
-      ? 'HORARIO DE MENÚ · 13:00 - 16:00'
-      : m.min_people
-      ? `Mínimo ${m.min_people} personas · Restaurante Sol`
-      : 'Restaurante Sol · Barcelona';
-
+    const pageEl = $('mc-pdf-template').querySelector('.mcp-page');
+    mcFillPdfTemplate(m, langs, template, colorMode);
     await document.fonts.ready;
-
-    // Reset any previous smart-fill spacing
-    Array.from($('mcp-body').querySelectorAll('.mcp-dish-row')).forEach(el => el.style.marginBottom = '');
-    Array.from($('mcp-body').querySelectorAll('.mcp-section')).forEach(el => el.style.marginBottom = '');
-    $('mcp-body').style.transform = '';
-
     await new Promise(r => setTimeout(r, 90));
-
-    // === Smart fill: distribute surplus space to fill the page ===
-    const bodyEl = $('mcp-body');
-    const bodyH  = bodyEl.offsetHeight;
-    const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
-    const allDishEls = Array.from(bodyEl.querySelectorAll('.mcp-dish-row'));
-
-    if (isMarineroTemplate) {
-      const overflow = bodyEl.scrollHeight - bodyEl.offsetHeight;
-      if (overflow > 2) {
-        const scaleRatio = bodyEl.offsetHeight / bodyEl.scrollHeight;
-        bodyEl.style.transform = `scale(${Math.max(scaleRatio, 0.82)})`;
-        bodyEl.style.transformOrigin = 'top center';
-      }
-    } else if (bodyH > 80 && allDishEls.length > 0 && allSecEls.length > 0) {
-      let occupiedH = 0;
-      allSecEls.forEach((sec, i) => {
-        occupiedH += sec.offsetHeight;
-        if (i < allSecEls.length - 1)
-          occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
-      });
-      const drinksBox = bodyEl.querySelector('.mcp-drinks-box');
-      if (drinksBox)
-        occupiedH += (parseFloat(getComputedStyle(drinksBox).marginTop) || 0) + drinksBox.offsetHeight;
-
-      const surplus = bodyH - occupiedH;
-      if (surplus > 4) {
-        const extra = surplus / allDishEls.length;
-        allDishEls.forEach(el => {
-          const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
-          el.style.marginBottom = `${base + extra}px`;
-        });
-      } else if (surplus < -20) {
-        const scaleRatio = bodyH / (bodyH - surplus);
-        bodyEl.style.transform      = `scale(${Math.max(scaleRatio, 0.65)})`;
-        bodyEl.style.transformOrigin = 'top center';
-      }
-    }
-
+    mcFitPdfBody(template === 'marinero');
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const scale = colorMode === 'bw' ? 3 : 2.5;
@@ -5797,16 +5581,20 @@ async function mcGeneratePDF(colorMode) {
   } catch (err) {
     console.error('mcGeneratePDF:', err);
     toast('Error al generar PDF: ' + err.message, 'error');
+  } finally {
+    mcRenderLivePreview();
   }
 }
 
+// Creates a separate menu row in another language (e.g. an English-only menu for tourists).
 async function mcTranslateAll(targetLang) {
   if (!mcCurrentMenu) return;
   if (mcCurrentMenu._isNew) { toast('Guarda el menú primero antes de crear una traducción', 'info'); return; }
 
   if (!mcPersistCurrent()) return;
-  const sourceMenu = JSON.parse(JSON.stringify(mcCurrentMenu));
+  const sourceMenu = MenuWorkflows.clone(mcCurrentMenu);
   const sourceOwner = cacheOwner;
+  const sourceLang = sourceMenu.language || 'es';
   const langName = targetLang === 'ca' ? 'catalán' : 'inglés';
   const parentId = mcCurrentMenu.parent_id || mcCurrentMenu.id;
   const existing = [...mcMenus, ...Object.values(mcDrafts)].find(m => (m.id === parentId || m.parent_id === parentId) && m.language === targetLang && m.id !== mcCurrentMenu.id);
@@ -5819,8 +5607,7 @@ async function mcTranslateAll(targetLang) {
   toast(`Creando versión en ${langName}…`, 'info');
 
   try {
-    const sections = sourceMenu.sections;
-    const tr = async (text) => text ? mcTranslateOneDish(text, targetLang, sourceMenu.language || 'es') : text;
+    const tr = async (text) => text ? mcTranslateOneDish(text, targetLang, sourceLang) : text;
 
     const translatedName       = await tr(sourceMenu.name);
     const translatedPriceLabel = await tr(sourceMenu.price_label);
@@ -5829,17 +5616,19 @@ async function mcTranslateAll(targetLang) {
 
     const translatedSections = [];
     let done = 0;
-    for (const sec of sections) {
+    for (const [si, sec] of sourceMenu.sections.entries()) {
       const tTitle    = await tr(sec.title);
       const tSubtitle = await tr(sec.subtitle);
       const tDishes   = [];
-      for (const d of sec.dishes) {
+      for (const [di, d] of sec.dishes.entries()) {
         if (!d.name) continue;
-        tDishes.push({ ...d, name: await tr(d.name), name_ca: null, name_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceMenu.language || 'es', name: d.name } });
+        // Reuse translations already written in the editor.
+        const name = mcLangDishName(sourceMenu, targetLang, si, di) || await tr(d.name);
+        tDishes.push({ ...d, name, name_ca: null, name_en: null, translations: {}, language_links: {}, translation_changed: [], translation_source: { language: sourceLang, name: d.name } });
         done++;
         if (done % 3 === 0) toast(`Traduciendo… ${done} elementos`, 'info');
       }
-      translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceMenu.language || 'es', title: sec.title, subtitle: sec.subtitle }, dishes: tDishes });
+      translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceLang, title: sec.title, subtitle: sec.subtitle }, dishes: tDishes });
     }
 
     const newMenu = {
@@ -5850,7 +5639,7 @@ async function mcTranslateAll(targetLang) {
       sections: translatedSections, drinks: translatedDrinks,
       language: targetLang, parent_id: parentId,
       version: sourceMenu.version || 1,
-      tags: [...(sourceMenu.tags || [])],
+      tags: (sourceMenu.tags || []).filter(t => !String(t).startsWith('langs:')),
       created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
       _isNew: true
     };
@@ -5859,11 +5648,9 @@ async function mcTranslateAll(targetLang) {
     if (!mcPersistCurrent()) return;
     mcCurrentMenu = newMenu;
     mcCurrentId = newMenu.id;
-    if (caBtn) caBtn.disabled = false;
-    if (enBtn) enBtn.disabled = false;
     mcRenderEditor();
     mcRenderLibrary();
-    toast(`Borrador en ${langName} creado · revísalo y pulsa Guardar`, 'info');
+    toast(`Copia en ${langName} creada · revísala y pulsa Guardar`, 'info');
   } catch {
     toast('Traducción incompleta. No se ha creado ninguna versión; el menú original se conserva.', 'error');
   } finally {
@@ -5876,7 +5663,6 @@ async function mcTranslateOneDish(text, targetLang, sourceLang = 'es') {
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
   if (geminiKey) {
     const langName = targetLang === 'ca' ? 'Catalan' : 'English';
-    const langCode = targetLang;
     try {
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent?key=${geminiKey}`,
@@ -5911,8 +5697,87 @@ async function mcTranslateOneDish(text, targetLang, sourceLang = 'es') {
   throw new Error('No se pudo traducir este texto');
 }
 
+function mcBindEditorEvents() {
+  const area = $('mc-editor-area');
+  area.addEventListener('click', e => {
+    const t = e.target.closest('button, .mc-a4-frame');
+    if (!t || !area.contains(t) || t.disabled) return;
+    const si = Number(t.dataset.si), di = Number(t.dataset.di);
+    t.closest('details.mc-menu')?.removeAttribute('open');
+    const has = cls => t.classList.contains(cls);
+    if (t.id === 'mc-save-btn') mcSaveMenu();
+    else if (t.id === 'mc-dup-btn') mcDuplicateMenu();
+    else if (t.id === 'mc-del-btn') mcDeleteMenu();
+    else if (t.id === 'mc-discard-draft') mcDiscardDraft();
+    else if (t.id === 'mc-translate-ca-btn') mcTranslateAll('ca');
+    else if (t.id === 'mc-translate-en-btn') mcTranslateAll('en');
+    else if (t.id === 'mc-pdf-color-btn') mcGeneratePDF('color');
+    else if (t.id === 'mc-pdf-bw-btn') mcGeneratePDF('bw');
+    else if (t.id === 'mc-preview-zoom' || has('mc-a4-frame')) mcOpenPreviewZoom();
+    else if (t.id === 'mc-jump-preview') $('mc-output-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else if (t.id === 'mc-qa-translate') mcTranslateMissing();
+    else if (t.id === 'mc-add-section-btn') mcSectionAction('add-section');
+    else if (t.id === 'mc-back-to-list') {
+      if (!mcPersistCurrent()) return;
+      document.querySelector('.mc-layout')?.classList.remove('mc-mobile-editing');
+      $('mc-library-list')?.scrollIntoView({ block: 'start' });
+    }
+    else if (has('mc-version-sibling')) mcSelectMenuById(t.dataset.id);
+    else if (has('mc-qa-action') && t.dataset.status) { $('mc-status-select').value = t.dataset.status; mcFlushEditor(); }
+    else if (has('mc-section-toggle')) mcSectionAction('toggle', si);
+    else if (has('mc-section-up')) mcSectionAction('up', si);
+    else if (has('mc-section-down')) mcSectionAction('down', si);
+    else if (has('mc-section-duplicate')) mcSectionAction('duplicate', si);
+    else if (has('mc-section-remove')) mcSectionAction('remove', si);
+    else if (has('mc-add-dish-btn')) mcSectionAction('add-dish', si);
+    else if (has('mc-dish-remove')) mcSectionAction('remove-dish', si, di);
+    else if (has('mc-paste-add')) mcSectionAction('paste', si);
+    else if (has('mc-section-paste') || has('mc-paste-cancel')) {
+      const panel = area.querySelector(`.mc-paste-panel[data-si="${si}"]`);
+      if (!panel) return;
+      panel.hidden = has('mc-paste-cancel') || !panel.hidden;
+      if (!panel.hidden) panel.querySelector('textarea')?.focus();
+    }
+  });
+  area.addEventListener('input', e => {
+    const el = e.target;
+    if (el.closest('.mc-paste-panel')) return;
+    if (el.classList.contains('mc-dish-tr-input')) {
+      el.dataset.src = el.closest('.mc-dish-row')?.querySelector('.mc-dish-name-input')?.value.trim() || '';
+      el.classList.remove('stale', 'missing');
+    }
+    if (el.classList.contains('mc-dish-name-input')) mcMarkStaleTranslations(el.closest('.mc-dish-row'));
+    mcScheduleFlush();
+  });
+  area.addEventListener('change', e => {
+    const el = e.target;
+    if (el.closest('.mc-paste-panel')) return;
+    if (el.classList.contains('mc-dish-name-input')) mcFillFromLibrary(el);
+    if (el.id === 'mc-type-select') mcApplyPresetIfUntouched(el.value);
+    if (el.classList.contains('mc-lang-check')) { mcPersistCurrent(); mcRefreshSections(); }
+    if (el.classList.contains('mc-section-mode-select')) {
+      const sub = el.closest('.mc-section-block')?.querySelector('.mc-section-subtitle-input');
+      const def = MC_MODE_PRINT[mcCurrentMenu?.language || 'es']?.[el.value] || '';
+      if (sub) sub.placeholder = def ? `Subtítulo opcional · si lo dejas vacío se imprime “${def}”` : 'Subtítulo opcional';
+    }
+    mcFlushEditor();
+  });
+  // Enter in a dish name adds the next dish right below it.
+  area.addEventListener('keydown', e => {
+    const el = e.target;
+    if (e.key !== 'Enter' || e.isComposing || !el.classList?.contains('mc-dish-name-input')) return;
+    e.preventDefault();
+    mcFillFromLibrary(el);
+    mcSectionAction('insert-dish', Number(el.dataset.si), Number(el.dataset.di));
+  });
+}
+
 function mcInitTabs() {
-  window.addEventListener('beforeunload', e => { if (mcDraftError) { e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('beforeunload', e => {
+    if (mcEditTimer) mcFlushEditor();
+    if (mcDraftError) { e.preventDefault(); e.returnValue = ''; }
+  });
+  window.addEventListener('pagehide', () => { if (mcEditTimer) mcFlushEditor(); });
   document.getElementById('tabDia').addEventListener('click', () => {
     if (!mcPersistCurrent()) return;
     document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
@@ -5930,25 +5795,21 @@ function mcInitTabs() {
   });
   $('mc-new-btn').addEventListener('click', () => {
     if (!mcPersistCurrent()) return;
-    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: [], drinks: '', language: 'es', parent_id: null, version: 1, tags: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
+    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
     mcCurrentId = mcCurrentMenu.id;
     mcRenderLibrary(); mcRenderEditor();
+    $('mc-name-input')?.focus();
   });
+  mcBindEditorEvents();
+  // Close open ⋯ menus when clicking elsewhere.
+  document.addEventListener('click', e => {
+    document.querySelectorAll('details.mc-menu[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });
+  });
+  let resizeTimer = null;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(mcScalePreview, 120); });
   $('mc-search').addEventListener('input', () => mcRenderLibrary());
-  $('mc-price-filter').addEventListener('change', e => {
-    mcFilterPrice = e.target.value;
-    mcRenderLibrary();
-  });
-  $('mc-lang-filter').addEventListener('change', e => {
-    mcFilterLang = e.target.value;
-    mcRenderLibrary();
-  });
-  $('mc-status-filter').addEventListener('change', e => {
-    mcFilterStatus = e.target.value;
-    mcRenderLibrary();
-  });
-  $('mc-tag-filter').addEventListener('input', e => {
-    mcFilterTag = e.target.value.trim().toLowerCase();
+  $('mc-show-archived').addEventListener('change', e => {
+    mcShowArchived = e.target.checked;
     mcRenderLibrary();
   });
   $('mc-type-filters').addEventListener('click', e => {

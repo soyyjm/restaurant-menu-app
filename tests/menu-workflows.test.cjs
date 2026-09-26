@@ -39,6 +39,13 @@ test('editing a legacy item invalidates old inline and sibling translations',()=
  m.sections[0].dishes[0]=W.editTranslatedItem(m.sections[0].dishes[0],{name:'Nueva sopa'});
  assert.equal(W.translatedField(m,[t],'ca',0,0,'name'),'');
 });
+test('inline translation wins over siblings and goes stale when source text changes',()=>{
+ const m=base(),t=ca();m.sections[0].dishes[0].translations={ca:{name:{text:'Sopa inline',source:'Sopa'}}};
+ assert.equal(W.translatedField(m,[t],'ca',0,0,'name'),'Sopa inline');
+ m.sections[0].dishes[0]=W.editTranslatedItem(m.sections[0].dishes[0],{name:'Sopa de pollo'});
+ assert.equal(W.translatedField(m,[t],'ca',0,0,'name'),'');
+ assert.equal(W.translatedField(m,[t],'en',0,0,'name'),'');
+});
 test('batch parser trims, supports bilingual lines and removes duplicates',()=>{
  const rows=W.parseBatch(' Sopa | Sopa CA\n\nSOPA | otra\r\nPollo\tPollastre','segundo');
  assert.equal(rows.length,2);assert.equal(rows[0].spanish,'Sopa');assert.equal(rows[1].catalan,'Pollastre');
