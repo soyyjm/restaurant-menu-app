@@ -124,6 +124,23 @@
       drafts: (drafts || []).filter(valid).map(pick)
     };
   }
+  // "Pollo al horno – 8.50€" -> { name: 'Pollo al horno', price: '8.50' }. Only a single trailing price is moved.
+  function splitDishPrice(name) {
+    const text = String(name || '').replace(/[​ ]/g, ' ').trim();
+    const matches = [...text.matchAll(/(\d+(?:[.,]\d{1,2})?)\s*€|€\s*(\d+(?:[.,]\d{1,2})?)/g)];
+    if (matches.length !== 1) return null;
+    const m = matches[0];
+    if (text.slice(m.index + m[0].length).trim()) return null;
+    const clean = text.slice(0, m.index).replace(/[\s–—:-]+$/, '').trim();
+    return clean ? { name: clean, price: (m[1] || m[2]).replace(',', '.') } : null;
+  }
+  // "8.5" -> "8.50 €", "19.95 / 29.95" -> "19.95 € / 29.95 €"; anything else (e.g. "S/M") is kept as written.
+  function formatDishPrice(raw) {
+    const text = String(raw || '').trim();
+    const parts = text.split('/').map(p => p.replace(/€/g, '').trim());
+    if (!text || !parts.every(p => /^\d+(?:[.,]\d{1,2})?$/.test(p))) return text;
+    return parts.map(p => `${Number(p.replace(',', '.')).toFixed(2)} €`).join(' / ');
+  }
   function parseClosedBackup(input) {
     const fail = () => { throw new Error('Copia no válida: no es una copia de menús cerrados o está dañada.'); };
     const uuid = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -205,7 +222,7 @@
     }
     return {library,history,metadata,favorites:[...favorites],packets,addedDishes,skippedDishes,addedMenus,skippedMenus};
   }
-  const api = { dailyBackup, closedBackup, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
+  const api = { dailyBackup, closedBackup, splitDishPrice, formatDishPrice, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MenuWorkflows = api;
 })(typeof globalThis === 'undefined' ? this : globalThis);

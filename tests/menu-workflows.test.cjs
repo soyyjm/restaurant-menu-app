@@ -126,3 +126,14 @@ test('closed restore rejects wrong format, bad ids, duplicates and malformed sec
  const ok=W.parseClosedBackup(file([cm(U(1),{owner_id:'someone',_isNew:true})]));
  assert.equal(ok.menus[0].owner_id,undefined);assert.equal(ok.menus[0]._isNew,undefined);
 });
+test('dish price is split from a single trailing price and formatted for the carta',()=>{
+ assert.deepEqual(W.splitDishPrice('Brocheta de pollo con salsa de teriyaki – 8.50€​'),{name:'Brocheta de pollo con salsa de teriyaki',price:'8.50'});
+ assert.deepEqual(W.splitDishPrice('Salmon tartar €12,95'),{name:'Salmon tartar',price:'12.95'});
+ assert.equal(W.splitDishPrice('Chuletón 350g – 19.95€ / 500g – 29.95€'),null);
+ assert.equal(W.splitDishPrice('Menú de 25€ para grupos'),null);
+ assert.equal(W.splitDishPrice('Croquetas caseras'),null);
+ assert.equal(W.formatDishPrice('8.5'),'8.50 €');
+ assert.equal(W.formatDishPrice('19,95 / 29.95 €'),'19.95 € / 29.95 €');
+ assert.equal(W.formatDishPrice('S/M'),'S/M');
+ assert.equal(W.formatDishPrice(''),'');
+});

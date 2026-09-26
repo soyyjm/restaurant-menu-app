@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menú del Día — Restaurante Sol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&family=Montserrat:wght@500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -1498,6 +1498,7 @@ kbd {
 .mc-dish-tr-input { flex: 1; font-style: italic; color: var(--ink-soft); }
 .mc-dish-tr-input.missing { border-color: rgba(122,46,59,0.55); background: var(--wine-light); }
 .mc-dish-tr-input.stale { border-color: #d9b44a; background: #fff8e0; }
+.mc-dish-price-input { width: 104px !important; flex: 0 0 104px !important; }
 .mc-dish-supp-input { width: 72px; flex: 0 0 72px; font-size: 12px; text-align: center; color: var(--ink-soft); }
 .mc-dish-name-input:focus, .mc-dish-tr-input:focus, .mc-dish-supp-input:focus { border-color: var(--terracotta); background: white; }
 .mc-dish-remove {
@@ -1868,6 +1869,57 @@ kbd {
 .mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
 .mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+/* ── Carta template (price per dish) ── */
+.mcp-template-carta .mcp-page { padding: 62px 96px 40px; }
+.mcp-root.mcp-template-carta .mcp-page { background: #ffffff; }
+.mcp-template-carta .mcp-corner,
+.mcp-template-carta .mcp-ornament-row,
+.mcp-template-carta .mcp-restaurant { display: none; }
+.mcp-root.mcp-template-carta .mcp-header-box { border: none; padding: 0; margin-bottom: 38px; }
+.mcp-root.mcp-template-carta .mcp-title {
+  font-family: 'Great Vibes', cursive; font-weight: 400; font-size: 62px; line-height: 1.15;
+  text-transform: none; letter-spacing: 0; color: #2b2b2b; margin-bottom: 0;
+}
+.mcp-root.mcp-template-carta .mcp-type-label {
+  font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 14.5px; letter-spacing: 0.01em;
+  text-transform: none; color: #8b6a44; margin: -2px 0 0;
+}
+.mcp-root.mcp-bw.mcp-template-carta .mcp-type-label { color: #555; }
+.mcp-root.mcp-template-carta .mcp-price-row { margin-top: 10px; }
+.mcp-root.mcp-template-carta .mcp-section { margin-bottom: 14px; }
+.mcp-root.mcp-template-carta .mcp-section-header { text-align: left; margin: 0 0 14px; }
+.mcp-root.mcp-template-carta .mcp-section-title {
+  font-family: 'Montserrat', sans-serif; font-weight: 500; font-size: 12px; letter-spacing: 0.16em; color: #8b6a44;
+}
+.mcp-root.mcp-template-carta .mcp-section-mode { font-family: 'Source Sans 3', sans-serif; font-size: 11.5px; color: #7b8494; }
+.mcp-root.mcp-template-carta .mcp-dish-row { display: block; padding: 0; margin-bottom: 22px; text-align: left; }
+.mcp-carta-line { display: flex; align-items: baseline; }
+.mcp-root.mcp-template-carta .mcp-dish.mcp-carta-name {
+  display: inline; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 18px;
+  line-height: 1.3; color: #2b2b2b; min-width: 0;
+}
+.mcp-root.mcp-template-carta .mcp-carta-detail {
+  font-family: 'Playfair Display', Georgia, serif; font-size: 13.5px; color: #555; margin-left: 5px; white-space: nowrap;
+}
+.mcp-carta-leader {
+  flex: 1 1 24px; min-width: 24px; margin: 0 12px; border-bottom: 1.5px dotted #6f7684; transform: translateY(-4px);
+}
+.mcp-root.mcp-template-carta .mcp-carta-price {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 18px; color: #2b2b2b; white-space: nowrap;
+}
+.mcp-root.mcp-template-carta .mcp-dish-ca,
+.mcp-root.mcp-template-carta .mcp-dish-en {
+  display: block; font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-style: normal;
+  font-size: 14.5px; line-height: 1.45;
+}
+.mcp-root.mcp-template-carta .mcp-dish-ca { color: #4b5260; margin-top: 9px; }
+.mcp-root.mcp-template-carta .mcp-dish-en { color: #7b8494; margin-top: 1px; }
+.mcp-root.mcp-template-carta .mcp-drinks-box { border-color: #e3e3e3; text-align: left; }
+.mcp-root.mcp-template-carta .mcp-footer-rule { display: none; }
+.mcp-root.mcp-template-carta .mcp-footer-text {
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif; font-size: 11.5px; letter-spacing: 0.01em;
+  text-transform: none; color: #9aa1ad; white-space: pre-line; line-height: 2.1;
+}
 /* ── Per-menu layout tweaks (mcGetLayout) ── */
 .mcp-root.mcp-hide-type .mcp-type-label,
 .mcp-root.mcp-hide-price .mcp-price-row { display: none !important; }
@@ -4621,7 +4673,8 @@ const MC_TEMPLATES = {
   fiesta: 'Fiesta elegante',
   tapas: 'Tapas informal',
   minimal: 'B&N minimal',
-  marinero: 'Marinero premium'
+  marinero: 'Marinero premium',
+  carta: 'Carta · precio por plato'
 };
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
@@ -4869,8 +4922,13 @@ function mcValidateMenu(menu, langs = mcGetDisplayLangs(menu)) {
 
   if (!menu.name || !menu.name.trim()) errors.push('Falta el nombre del menú.');
   if (!sections.some(sec => (sec.dishes || []).some(d => d.name))) errors.push('El menú no tiene platos.');
-  if (!menu.price) warnings.push('No tiene precio.');
-  if (!menu.drinks || !menu.drinks.trim()) warnings.push('No indica bebidas incluidas.');
+  if (mcGetTemplate(menu) === 'carta') {
+    const unpriced = sections.reduce((n, sec) => n + (sec.dishes || []).filter(d => d.name && !String(d.price || '').trim()).length, 0);
+    if (unpriced) warnings.push(`${unpriced} ${unpriced === 1 ? 'plato no tiene' : 'platos no tienen'} precio.`);
+  } else {
+    if (!menu.price) warnings.push('No tiene precio.');
+    if (!menu.drinks || !menu.drinks.trim()) warnings.push('No indica bebidas incluidas.');
+  }
   if (!menu.min_people && menu.type === 'grupos') warnings.push('Menú de grupos sin mínimo de personas.');
 
   langs.filter(lang => lang !== source && MC_LANG_LABELS[lang]).forEach(lang => {
@@ -5116,7 +5174,7 @@ function mcRenderEditor() {
           <input class="mc-meta-input mc-people-input" id="mc-min-people-input" type="number" min="1" inputmode="numeric" value="${m.min_people||''}"></label>
       </div>
       ${vFamily}
-      <label class="mc-field-label" for="mc-notes-input">Condiciones <span class="mc-label-hint">· se imprimen bajo el precio</span></label>
+      <label class="mc-field-label" for="mc-notes-input">Condiciones <span class="mc-label-hint">· se imprimen bajo el precio (en Carta, como pie de página)</span></label>
       <textarea class="mc-notes-input" id="mc-notes-input" rows="2" placeholder="Ej: Disponible para grupos a partir de 10 personas">${esc(m.notes||'')}</textarea>
       <details class="mc-extra-options">
         <summary>Más opciones <span class="mc-label-hint">· estado, texto del precio, subtítulo, etiquetas</span></summary>
@@ -5127,7 +5185,7 @@ function mcRenderEditor() {
             </select></label>
           <label class="mc-meta-field">Texto junto al precio
             <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label||'por persona (IVA incluido)')}"></label>
-          <label class="mc-meta-field">Subtítulo (solo plantilla Marinero)
+          <label class="mc-meta-field">Subtítulo (plantillas Marinero y Carta)
             <input class="mc-meta-input" id="mc-occasion-input" value="${esc(m.occasion||'')}" placeholder="Entrante + Principal + Postre"></label>
           <label class="mc-meta-field">Etiquetas internas
             <input class="mc-meta-input" id="mc-tags-input" value="${esc(selectedTags)}" placeholder="navidad, empresa, 2026"></label>
@@ -5244,6 +5302,10 @@ function mcRenderSection(menu, sec, si, count, extraLangs) {
 
 function mcRenderDish(menu, d, si, di, extraLangs) {
   const suppVal = d.supplement ? `+${d.supplement}€` : '';
+  // The carta template prices each dish; the others use an optional supplement.
+  const priceCell = mcGetTemplate(menu) === 'carta'
+    ? `<input class="mc-dish-supp-input mc-dish-price-input" value="${esc(d.price || '')}" placeholder="Precio €" data-si="${si}" data-di="${di}" title="Precio del plato (ej: 8.50 o 19.95 / 29.95)" aria-label="Precio">`
+    : `<input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl. €" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50)" aria-label="Suplemento">`;
   const listAttr = (menu.language || 'es') === 'es' ? ' list="mc-dish-suggestions"' : '';
   const translations = extraLangs.map(lang => {
     const current = d.name ? mcLangDishName(menu, lang, si, di) : '';
@@ -5257,7 +5319,7 @@ function mcRenderDish(menu, d, si, di, extraLangs) {
   return `<div class="mc-dish-row${extraLangs.length ? ' has-tr' : ''}" data-si="${si}" data-di="${di}">
     <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato" data-si="${si}" data-di="${di}"${listAttr} lang="${menu.language || 'es'}" aria-label="Nombre del plato">
     ${translations}
-    <input class="mc-dish-supp-input" value="${suppVal}" placeholder="+supl. €" data-si="${si}" data-di="${di}" title="Suplemento opcional (ej: +4.50)" aria-label="Suplemento">
+    ${priceCell}
     <button type="button" class="mc-dish-remove" data-si="${si}" data-di="${di}" title="Quitar plato" aria-label="Quitar plato">✕</button>
   </div>`;
 }
@@ -5278,7 +5340,9 @@ function mcGatherSections() {
     const prevSection = mcCurrentMenu.sections?.[si] || {};
     const dishes = Array.from(block.querySelectorAll('.mc-dish-row')).map((row, di) => {
       const name    = row.querySelector('.mc-dish-name-input')?.value.trim() || '';
-      const suppRaw = (row.querySelector('.mc-dish-supp-input')?.value || '').replace(/^\+/, '').replace('€', '').trim();
+      const suppInput = row.querySelector('.mc-dish-supp-input:not(.mc-dish-price-input)');
+      const priceInput = row.querySelector('.mc-dish-price-input');
+      const suppRaw = (suppInput?.value || '').replace(/^\+/, '').replace('€', '').trim();
       const prev = prevSection.dishes?.[di] || {};
       const translations = MenuWorkflows.clone(prev.translations || {});
       row.querySelectorAll('.mc-dish-tr-input').forEach(input => {
@@ -5288,7 +5352,9 @@ function mcGatherSections() {
         else delete entry.name;
         if (Object.keys(entry).length) translations[lang] = entry; else delete translations[lang];
       });
-      const fields = { id: prev.id || mcUUID(), name, supplement: parseFloat(suppRaw.replace(',', '.')) || null };
+      const fields = { id: prev.id || mcUUID(), name, supplement: suppInput ? (parseFloat(suppRaw.replace(',', '.')) || null) : (prev.supplement ?? null) };
+      const price = priceInput ? priceInput.value.trim() : (prev.price || '');
+      if (price || prev.price !== undefined) fields.price = price;
       if (Object.keys(translations).length || prev.translations) fields.translations = translations;
       return MenuWorkflows.editTranslatedItem(prev, fields);
     });
@@ -5357,6 +5423,7 @@ function mcSectionAction(action, si, di) {
     const pasted = text.split('\n').map(line => line.trim()).filter(Boolean).map(line => {
       const parts = line.split('|').map(p => p.trim());
       const suppRaw = (parts[1] || '').replace(/^\+/, '').replace('€', '').replace(',', '.').trim();
+      if (mcGetTemplate(mcCurrentMenu) === 'carta') return { id: mcUUID(), name: parts[0], supplement: null, price: (parts[1] || '').replace('€', '').trim() };
       return { id: mcUUID(), name: parts[0], supplement: parseFloat(suppRaw) || null };
     }).filter(d => d.name);
     if (!pasted.length) return;
@@ -5389,6 +5456,19 @@ function mcFillFromLibrary(nameInput) {
   ca.value = hit.catalan;
   ca.dataset.src = name;
   ca.classList.remove('stale', 'missing');
+}
+
+// Old menus wrote prices inside the dish name ("Pollo – 8.50€"); the carta needs them in their own field.
+function mcExtractDishPrices() {
+  let moved = 0;
+  (mcCurrentMenu.sections || []).forEach(sec => (sec.dishes || []).forEach((d, i) => {
+    if (!d.name || String(d.price || '').trim()) return;
+    const split = MenuWorkflows.splitDishPrice(d.name);
+    if (!split) return;
+    sec.dishes[i] = MenuWorkflows.editTranslatedItem(d, { name: split.name, price: split.price });
+    moved++;
+  }));
+  if (moved) toast(`${moved} precios pasados de los nombres a la columna Precio. Revísalos.`, 'info');
 }
 
 function mcApplyPresetIfUntouched(type) {
@@ -5502,6 +5582,7 @@ async function mcTranslateMissing() {
 function mcFillPdfTemplate(m, langs, template, colorMode) {
   const primaryLang = langs[0] || (m.language || 'es');
   const isMarineroTemplate = template === 'marinero';
+  const isCarta = template === 'carta';
   const tpl = $('mc-pdf-template');
   const layout = mcGetLayout(m);
   const accent = !isMarineroTemplate && MC_LAYOUT_ACCENTS[layout.accent][1];
@@ -5523,8 +5604,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   const typeEl = $('mcp-type-label');
   typeEl.textContent = isMarineroTemplate
     ? (m.occasion || 'Entrante + Principal + Postre')
+    : isCarta ? (m.occasion || '')
     : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
-  typeEl.style.display = (isMarineroTemplate || (m.type && m.type !== 'otro')) ? 'block' : 'none';
+  typeEl.style.display = (isMarineroTemplate || (isCarta ? !!m.occasion : (m.type && m.type !== 'otro'))) ? 'block' : 'none';
 
   const priceRow = $('mcp-price-row');
   if (m.price) {
@@ -5537,11 +5619,12 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   }
   const notesEl = $('mcp-notes');
   notesEl.textContent = m.notes || '';
-  notesEl.style.display = m.notes ? 'block' : 'none';
+  // The carta prints its conditions as the footer instead.
+  notesEl.style.display = m.notes && !isCarta ? 'block' : 'none';
 
   // Body sections
-  let bodyHtml = '';
-  for (let si = 0; si < (m.sections || []).length; si++) {
+  let bodyHtml = isCarta ? mcCartaBodyHtml(m, langs) : '';
+  for (let si = 0; !isCarta && si < (m.sections || []).length; si++) {
     const sec = m.sections[si];
     if (!sec.title && !(sec.dishes || []).some(d => d.name)) continue;
     const sub = sec.subtitle || (MC_MODE_PRINT[primaryLang] || MC_MODE_PRINT.es)[sec.mode] || '';
@@ -5591,9 +5674,40 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   // Footer note
   $('mcp-footer-text').textContent = layout.footer || (isMarineroTemplate
     ? 'HORARIO DE MENÚ · 13:00 - 16:00'
+    : isCarta ? (m.notes || 'IVA incluido / IVA inclòs / VAT included')
     : m.min_people
     ? `Mínimo ${m.min_people} personas · Restaurante Sol`
     : 'Restaurante Sol · Barcelona');
+}
+
+// Carta: one line per dish with dotted leader and its own price, translations underneath.
+// Section titles only appear when there is more than one section.
+function mcCartaBodyHtml(m, langs) {
+  const visible = (m.sections || []).map((sec, si) => ({ sec, si })).filter(({ sec }) => (sec.dishes || []).some(d => d.name));
+  return visible.map(({ sec, si }) => {
+    const header = visible.length > 1 || sec.subtitle
+      ? `<div class="mcp-section-header">${visible.length > 1 && sec.title ? `<div class="mcp-section-title" data-mc="section:${si}:title">${esc(sec.title)}</div>` : ''}${sec.subtitle ? `<div class="mcp-section-mode" data-mc="section:${si}:subtitle">${esc(sec.subtitle)}</div>` : ''}</div>`
+      : '';
+    const dishes = (sec.dishes || []).map((d, di) => {
+      if (!d.name) return '';
+      // A trailing "(350g / 500g)" is printed lighter, as in the printed carta.
+      const [, main, detail] = d.name.match(/^(.*?)\s*(\([^()]*\))\s*$/) || [null, d.name, ''];
+      const price = MenuWorkflows.formatDishPrice(d.price);
+      const translations = langs.slice(1).map(lang => {
+        const text = mcLangDishName(m, lang, si, di);
+        return text ? `<span class="${lang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en'}" data-mc="dish:${si}:${di}:${lang}">${esc(text)}</span>` : '';
+      }).join('');
+      return `<div class="mcp-dish-row mcp-carta-item">
+        <div class="mcp-carta-line">
+          <span class="mcp-dish mcp-carta-name" data-mc="dish:${si}:${di}:${langs[0]}">${esc(main || d.name)}</span>${detail ? `<span class="mcp-carta-detail">${esc(detail)}</span>` : ''}
+          <span class="mcp-carta-leader"></span>
+          ${price ? `<span class="mcp-carta-price" data-mc="dish:${si}:${di}:price">${esc(price)}</span>` : ''}
+        </div>
+        ${translations}
+      </div>`;
+    }).join('');
+    return `<div class="mcp-section">${header}${dishes}</div>`;
+  }).join('');
 }
 
 // Smart fill: spread spare height between dishes, or shrink the body when it overflows.
@@ -5640,9 +5754,15 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
   return scaled;
 }
 
+let mcFontsWaiting = false;
 function mcRenderLivePreview() {
   const frame = $('mc-live-preview');
   if (!frame || !mcCurrentMenu) return;
+  // Template fonts load on first use; draw again once they are ready so spacing is measured correctly.
+  if (document.fonts?.status === 'loading' && !mcFontsWaiting) {
+    mcFontsWaiting = true;
+    document.fonts.ready.then(() => { mcFontsWaiting = false; mcRenderLivePreview(); });
+  }
   const template = mcGetTemplate(mcCurrentMenu);
   mcFillPdfTemplate(mcCurrentMenu, mcGetDisplayLangs(mcCurrentMenu), template, 'color');
   const scaled = mcFitPdfBody(template === 'marinero', mcGetLayout(mcCurrentMenu).spacing);
@@ -5731,7 +5851,7 @@ function mcCollectTextBoxes(pageEl, bodyScale) {
       x: r.left - page.left, y: r.top - page.top, w: r.width, h: r.height,
       fontSize: parseFloat(cs.fontSize) * scale,
       lineHeight: Number.isFinite(lineHeight) ? lineHeight * scale : null,
-      fontFace: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+      fontFace: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim().replace(/^Source Sans 3$/, 'Source Sans Pro'),
       bold: parseInt(cs.fontWeight, 10) >= 600, italic: cs.fontStyle === 'italic',
       color: cs.color, align: ['center', 'right', 'end'].includes(cs.textAlign) ? (cs.textAlign === 'end' ? 'right' : cs.textAlign) : 'left',
       letterSpacing: (parseFloat(cs.letterSpacing) || 0) * scale
@@ -6191,6 +6311,11 @@ function mcBindEditorEvents() {
     if (el.closest('.mc-paste-panel')) return;
     if (el.classList.contains('mc-dish-name-input')) mcFillFromLibrary(el);
     if (el.id === 'mc-type-select') mcApplyPresetIfUntouched(el.value);
+    if (el.id === 'mc-template-select') {
+      mcPersistCurrent();
+      if (el.value === 'carta') mcExtractDishPrices();
+      mcRefreshSections();
+    }
     if (el.classList.contains('mc-lang-check')) { mcPersistCurrent(); mcRefreshSections(); }
     if (el.classList.contains('mc-section-mode-select')) {
       const sub = el.closest('.mc-section-block')?.querySelector('.mc-section-subtitle-input');
