@@ -104,3 +104,25 @@ test('closed backup keeps menu columns and drafts but drops owner and session fi
  assert.equal(b.drafts[0].name,'Borrador');assert.equal(b.drafts[0]._isNew,undefined);
  b.menus[0].sections[0].title='changed';assert.equal(cloud.sections[0].title,'Entrantes');
 });
+const cm=(id,extra={})=>({id,name:'Menu '+id.slice(0,4),type:'grupos',language:'es',version:1,updated_at:'2026-09-01T00:00:00Z',sections:[{id:'s',title:'Entrantes',dishes:[{id:'d',name:'Sopa'}]}],...extra});
+const U=n=>`${String(n).padStart(8,'0')}-0000-4000-8000-000000000000`;
+const file=(menus,drafts=[])=>({format:'menus-cerrados-backup',version:1,source:'cloud',menus,drafts});
+test('closed restore adds only missing menus and never replaces existing cloud rows or local drafts',()=>{
+ const f=file([cm(U(1)),cm(U(2),{name:'Backup name'})],[cm(U(2),{name:'Unsaved edit'}),cm(U(3),{name:'New draft'}),cm(U(4)),cm(U(5))]);
+ const cloud=[cm(U(2),{name:'Cloud name'}),cm(U(4))];
+ const plan=W.planClosedRestore(f,cloud,{[U(5)]:cm(U(5),{name:'Local draft'})});
+ assert.deepEqual(plan.insert.map(m=>m.id),[U(1)]);assert.equal(plan.existing,1);
+ assert.deepEqual(plan.drafts.map(d=>[d.id,d._isNew||false,d._baseUpdatedAt||null]),[[U(2),false,'2026-09-01T00:00:00Z'],[U(3),true,null]]);
+ assert.deepEqual(plan.skippedDrafts.map(d=>d.id),[U(4),U(5)]);
+ const again=W.planClosedRestore(f,[...cloud,...plan.insert],{[U(5)]:{},...Object.fromEntries(plan.drafts.map(d=>[d.id,d]))});
+ assert.equal(again.insert.length,0);assert.equal(again.drafts.length,0);
+});
+test('closed restore rejects wrong format, bad ids, duplicates and malformed sections',()=>{
+ assert.throws(()=>W.parseClosedBackup({format:'menu-daily-backup',version:1,menus:[]}));
+ assert.throws(()=>W.parseClosedBackup(file([cm('not-a-uuid')])));
+ assert.throws(()=>W.parseClosedBackup(file([cm(U(1)),cm(U(1))])));
+ assert.throws(()=>W.parseClosedBackup(file([cm(U(1),{sections:[{title:'x',dishes:[null]}]})])));
+ assert.throws(()=>W.parseClosedBackup(file([cm(U(1),{price:-5})])));
+ const ok=W.parseClosedBackup(file([cm(U(1),{owner_id:'someone',_isNew:true})]));
+ assert.equal(ok.menus[0].owner_id,undefined);assert.equal(ok.menus[0]._isNew,undefined);
+});

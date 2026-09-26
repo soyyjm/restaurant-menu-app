@@ -1286,8 +1286,9 @@ kbd {
 }
 .mc-library-new-btn:hover { background: var(--terracotta-dark); }
 .mc-library-new-btn { margin-bottom: 4px; }
+.mc-library-backup { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 12px 10px; flex-shrink: 0; }
 .mc-library-export-btn {
-  margin: 0 12px 10px; padding: 6px 0; font: 600 12px var(--font-body); color: var(--ink-soft);
+  padding: 6px 0; font: 600 12px var(--font-body); color: var(--ink-soft);
   background: none; border: none; border-radius: var(--radius); cursor: pointer; flex-shrink: 0;
 }
 .mc-library-export-btn:hover:not(:disabled) { color: var(--terracotta-dark); background: var(--paper-warm); }
@@ -1548,6 +1549,7 @@ kbd {
 .mc-qa-action:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta-dark); }
 .mc-pdf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .mc-pdf-row .btn { justify-content: center; }
+.mc-pdf-row .mc-canva-btn { grid-column: 1 / -1; }
 .mc-preview-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 10px; }
 .mc-preview-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
 .mc-a4-frame {
@@ -1563,6 +1565,27 @@ kbd {
   position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
   background: rgba(20,17,13,0.72); cursor: zoom-out;
 }
+.mc-layout-panel { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--cream); border-radius: var(--radius); background: var(--paper); }
+.mc-layout-panel summary { font: 600 13px var(--font-body); color: var(--ink-soft); cursor: pointer; }
+.mc-layout-panel[open] summary { margin-bottom: 12px; }
+.mc-layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mc-layout-wide { grid-column: 1 / -1; }
+.mc-layout-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.mc-swatches { display: flex; flex-wrap: wrap; gap: 5px; }
+.mc-swatch input { position: absolute; opacity: 0; pointer-events: none; }
+.mc-swatch span {
+  display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid white; box-shadow: 0 0 0 1px var(--cream); cursor: pointer;
+  font: 700 8px var(--font-body); color: var(--ink-faint); text-transform: none; letter-spacing: 0;
+}
+.mc-swatch-template { background: linear-gradient(135deg, #b89040 50%, #f5f0e6 50%); color: transparent !important; }
+.mc-swatch input:checked + span { box-shadow: 0 0 0 2px var(--terracotta); }
+.mc-swatch input:focus-visible + span { outline: 2px solid var(--terracotta); outline-offset: 2px; }
+.mc-restore-summary { font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+.mc-restore-summary h3 { font: 700 13px var(--font-body); color: var(--ink); margin: 14px 0 4px; }
+.mc-restore-summary ul { margin: 0 0 0 18px; }
+.mc-restore-summary .mc-restore-note { font-size: 12px; color: var(--ink-faint); margin-top: 12px; }
+.mc-restore-actions { display: flex; gap: 8px; margin-top: 20px; }
 .mc-zoom-box { overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
 
 /* ==========================================
@@ -1845,6 +1868,37 @@ kbd {
 .mcp-footer { flex-shrink: 0; text-align: center; padding-top: 12px; }
 .mcp-footer-rule { height: 1px; border: none; margin-bottom: 8px; }
 .mcp-footer-text { font-family: 'DM Sans', sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; }
+/* ── Per-menu layout tweaks (mcGetLayout) ── */
+.mcp-root.mcp-hide-type .mcp-type-label,
+.mcp-root.mcp-hide-price .mcp-price-row { display: none !important; }
+.mcp-root.mcp-align-left .mcp-dish-row { justify-content: flex-start; text-align: left; padding-left: 8px; padding-right: 8px; }
+.mcp-root.mcp-align-left .mcp-dish-cell,
+.mcp-root.mcp-align-left .mcp-section-header,
+.mcp-root.mcp-align-left .mcp-drinks-box,
+.mcp-root.mcp-align-left .mcp-marinero-connector { text-align: left; }
+.mcp-root.mcp-align-left .mcp-section-rule { margin-left: 0; }
+.mcp-root.mcp-align-left .mcp-dish-row .mcp-bullet-dot:last-child { display: none; }
+.mcp-root.mcp-align-center .mcp-dish-row { justify-content: center; text-align: center; }
+.mcp-root.mcp-align-center .mcp-dish-cell,
+.mcp-root.mcp-align-center .mcp-section-header,
+.mcp-root.mcp-align-center .mcp-drinks-box { text-align: center; }
+.mcp-root.mcp-align-center .mcp-section-rule { margin-left: auto; margin-right: auto; }
+.mcp-root.mcp-color.mcp-accent .mcp-section-title,
+.mcp-root.mcp-color.mcp-accent .mcp-type-label,
+.mcp-root.mcp-color.mcp-accent .mcp-bullet-dot,
+.mcp-root.mcp-color.mcp-accent .mcp-supp,
+.mcp-root.mcp-color.mcp-accent .mcp-drinks-label,
+.mcp-root.mcp-color.mcp-accent .mcp-ornament-dot,
+.mcp-root.mcp-color.mcp-accent .mcp-footer-text { color: var(--mcp-accent); }
+.mcp-root.mcp-color.mcp-accent .mcp-section-rule,
+.mcp-root.mcp-color.mcp-accent .mcp-ornament-line,
+.mcp-root.mcp-color.mcp-accent .mcp-footer-rule { background: var(--mcp-accent); opacity: 0.5; }
+.mcp-root.mcp-color.mcp-accent .mcp-corner,
+.mcp-root.mcp-color.mcp-accent .mcp-header-box,
+.mcp-root.mcp-color.mcp-accent .mcp-drinks-box { border-color: var(--mcp-accent); }
+.mcp-root.mcp-color.mcp-accent .mcp-price-badge { background: var(--mcp-accent); }
+/* Canva export: capture decoration only; text is added as editable boxes. */
+.mcp-root.mcp-text-hidden .mcp-page * { color: transparent !important; text-shadow: none !important; }
 @media (max-width: 1180px) {
   .mc-editor-shell { grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; }
   .mc-editor { padding: 0 20px 40px; }
@@ -2102,7 +2156,11 @@ kbd {
         </div>
         <div class="mc-library-list" id="mc-library-list"></div>
         <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
-        <button class="mc-library-export-btn" id="mc-export-btn" type="button" title="Descarga todos los menús cerrados y los borradores sin guardar en un archivo JSON">⬇ Exportar copia de seguridad</button>
+        <div class="mc-library-backup">
+          <button class="mc-library-export-btn" id="mc-export-btn" type="button" title="Descarga todos los menús cerrados y los borradores sin guardar en un archivo JSON">⬇ Exportar copia</button>
+          <button class="mc-library-export-btn" id="mc-restore-btn" type="button" title="Añade los menús que falten a partir de una copia descargada antes">⬆ Restaurar copia…</button>
+        </div>
+        <input id="mc-restore-file" type="file" accept=".json,application/json" hidden>
       </div>
       <div class="mc-editor" id="mc-editor-area">
         <div class="mc-editor-empty">
@@ -2170,6 +2228,19 @@ kbd {
     <div class="mcp-footer">
       <div class="mcp-footer-rule"></div>
       <div class="mcp-footer-text" id="mcp-footer-text">Restaurante Sol · Barcelona</div>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSED MENU RESTORE MODAL -->
+<div class="modal-overlay" id="mcRestoreModal">
+  <div class="modal" role="dialog" aria-labelledby="mcRestoreTitle">
+    <button class="modal-close" id="mc-restore-close" type="button">&times;</button>
+    <h2 id="mcRestoreTitle">Restaurar menús cerrados</h2>
+    <div id="mc-restore-summary" class="mc-restore-summary" role="status"></div>
+    <div class="mc-restore-actions">
+      <button class="btn btn-primary" id="mc-restore-confirm" type="button">Restaurar</button>
+      <button class="btn btn-secondary" id="mc-restore-cancel" type="button">Cancelar</button>
     </div>
   </div>
 </div>
@@ -4554,7 +4625,13 @@ const MC_TEMPLATES = {
 };
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
-const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:'];
+const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:', 'layout:'];
+// Per-menu print tweaks on top of the template. Stored as a `layout:` tag with only non-default values.
+const MC_LAYOUT_DEFAULT = { size: 'md', spacing: 'auto', align: 'template', accent: 'template', header: '', footer: '', showType: true, showPrice: true };
+const MC_LAYOUT_SIZES = { sm: ['Pequeño', 0.88], md: ['Normal', 1], lg: ['Grande', 1.14], xl: ['Muy grande', 1.28] };
+const MC_LAYOUT_SPACING = { auto: 'Repartir en la página', compact: 'Compacto (arriba)', center: 'Compacto (centrado)' };
+const MC_LAYOUT_ALIGN = { template: 'Según plantilla', center: 'Centrado', left: 'Izquierda' };
+const MC_LAYOUT_ACCENTS = { template: ['Plantilla', ''], terracota: ['Terracota', '#b5562a'], oliva: ['Oliva', '#5f6f3a'], vino: ['Vino', '#7a2e3b'], marino: ['Azul marino', '#1f3f5b'], negro: ['Negro', '#1a1a1a'] };
 // Starting sections for a new menu, by type: [title, mode].
 const MC_PRESETS = {
   grupos: [['Entrantes', 'shared'], ['Principal', 'choose_one'], ['Postre', 'choose_one']],
@@ -4686,6 +4763,45 @@ function mcGetTemplate(menu) {
   if (menu?.type === 'tapas') return 'tapas';
   if (menu?.type === 'grupos') return 'grupo';
   return 'editorial';
+}
+
+function mcCleanLayout(raw) {
+  const pick = (value, allowed, fallback) => Object.hasOwn(allowed, value) ? value : fallback;
+  const text = v => typeof v === 'string' ? v.trim().slice(0, 120) : '';
+  return {
+    size: pick(raw?.size, MC_LAYOUT_SIZES, 'md'),
+    spacing: pick(raw?.spacing, MC_LAYOUT_SPACING, 'auto'),
+    align: pick(raw?.align, MC_LAYOUT_ALIGN, 'template'),
+    accent: pick(raw?.accent, MC_LAYOUT_ACCENTS, 'template'),
+    header: text(raw?.header),
+    footer: text(raw?.footer),
+    showType: raw?.showType !== false,
+    showPrice: raw?.showPrice !== false
+  };
+}
+
+function mcGetLayout(menu) {
+  try { return mcCleanLayout(JSON.parse(mcTagValue(menu, 'layout:', '{}'))); }
+  catch { return { ...MC_LAYOUT_DEFAULT }; }
+}
+
+function mcLayoutTag(layout) {
+  const changed = Object.fromEntries(Object.entries(mcCleanLayout(layout)).filter(([k, v]) => MC_LAYOUT_DEFAULT[k] !== v));
+  return Object.keys(changed).length ? JSON.stringify(changed) : '';
+}
+
+function mcGatherLayout() {
+  if (!$('mc-layout-size')) return mcGetLayout(mcCurrentMenu);
+  return mcCleanLayout({
+    size: $('mc-layout-size').value,
+    spacing: $('mc-layout-spacing').value,
+    align: $('mc-layout-align').value,
+    accent: document.querySelector('.mc-accent-input:checked')?.value,
+    header: $('mc-layout-header').value,
+    footer: $('mc-layout-footer').value,
+    showType: $('mc-layout-show-type').checked,
+    showPrice: $('mc-layout-show-price').checked
+  });
 }
 
 // The menu's own language always prints first; the others are extra lines under each dish.
@@ -5040,11 +5156,14 @@ function mcRenderEditor() {
             </div>
           </div>
         </div>
+        ${mcRenderLayoutPanel(m, selectedTemplate)}
         <div id="mc-qa-panel"></div>
         <div class="mc-pdf-row">
           <button class="btn btn-pdf-color" id="mc-pdf-color-btn" type="button">🎨 PDF Color</button>
           <button class="btn btn-pdf-bw" id="mc-pdf-bw-btn" type="button">◑ PDF B&amp;N</button>
+          <button class="btn btn-secondary mc-canva-btn" id="mc-canva-btn" type="button" title="Descarga un .pptx con los textos editables para importarlo en Canva">✏️ Exportar para editar en Canva</button>
         </div>
+        <p class="mc-help-text">Canva: <b>Crear un diseño → Importar archivo</b> y elige el .pptx descargado. Los textos se pueden editar; el fondo y los adornos van como imagen.</p>
       </div>
       <div class="mc-preview-toolbar">
         <div class="mc-preview-title">Vista previa · A4</div>
@@ -5058,6 +5177,31 @@ function mcRenderEditor() {
   mcRefreshSections();
   if (!mcDrafts[mcCurrentId] && !mcCurrentMenu._isNew) mcViewBaselines[mcCurrentId] = MenuWorkflows.clone({ ...mcCurrentMenu, ...mcGatherFromEditor() });
   mcFlushEditor();
+}
+
+function mcRenderLayoutPanel(menu, template) {
+  const layout = mcGetLayout(menu);
+  const custom = mcLayoutTag(layout) !== '';
+  const options = (map, value) => Object.entries(map).map(([k, v]) => `<option value="${k}"${value === k ? ' selected' : ''}>${Array.isArray(v) ? v[0] : v}</option>`).join('');
+  const swatches = Object.entries(MC_LAYOUT_ACCENTS).map(([k, [label, color]]) => `
+    <label class="mc-swatch" title="${label}"><input class="mc-accent-input" type="radio" name="mc-accent" value="${k}"${layout.accent === k ? ' checked' : ''}>
+      <span style="${color ? `background:${color}` : ''}" class="${color ? '' : 'mc-swatch-template'}">${color ? '' : 'Auto'}</span></label>`).join('');
+  return `<details class="mc-layout-panel"${custom ? ' open' : ''}>
+    <summary>Ajustar diseño <span class="mc-label-hint" id="mc-layout-state">${custom ? '· personalizado' : '· según plantilla'}</span></summary>
+    <div class="mc-layout-grid">
+      <label class="mc-meta-field">Tamaño del texto<select class="mc-meta-select" id="mc-layout-size">${options(MC_LAYOUT_SIZES, layout.size)}</select></label>
+      <label class="mc-meta-field">Espaciado<select class="mc-meta-select" id="mc-layout-spacing">${options(MC_LAYOUT_SPACING, layout.spacing)}</select></label>
+      <label class="mc-meta-field">Alineación de platos<select class="mc-meta-select" id="mc-layout-align">${options(MC_LAYOUT_ALIGN, layout.align)}</select></label>
+      <div class="mc-meta-field">Color de acento${template === 'marinero' ? ' <span class="mc-label-hint">(no aplica a Marinero)</span>' : ''}<div class="mc-swatches">${swatches}</div></div>
+      <label class="mc-meta-field mc-layout-wide">Texto de cabecera<input class="mc-meta-input" id="mc-layout-header" value="${esc(layout.header)}" placeholder="RESTAURANTE SOL" maxlength="120"></label>
+      <label class="mc-meta-field mc-layout-wide">Texto del pie<input class="mc-meta-input" id="mc-layout-footer" value="${esc(layout.footer)}" placeholder="Automático (mínimo de personas o dirección)" maxlength="120"></label>
+      <div class="mc-layout-checks mc-layout-wide">
+        <label class="mc-check-pill"><input type="checkbox" id="mc-layout-show-type"${layout.showType ? ' checked' : ''}>Mostrar tipo de menú</label>
+        <label class="mc-check-pill"><input type="checkbox" id="mc-layout-show-price"${layout.showPrice ? ' checked' : ''}>Mostrar precio</label>
+      </div>
+      <button type="button" class="btn btn-secondary btn-small mc-layout-wide" id="mc-layout-reset">Restablecer diseño</button>
+    </div>
+  </details>`;
 }
 
 function mcRenderSection(menu, sec, si, count, extraLangs) {
@@ -5284,6 +5428,7 @@ function mcGatherFromEditor() {
   mcSetTagValue(gathered, 'template:', $('mc-template-select')?.value || mcGetTemplate(mcCurrentMenu));
   mcSetTagValue(gathered, 'langs:', mcActiveDisplayLangs().join('-'));
   mcSetTagValue(gathered, 'status:', $('mc-status-select')?.value || mcGetStatus(mcCurrentMenu));
+  mcSetTagValue(gathered, 'layout:', mcLayoutTag(mcGatherLayout()));
   return gathered;
 }
 
@@ -5299,6 +5444,8 @@ function mcFlushEditor() {
   mcPersistCurrent();
   mcRenderQualityPanel(mcCurrentMenu);
   mcRenderLivePreview();
+  const layoutState = $('mc-layout-state');
+  if (layoutState) layoutState.textContent = mcLayoutTag(mcGetLayout(mcCurrentMenu)) ? '· personalizado' : '· según plantilla';
 }
 
 function mcRenderQualityPanel(menu) {
@@ -5356,10 +5503,17 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   const primaryLang = langs[0] || (m.language || 'es');
   const isMarineroTemplate = template === 'marinero';
   const tpl = $('mc-pdf-template');
-  tpl.className = `mcp-root ${colorMode === 'color' ? 'mcp-color' : 'mcp-bw'} mcp-template-${template}`;
+  const layout = mcGetLayout(m);
+  const accent = !isMarineroTemplate && MC_LAYOUT_ACCENTS[layout.accent][1];
+  tpl.className = [
+    'mcp-root', colorMode === 'color' ? 'mcp-color' : 'mcp-bw', `mcp-template-${template}`,
+    layout.align !== 'template' ? `mcp-align-${layout.align}` : '',
+    accent ? 'mcp-accent' : '', layout.showType ? '' : 'mcp-hide-type', layout.showPrice ? '' : 'mcp-hide-price'
+  ].filter(Boolean).join(' ');
+  tpl.style.setProperty('--mcp-accent', accent || 'initial');
 
   // Header
-  $('mcp-restaurant').textContent = 'RESTAURANTE SOL';
+  $('mcp-restaurant').textContent = layout.header || 'RESTAURANTE SOL';
   $('mcp-title').textContent = m.name || '';
   const typeLabelsMap = {
     es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
@@ -5393,9 +5547,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     const sub = sec.subtitle || (MC_MODE_PRINT[primaryLang] || MC_MODE_PRINT.es)[sec.mode] || '';
     bodyHtml += `<div class="mcp-section">
       <div class="mcp-section-header">
-        <div class="mcp-section-title">${esc(sec.title || '')}</div>
+        <div class="mcp-section-title" data-mc="section:${si}:title">${esc(sec.title || '')}</div>
         <div class="mcp-section-rule"></div>
-        ${sub ? `<div class="mcp-section-mode">${esc(sub)}</div>` : ''}
+        ${sub ? `<div class="mcp-section-mode" data-mc="section:${si}:subtitle">${esc(sub)}</div>` : ''}
       </div>`;
     for (const [di, d] of (sec.dishes || []).entries()) {
       if (!d.name) continue;
@@ -5403,9 +5557,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
         const text = li === 0 ? d.name : mcLangDishName(m, displayLang, si, di);
         if (!text) return '';
         const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
-        return `<span class="${cls}">${esc(text)}</span>`;
+        return `<span class="${cls}" data-mc="dish:${si}:${di}:${displayLang}">${esc(text)}</span>`;
       }).join('');
-      const suppHtml = d.supplement ? `<span class="mcp-supp">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
+      const suppHtml = d.supplement ? `<span class="mcp-supp" data-mc="dish:${si}:${di}:supplement">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
       bodyHtml += `<div class="mcp-dish-row">
         <span class="mcp-bullet-dot">●</span>
         <div class="mcp-dish-cell">${lineHtml}</div>
@@ -5427,17 +5581,23 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   }
   $('mcp-body').innerHTML = bodyHtml;
   $('mcp-body').style.transform = '';
+  $('mcp-body').style.justifyContent = '';
+  // Text size: scale leaf text nodes so nested spans are not scaled twice.
+  const factor = MC_LAYOUT_SIZES[layout.size][1];
+  if (factor !== 1) $('mcp-body').querySelectorAll('*').forEach(el => {
+    if (!el.childElementCount) el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * factor}px`;
+  });
 
   // Footer note
-  $('mcp-footer-text').textContent = isMarineroTemplate
+  $('mcp-footer-text').textContent = layout.footer || (isMarineroTemplate
     ? 'HORARIO DE MENÚ · 13:00 - 16:00'
     : m.min_people
     ? `Mínimo ${m.min_people} personas · Restaurante Sol`
-    : 'Restaurante Sol · Barcelona';
+    : 'Restaurante Sol · Barcelona');
 }
 
 // Smart fill: spread spare height between dishes, or shrink the body when it overflows.
-function mcFitPdfBody(isMarineroTemplate) {
+function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
   const bodyEl = $('mcp-body');
   const bodyH  = bodyEl.offsetHeight;
   const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
@@ -5463,7 +5623,9 @@ function mcFitPdfBody(isMarineroTemplate) {
       occupiedH += (parseFloat(getComputedStyle(drinksBox).marginTop) || 0) + drinksBox.offsetHeight;
 
     const surplus = bodyH - occupiedH;
-    if (surplus > 4) {
+    if (surplus > 4 && spacing === 'center') {
+      bodyEl.style.justifyContent = 'center';
+    } else if (surplus > 4 && spacing === 'auto') {
       const extra = surplus / allDishEls.length;
       allDishEls.forEach(el => {
         const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
@@ -5483,13 +5645,14 @@ function mcRenderLivePreview() {
   if (!frame || !mcCurrentMenu) return;
   const template = mcGetTemplate(mcCurrentMenu);
   mcFillPdfTemplate(mcCurrentMenu, mcGetDisplayLangs(mcCurrentMenu), template, 'color');
-  const scaled = mcFitPdfBody(template === 'marinero');
+  const scaled = mcFitPdfBody(template === 'marinero', mcGetLayout(mcCurrentMenu).spacing);
   const tpl = $('mc-pdf-template');
   const page = tpl.querySelector('.mcp-page').cloneNode(true);
   // The clone must not steal the template's element ids.
   page.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
   const root = document.createElement('div');
   root.className = tpl.className + ' mc-a4-page';
+  root.style.cssText = tpl.style.cssText;
   root.appendChild(page);
   frame.replaceChildren(root);
   mcScalePreview();
@@ -5530,6 +5693,123 @@ function mcOpenPreviewZoom() {
   document.body.appendChild(overlay);
 }
 
+const MC_PPTX_SRC = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+const MC_HEADER_FIELDS = { 'mcp-restaurant': 'header', 'mcp-title': 'name', 'mcp-type-label': 'type', 'mcp-price': 'price', 'mcp-price-label': 'price_label', 'mcp-notes': 'notes', 'mcp-footer-text': 'footer' };
+
+function mcLoadScript(src, ready) {
+  if (ready()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => ready() ? resolve() : reject(new Error('Script not ready'));
+    script.onerror = () => reject(new Error('Script failed'));
+    document.head.appendChild(script);
+  });
+}
+
+function mcCssColor(value) {
+  const [r = 0, g = 0, b = 0, a = 1] = (value.match(/[\d.]+/g) || []).map(Number);
+  return { hex: [r, g, b].map(n => Math.round(n).toString(16).padStart(2, '0')).join('').toUpperCase(), alpha: a };
+}
+
+// Reads every visible leaf text in the filled A4 template with its position and style (in px).
+function mcCollectTextBoxes(pageEl, bodyScale) {
+  const page = pageEl.getBoundingClientRect();
+  const boxes = [];
+  pageEl.querySelectorAll('*').forEach(el => {
+    if (el.childElementCount || !el.textContent.trim()) return;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const cs = getComputedStyle(el);
+    if (cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
+    const scale = el.closest('.mcp-body') ? bodyScale : 1;
+    let text = el.textContent.replace(/[ \t]+/g, ' ').trim();
+    if (cs.textTransform === 'uppercase') text = text.toLocaleUpperCase('es');
+    const lineHeight = parseFloat(cs.lineHeight);
+    boxes.push({
+      text, field: el.dataset.mc || MC_HEADER_FIELDS[el.id] || el.className || '',
+      x: r.left - page.left, y: r.top - page.top, w: r.width, h: r.height,
+      fontSize: parseFloat(cs.fontSize) * scale,
+      lineHeight: Number.isFinite(lineHeight) ? lineHeight * scale : null,
+      fontFace: cs.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+      bold: parseInt(cs.fontWeight, 10) >= 600, italic: cs.fontStyle === 'italic',
+      color: cs.color, align: ['center', 'right', 'end'].includes(cs.textAlign) ? (cs.textAlign === 'end' ? 'right' : cs.textAlign) : 'left',
+      letterSpacing: (parseFloat(cs.letterSpacing) || 0) * scale
+    });
+  });
+  return boxes;
+}
+
+// Builds a one-slide A4 .pptx: the decoration as background image, every text as an editable box.
+// Canva imports .pptx files with the text still editable.
+async function mcExportCanva() {
+  if (!mcCurrentMenu) return;
+  const btn = $('mc-canva-btn');
+  if (btn?.disabled) return;
+  mcPersistCurrent();
+  const m = MenuWorkflows.clone(mcCurrentMenu);
+  const langs = mcGetDisplayLangs(m);
+  const template = mcGetTemplate(m);
+  const validation = mcValidateMenu(m, langs);
+  if (validation.errors.length) { toast(validation.errors.join(' '), 'error'); return; }
+  if (validation.missing.length) { mcRenderQualityPanel(m); toast('Completa las traducciones (en rojo) o desmarca el idioma antes de exportar.', 'error'); return; }
+  if (!window.html2canvas) { toast('Error: librerías de imagen no cargadas', 'error'); return; }
+  if (btn) btn.disabled = true;
+  const tpl = $('mc-pdf-template');
+  try {
+    toast('Preparando archivo para Canva…', 'info');
+    await mcLoadScript(MC_PPTX_SRC, () => !!window.PptxGenJS);
+    const pageEl = tpl.querySelector('.mcp-page');
+    mcFillPdfTemplate(m, langs, template, 'color');
+    await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 90));
+    const bodyScale = mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const boxes = mcCollectTextBoxes(pageEl, bodyScale);
+    tpl.classList.add('mcp-text-hidden');
+    let background;
+    try {
+      const canvas = await html2canvas(pageEl, { width: 794, height: 1123, scale: 2, useCORS: true, backgroundColor: null, logging: false, imageTimeout: 0 });
+      background = canvas.toDataURL('image/png');
+    } finally { tpl.classList.remove('mcp-text-hidden'); }
+
+    const pptx = new window.PptxGenJS();
+    pptx.defineLayout({ name: 'A4_VERTICAL', width: 8.27, height: 11.69 });
+    pptx.layout = 'A4_VERTICAL';
+    pptx.title = m.name || 'Menú';
+    pptx.company = 'Restaurante Sol';
+    const slide = pptx.addSlide();
+    slide.background = { data: background.replace(/^data:/, '') };
+    const inch = 8.27 / 794;
+    for (const b of boxes) {
+      // Leave slack so small font-metric differences in Canva don't force a line break.
+      const slack = Math.max(b.w * 0.1, b.fontSize * 1.5);
+      const w = Math.min(b.w + slack, 794);
+      const x = b.align === 'center' ? b.x - slack / 2 : b.align === 'right' ? b.x - slack : b.x;
+      const multiLine = b.lineHeight && b.h > b.lineHeight * 1.5;
+      const color = mcCssColor(b.color);
+      slide.addText(b.text, {
+        x: Math.max(0, x) * inch, y: b.y * inch, w: w * inch, h: b.h * inch,
+        fontFace: b.fontFace, fontSize: Math.round(b.fontSize * 0.75 * 10) / 10,
+        bold: b.bold, italic: b.italic, align: b.align, valign: multiLine ? 'top' : 'middle',
+        color: color.hex, transparency: Math.round((1 - color.alpha) * 100),
+        charSpacing: Math.round(b.letterSpacing * 0.75 * 10) / 10,
+        lineSpacing: multiLine ? Math.round(b.lineHeight * 0.75) : undefined,
+        margin: 0, wrap: true, fit: 'none', objectName: `mc:${b.field}`
+      });
+    }
+    const slug = (m.name || 'menu').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'menu';
+    await pptx.writeFile({ fileName: `${slug}-canva.pptx` });
+    toast('Archivo descargado. En Canva: Crear un diseño → Importar archivo.', 'success');
+  } catch (err) {
+    console.error('mcExportCanva:', err);
+    toast('No se pudo preparar el archivo para Canva. Comprueba la conexión y vuelve a intentarlo.', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+    mcRenderLivePreview();
+  }
+}
+
 async function mcGeneratePDF(colorMode) {
   if (!mcCurrentMenu) return;
   if (!window.html2canvas || !window.jspdf) { toast('Error: librerías PDF no cargadas', 'error'); return; }
@@ -5550,7 +5830,7 @@ async function mcGeneratePDF(colorMode) {
     mcFillPdfTemplate(m, langs, template, colorMode);
     await document.fonts.ready;
     await new Promise(r => setTimeout(r, 90));
-    mcFitPdfBody(template === 'marinero');
+    mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const scale = colorMode === 'bw' ? 3 : 2.5;
@@ -5737,6 +6017,115 @@ async function mcExportBackup() {
   } finally { btn.disabled = false; }
 }
 
+let mcRestoreReview = null;
+let mcRestoreRevision = 0;
+
+async function mcReadCloudMenus() {
+  const { data, error } = await supabase.from('menus_cerrados').select('*').order('updated_at', { ascending: false }).abortSignal(AbortSignal.timeout(15000));
+  if (error || !Array.isArray(data)) throw error || new Error('No data');
+  return data;
+}
+
+function mcRestoreList(rows, limit = 12) {
+  const items = rows.slice(0, limit).map(m => `<li>${esc(m.name || 'Sin nombre')}${m.language && m.language !== 'es' ? ` (${m.language.toUpperCase()})` : ''}${m.version > 1 ? ` v${m.version}` : ''}</li>`).join('');
+  return `<ul>${items}${rows.length > limit ? `<li>… y ${rows.length - limit} más</li>` : ''}</ul>`;
+}
+
+function mcCloseRestore() {
+  mcRestoreReview = null;
+  mcRestoreRevision++;
+  $('mcRestoreModal').classList.remove('visible');
+}
+
+// Step 1: read the file and show exactly what would be added, without writing anything.
+async function mcReviewRestore(file) {
+  const revision = ++mcRestoreRevision;
+  mcRestoreReview = null;
+  if (!file) return;
+  if (!supabase || !currentUser) { toast('Inicia sesión para restaurar menús en la nube.', 'info'); return; }
+  if (file.size > 5 * 1024 * 1024) { toast('El archivo es demasiado grande para ser una copia de menús cerrados.', 'error'); return; }
+  const owner = cacheOwner, generation = authGeneration;
+  try {
+    const input = JSON.parse(await file.text());
+    MenuWorkflows.parseClosedBackup(input);
+    if (!mcPersistCurrent()) return;
+    const cloud = await mcReadCloudMenus();
+    if (revision !== mcRestoreRevision || owner !== cacheOwner || generation !== authGeneration) return;
+    const plan = MenuWorkflows.planClosedRestore(input, cloud, mcDrafts);
+    mcRestoreReview = { input, owner, generation, revision };
+    const date = plan.backup.exported_at ? new Date(plan.backup.exported_at).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : 'fecha desconocida';
+    const nothing = !plan.insert.length && !plan.drafts.length;
+    $('mc-restore-summary').innerHTML = `
+      <p>Copia del <b>${esc(date)}</b> · ${plan.backup.source === 'cloud' ? 'exportada de la nube' : 'copia local de un dispositivo'} · ${plan.backup.menus.length} menús${plan.backup.drafts.length ? ` y ${plan.backup.drafts.length} borradores` : ''}.</p>
+      ${plan.insert.length ? `<h3>Se añadirán a la nube (${plan.insert.length})</h3>${mcRestoreList(plan.insert)}` : ''}
+      ${plan.drafts.length ? `<h3>Borradores que se recuperan en este dispositivo (${plan.drafts.length})</h3>${mcRestoreList(plan.drafts)}` : ''}
+      ${plan.existing ? `<p class="mc-restore-note">${plan.existing} menús ya existen en la nube y se conservan tal cual.</p>` : ''}
+      ${plan.skippedDrafts.length ? `<p class="mc-restore-note">${plan.skippedDrafts.length} borradores no se recuperan porque ya tienes cambios locales en esos menús o su versión de la nube no está en la copia.</p>` : ''}
+      ${nothing ? '<p><b>No falta nada:</b> todo lo que contiene la copia ya está aquí.</p>' : '<p class="mc-restore-note">Nada existente se modifica ni se borra. Puedes repetir la restauración sin duplicar menús.</p>'}`;
+    $('mc-restore-confirm').hidden = nothing;
+    $('mc-restore-confirm').disabled = false;
+    $('mc-restore-confirm').textContent = `Restaurar ${plan.insert.length + plan.drafts.length} elementos`;
+    $('mcRestoreModal').classList.add('visible');
+  } catch (err) {
+    if (revision !== mcRestoreRevision) return;
+    toast(err instanceof SyntaxError || /Copia no válida/.test(err?.message || '')
+      ? 'Este archivo no es una copia válida de menús cerrados.'
+      : 'No se pudo leer la nube para comparar. No se ha cambiado nada; vuelve a intentarlo.', 'error');
+  }
+}
+
+// Step 2: re-check the cloud, insert the missing rows in one request, then add drafts locally.
+async function mcApplyRestore() {
+  const review = mcRestoreReview;
+  if (!review || review.revision !== mcRestoreRevision) return;
+  const { owner, generation } = review;
+  const stale = () => owner !== cacheOwner || generation !== authGeneration;
+  if (stale()) { mcCloseRestore(); toast('La sesión ha cambiado. Vuelve a abrir la copia.', 'info'); return; }
+  $('mc-restore-confirm').disabled = true;
+  try {
+    const cloud = await mcReadCloudMenus();
+    if (stale()) return;
+    const plan = MenuWorkflows.planClosedRestore(review.input, cloud, mcDrafts);
+    let inserted = [];
+    if (plan.insert.length) {
+      let { data, error } = await supabase.from('menus_cerrados').insert(plan.insert).select().abortSignal(AbortSignal.timeout(20000));
+      if (stale()) return;
+      if (error || !Array.isArray(data) || data.length !== plan.insert.length) {
+        // The response may be lost after the server committed; accept only if every row is there.
+        const check = await mcReadCloudMenus();
+        if (stale()) return;
+        const ids = new Set(plan.insert.map(m => m.id));
+        data = check.filter(m => ids.has(m.id));
+        if (data.length !== plan.insert.length) throw error || new Error('Incomplete restore');
+      }
+      inserted = data;
+    }
+    const insertedById = new Map(inserted.map(m => [m.id, m]));
+    mcMenus = [...inserted, ...cloud.filter(m => !insertedById.has(m.id))];
+    const added = [];
+    for (const draft of plan.drafts) {
+      if (mcDrafts[draft.id]) continue;
+      const base = insertedById.get(draft.id);
+      mcDrafts[draft.id] = base ? { ...draft, _baseUpdatedAt: base.updated_at } : draft;
+      added.push(draft.id);
+    }
+    if (!mcWriteDrafts()) {
+      added.forEach(id => delete mcDrafts[id]);
+      mcWriteDrafts();
+      throw new Error('Local drafts not stored');
+    }
+    mcLoaded = true;
+    mcCloseRestore();
+    mcRenderLibrary();
+    toast(`Restaurados: ${inserted.length} menús en la nube${added.length ? ` y ${added.length} borradores locales` : ''}.`, 'success');
+  } catch {
+    if (!stale()) {
+      $('mc-restore-confirm').disabled = false;
+      toast('No se confirmó la restauración. Vuelve a intentarlo: solo se añadirá lo que falte.', 'error');
+    }
+  }
+}
+
 function mcBindEditorEvents() {
   const area = $('mc-editor-area');
   area.addEventListener('click', e => {
@@ -5757,6 +6146,14 @@ function mcBindEditorEvents() {
     else if (t.id === 'mc-jump-preview') $('mc-output-step')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     else if (t.id === 'mc-qa-translate') mcTranslateMissing();
     else if (t.id === 'mc-add-section-btn') mcSectionAction('add-section');
+    else if (t.id === 'mc-layout-reset') {
+      $('mc-layout-size').value = 'md'; $('mc-layout-spacing').value = 'auto'; $('mc-layout-align').value = 'template';
+      document.querySelector('.mc-accent-input[value="template"]').checked = true;
+      $('mc-layout-header').value = ''; $('mc-layout-footer').value = '';
+      $('mc-layout-show-type').checked = true; $('mc-layout-show-price').checked = true;
+      mcFlushEditor();
+    }
+    else if (t.id === 'mc-canva-btn') mcExportCanva();
     else if (t.id === 'mc-back-to-list') {
       if (!mcPersistCurrent()) return;
       document.querySelector('.mc-layout')?.classList.remove('mc-mobile-editing');
@@ -5842,6 +6239,12 @@ function mcInitTabs() {
   });
   mcBindEditorEvents();
   $('mc-export-btn').addEventListener('click', mcExportBackup);
+  $('mc-restore-btn').addEventListener('click', () => { $('mc-restore-file').value = ''; $('mc-restore-file').click(); });
+  $('mc-restore-file').addEventListener('change', e => mcReviewRestore(e.target.files[0]));
+  $('mc-restore-confirm').addEventListener('click', mcApplyRestore);
+  $('mc-restore-cancel').addEventListener('click', mcCloseRestore);
+  $('mc-restore-close').addEventListener('click', mcCloseRestore);
+  $('mcRestoreModal').addEventListener('click', e => { if (e.target === $('mcRestoreModal')) mcCloseRestore(); });
   // Close open ⋯ menus when clicking elsewhere.
   document.addEventListener('click', e => {
     document.querySelectorAll('details.mc-menu[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); });

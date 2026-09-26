@@ -124,6 +124,54 @@
       drafts: (drafts || []).filter(valid).map(pick)
     };
   }
+  function parseClosedBackup(input) {
+    const fail = () => { throw new Error('Copia no válida: no es una copia de menús cerrados o está dañada.'); };
+    const uuid = v => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+    const text = (v, max) => v == null || (typeof v === 'string' && v.length <= max);
+    const list = (v, max) => Array.isArray(v) && v.length <= max;
+    const menu = m => {
+      if (!m || typeof m !== 'object' || !uuid(m.id) || !text(m.name, 200) || !text(m.type, 40)) return fail();
+      if (!text(m.notes, 5000) || !text(m.drinks, 5000) || !text(m.occasion, 500) || !text(m.price_label, 200)) return fail();
+      if (m.parent_id != null && !uuid(m.parent_id)) return fail();
+      if (m.language != null && !['es', 'ca', 'en'].includes(m.language)) return fail();
+      if (m.price != null && !(Number(m.price) >= 0 && Number(m.price) <= 100000)) return fail();
+      if (m.min_people != null && !(Number.isInteger(Number(m.min_people)) && Number(m.min_people) > 0)) return fail();
+      if (m.version != null && !(Number.isInteger(Number(m.version)) && Number(m.version) >= 1 && Number(m.version) <= 1000)) return fail();
+      if (m.tags != null && !(list(m.tags, 100) && m.tags.every(t => text(t, 1000)))) return fail();
+      if (!list(m.sections || [], 100)) return fail();
+      for (const s of m.sections || []) {
+        if (!s || typeof s !== 'object' || !text(s.title, 300) || !text(s.subtitle, 300) || !list(s.dishes || [], 300)) return fail();
+        if ((s.dishes || []).some(d => !d || typeof d !== 'object' || !text(d.name, 500))) return fail();
+      }
+      return Object.fromEntries(CLOSED_FIELDS.filter(k => m[k] !== undefined).map(k => [k, clone(m[k])]));
+    };
+    const unique = rows => {
+      const ids = new Set();
+      return rows.map(menu).map(m => { if (ids.has(m.id)) fail(); ids.add(m.id); return m; });
+    };
+    if (!input || input.format !== 'menus-cerrados-backup' || input.version !== 1) return fail();
+    if (!list(input.menus, 2000) || !list(input.drafts || [], 2000)) return fail();
+    return { format: input.format, version: 1, exported_at: String(input.exported_at || ''), source: input.source === 'cloud' ? 'cloud' : 'local', menus: unique(input.menus), drafts: unique(input.drafts || []) };
+  }
+  // Restore only adds what is missing: existing cloud menus and local drafts are never replaced.
+  // A backed-up draft goes back on top of its backed-up cloud version, so the usual
+  // conflict check flags it if the cloud has changed since.
+  function planClosedRestore(input, cloudMenus, localDrafts) {
+    const backup = parseClosedBackup(input);
+    const cloudIds = new Set((cloudMenus || []).map(m => m.id));
+    const draftIds = new Set(Object.keys(localDrafts || {}));
+    const insert = backup.menus.filter(m => !cloudIds.has(m.id));
+    const bases = new Map(backup.menus.map(m => [m.id, m]));
+    const drafts = [], skippedDrafts = [];
+    for (const d of backup.drafts) {
+      const base = bases.get(d.id);
+      if (draftIds.has(d.id)) skippedDrafts.push(d);
+      else if (base) drafts.push({ ...d, _baseUpdatedAt: base.updated_at });
+      else if (!cloudIds.has(d.id)) drafts.push({ ...d, _isNew: true });
+      else skippedDrafts.push(d);
+    }
+    return { backup, insert, existing: backup.menus.length - insert.length, drafts, skippedDrafts };
+  }
   function planDailyImport(file, state, nextId) {
     const backup = dailyBackup(file);
     const library = clone(state.library), history = clone(state.history), metadata = clone(state.metadata);
@@ -157,7 +205,7 @@
     }
     return {library,history,metadata,favorites:[...favorites],packets,addedDishes,skippedDishes,addedMenus,skippedMenus};
   }
-  const api = { dailyBackup, closedBackup, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
+  const api = { dailyBackup, closedBackup, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MenuWorkflows = api;
 })(typeof globalThis === 'undefined' ? this : globalThis);

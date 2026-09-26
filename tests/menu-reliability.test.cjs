@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -396,4 +396,50 @@ test('closed backup never downloads a partial copy when the cloud read fails',as
  const h=harness({fail:true}),files=captureDownloads(h);
  await h.api.mcExportBackup();
  assert.equal(files.length,0);assert.equal(h.el('mc-export-btn').disabled,false);
+});
+const RU=n=>`${String(n).padStart(8,'0')}-0000-4000-8000-000000000000`;
+const rmenu=(id,extra={})=>({...closedMenu(),id,...extra});
+const restoreFile=obj=>({size:100,text:async()=>JSON.stringify(obj)});
+function restoreCloud(initial,{rejectInsert=false,loseResponse=false}={}){
+ const rows=[...initial];
+ return {rows,response:({table,op,payload})=>{
+  if(table!=='menus_cerrados')return {error:null,data:null};
+  if(op==='select')return {error:null,data:[...rows]};
+  if(op==='insert'){if(rejectInsert)return {error:{message:'rejected'},data:null};rows.push(...payload);return loseResponse?{error:{message:'timeout'},data:null}:{error:null,data:payload};}
+  return {error:null,data:null};
+ }};
+}
+test('closed restore inserts missing menus once and recovers drafts over their backed-up base',async()=>{
+ const cloud=restoreCloud([rmenu(RU(2),{name:'Cloud'})]);
+ const h=harness({response:cloud.response});h.api.setClosed(null,[]);
+ const backup={format:'menus-cerrados-backup',version:1,source:'cloud',menus:[rmenu(RU(1)),rmenu(RU(2),{name:'Old'})],drafts:[rmenu(RU(1),{name:'Unsaved'}),rmenu(RU(3),{name:'Brand new'})]};
+ await h.api.mcReviewRestore(restoreFile(backup));await h.api.mcApplyRestore();
+ const inserts=h.writes.filter(w=>w.op==='insert');
+ assert.equal(inserts.length,1);assert.deepEqual(inserts[0].payload.map(m=>m.id),[RU(1)]);
+ const s=h.api.state();assert.equal(s.mcMenus.find(m=>m.id===RU(2)).name,'Cloud');
+ assert.equal(s.mcDrafts[RU(1)].name,'Unsaved');assert.equal(s.mcDrafts[RU(1)]._baseUpdatedAt,closedMenu().updated_at);
+ assert.equal(s.mcDrafts[RU(3)]._isNew,true);
+ await h.api.mcReviewRestore(restoreFile(backup));await h.api.mcApplyRestore();
+ assert.equal(h.writes.filter(w=>w.op==='insert').length,1);
+});
+test('closed restore accepts a lost insert response only when every row reached the cloud',async()=>{
+ const cloud=restoreCloud([],{loseResponse:true});const h=harness({response:cloud.response});h.api.setClosed(null,[]);
+ const backup={format:'menus-cerrados-backup',version:1,menus:[rmenu(RU(1))],drafts:[rmenu(RU(1),{name:'Draft'})]};
+ await h.api.mcReviewRestore(restoreFile(backup));await h.api.mcApplyRestore();
+ assert.equal(h.api.state().mcMenus.length,1);assert.equal(h.api.state().mcDrafts[RU(1)].name,'Draft');
+});
+test('rejected closed restore changes nothing locally',async()=>{
+ const cloud=restoreCloud([],{rejectInsert:true});const h=harness({response:cloud.response});h.api.setClosed(null,[]);
+ const backup={format:'menus-cerrados-backup',version:1,menus:[rmenu(RU(1))],drafts:[rmenu(RU(1),{name:'Draft'})]};
+ await h.api.mcReviewRestore(restoreFile(backup));await h.api.mcApplyRestore();
+ assert.equal(h.api.state().mcMenus.length,0);assert.deepEqual(plain(h.api.state().mcDrafts),{});
+});
+test('layout tweaks store only non-default values and ignore unknown ones',()=>{
+ const h=harness();
+ assert.equal(h.api.mcLayoutTag({size:'md',spacing:'auto',align:'template',accent:'template',header:'',footer:'',showType:true,showPrice:true}),'');
+ const tag=h.api.mcLayoutTag({size:'lg',accent:'vino',footer:' Reservas 93 000 00 00 ',showPrice:false,align:'diagonal'});
+ assert.deepEqual(JSON.parse(tag),{size:'lg',accent:'vino',footer:'Reservas 93 000 00 00',showPrice:false});
+ const layout=h.api.mcGetLayout({tags:['status:listo','layout:'+tag]});
+ assert.equal(layout.size,'lg');assert.equal(layout.align,'template');assert.equal(layout.showType,true);
+ assert.equal(h.api.mcGetLayout({tags:['layout:{broken']}).size,'md');
 });
