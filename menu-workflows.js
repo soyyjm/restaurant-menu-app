@@ -222,7 +222,53 @@
     }
     return {library,history,metadata,favorites:[...favorites],packets,addedDishes,skippedDishes,addedMenus,skippedMenus};
   }
-  const api = { dailyBackup, closedBackup, splitDishPrice, formatDishPrice, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
+  // Looser than key(): also ignores accents and trailing dots, to surface near-identical library entries.
+  const looseKey = (name, category) => `${category}:${String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[.\s]+$/, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es')}`;
+  // Groups of library dishes that look the same. keepId: favorite first, then the oldest entry.
+  function libraryDuplicates(library, favorites = []) {
+    const fav = new Set(favorites.map(String));
+    const groups = new Map();
+    for (const d of library) {
+      const k = looseKey(d.spanish, d.category);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(d);
+    }
+    return [...groups.entries()].filter(([, dishes]) => dishes.length > 1).map(([k, dishes]) => {
+      const ranked = [...dishes].sort((a, b) => (fav.has(String(b.id)) - fav.has(String(a.id)))
+        || String(a.created_at || '9999').localeCompare(String(b.created_at || '9999')) || (Number(a.id) - Number(b.id)));
+      return { key: k, category: dishes[0].category, dishes, keepId: ranked[0].id };
+    });
+  }
+  // Keep one dish per group; a removed favorite passes its star to the kept dish.
+  function mergeLibraryDuplicates(library, favorites, choices) {
+    const fav = new Set(favorites.map(String));
+    const remove = new Set();
+    for (const { keepId, dishes } of choices) {
+      for (const d of dishes) {
+        if (String(d.id) === String(keepId)) continue;
+        remove.add(String(d.id));
+        if (fav.delete(String(d.id))) fav.add(String(keepId));
+      }
+    }
+    return { library: library.filter(d => !remove.has(String(d.id))), favorites: [...fav], removedIds: library.filter(d => remove.has(String(d.id))).map(d => d.id) };
+  }
+  // Cloud library plus this device's unsynced changes. A dish added here that another device already saved is dropped.
+  function mergeCloudLibrary(cloud, local, { localPending = false, deletes = [] } = {}) {
+    const deleted = new Set(deletes.map(String));
+    const byId = new Map(cloud.filter(d => !deleted.has(String(d.id))).map(d => [String(d.id), d]));
+    const cloudKeys = new Set([...byId.values()].map(d => key(d.spanish, d.category)));
+    const added = [];
+    let dropped = 0;
+    if (localPending) for (const d of local) {
+      const id = String(d.id);
+      if (deleted.has(id)) continue;
+      if (byId.has(id)) { byId.set(id, d); continue; }
+      if (cloudKeys.has(key(d.spanish, d.category))) { dropped++; continue; }
+      added.push(d);
+    }
+    return { library: [...added, ...byId.values()], dropped };
+  }
+  const api = { looseKey, libraryDuplicates, mergeLibraryDuplicates, mergeCloudLibrary, dailyBackup, closedBackup, splitDishPrice, formatDishPrice, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MenuWorkflows = api;
 })(typeof globalThis === 'undefined' ? this : globalThis);

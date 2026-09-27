@@ -606,6 +606,17 @@ body {
   box-shadow: var(--shadow-sm);
   background: white;
 }
+.pt-page.ps-page { display: block; padding: 76px; background: #fff; color: #000; font-weight: 600; }
+.ps-content { transform-origin: top center; }
+.ps-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
+.ps-title { font-style: italic; }
+.ps-restaurant { font-size: 14px; color: #333; font-style: italic; margin-bottom: 12px; }
+.ps-meta { display: flex; justify-content: space-between; font-weight: 700; }
+.ps-section { break-inside: avoid; }
+.ps-section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.ps-es { font-weight: 600; color: #000; }
+.ps-ca { font-weight: 500; font-style: italic; color: #333; }
+.ps-hours { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #000; font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
 .menu-preview-frame > .pt-root {
   position: absolute; left: 0; top: 0;
   transform-origin: top left;
@@ -2060,6 +2071,15 @@ kbd {
 @media (hover: none) { .library-item .lib-edit, .library-item .lib-delete { opacity: 1; } }
 .library-edit-row { margin: 4px 0 8px; }
 .autocomplete-item .ac-last { font-size: 11px; color: var(--terracotta); margin-left: 6px; }
+.dup-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 10px; border-radius: var(--radius); background: #fff4e5; border: 1px solid #f0c98a; font-size: 13px; color: #7a4b00; }
+.dup-panel { margin: 0 0 12px; padding: 12px; border: 1px solid #f0c98a; border-radius: var(--radius); background: #fffaf2; }
+.dup-head .action-row { margin-top: 8px; }
+.dup-group { border: 1px solid var(--cream); border-radius: var(--radius); margin: 10px 0 0; padding: 8px 10px; background: white; min-width: 0; }
+.dup-group legend { font-size: 12px; font-weight: 600; padding: 0 4px; }
+.dup-option { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 6px 0; font-size: 14px; cursor: pointer; }
+.dup-option em { color: var(--ink-faint); font-size: 12px; }
+.dup-option small { color: var(--ink-faint); font-size: 11px; }
+.dup-group .btn { margin-top: 4px; }
 .history-dish-label { display: block; margin-top: 10px; font-size: 12px; }
 .history-match { font-size: 12px; color: var(--ink-soft); flex-basis: 100%; }
 .toast { display: flex; align-items: center; gap: 12px; }
@@ -2203,6 +2223,7 @@ kbd {
           <button data-filter="segundo" aria-pressed="false">Segundos</button>
           <button data-filter="postre" aria-pressed="false">Postres</button>
         </div>
+        <div id="libraryDuplicates"></div>
         <div id="libraryList"></div>
       </div>
     </div>
@@ -2230,8 +2251,9 @@ kbd {
   <div class="preview-sidebar" id="previewSidebar">
     <div class="preview-header">
       <h2>Vista Previa</h2>
-      <div class="preview-mode-toggle" id="previewMode" role="group" aria-label="Versión del PDF">
-        <button data-mode="color" aria-pressed="true">Color</button>
+      <div class="preview-mode-toggle" id="previewMode" role="group" aria-label="Estilo de impresión">
+        <button data-mode="simple" aria-pressed="true" title="Texto en blanco y negro, como la versión anterior">Sencillo</button>
+        <button data-mode="color" aria-pressed="false">Color</button>
         <button data-mode="bw" aria-pressed="false">B&amp;N</button>
       </div>
       <button class="btn-icon" id="btnSettings" title="Ajustes">⚙️</button>
@@ -2372,7 +2394,7 @@ kbd {
     <details class="settings-group">
       <summary>🎨 Diseño del PDF</summary>
       <div class="settings-body">
-        <p class="hint" style="margin:0 0 10px;">La vista previa muestra exactamente la página que se imprime.</p>
+        <p class="hint" style="margin:0 0 10px;">La vista previa muestra exactamente la página que se imprime. El estilo (Sencillo, Color o B&amp;N) se elige encima de la vista previa y se recuerda en todos los dispositivos.</p>
         <div class="settings-grid">
           <label>Título (%)<input type="number" id="psTitleScale" min="60" max="130" step="5"></label>
           <label>Platos en español (%)<input type="number" id="psDishScale" min="70" max="140" step="5"></label>
@@ -2508,7 +2530,7 @@ let todayMenu = { primer: [], segundo: [], postre: [] };
 let menuHistory = {};  // { 'YYYY-MM-DD': { primer: [...], segundo: [...], postre: [...] } }
 let specialPrices = {}; // { 'YYYY-MM-DD': '21.50 €' }
 const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18,
-  titleScale: 100, dishScale: 100, caScale: 100,
+  titleScale: 100, dishScale: 100, caScale: 100, pdfStyle: 'simple',
   restaurantName: 'Restaurante Sol', hours: '13:00 – 16:00', priceWeekday: '14.50 €', priceWeekend: '20.00 €', phone: '', address: '', holidays: DEFAULT_HOLIDAYS };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 let editingId = null;
@@ -2532,6 +2554,8 @@ let batchDraft = { text: '', category: 'primer', rows: [] };
 let batchRunning = false;
 let batchGeneration = 0;
 let libraryFilter = 'all';
+let duplicateReviewOpen = false;
+const duplicateChoice = {};
 let libraryEditingId = null;
 
 function localDate(now = new Date()) {
@@ -2625,6 +2649,7 @@ function normalizePrintSettings(input = {}) {
     titleScale: toIntInRange(base.titleScale, 100, 60, 130),
     dishScale: toIntInRange(base.dishScale, 100, 70, 140),
     caScale: toIntInRange(base.caScale, 100, 70, 140),
+    pdfStyle: ['simple', 'color', 'bw'].includes(base.pdfStyle) ? base.pdfStyle : 'simple',
     restaurantName: textSetting(base.restaurantName, DEFAULT_PRINT_SETTINGS.restaurantName),
     hours: textSetting(base.hours, DEFAULT_PRINT_SETTINGS.hours),
     priceWeekday: textSetting(base.priceWeekday, DEFAULT_PRINT_SETTINGS.priceWeekday, 20),
@@ -2917,7 +2942,7 @@ async function loadAll() {
     let hasCloudError = false;
 
     if (libRes.status === 'fulfilled' && !libRes.value.error) {
-      if (libRes.value.data && !pendingSaves.library && !pendingSaves.deletes.length) library = libRes.value.data;
+      if (libRes.value.data) applyCloudLibrary(libRes.value.data);
     } else {
       hasCloudError = true;
       console.warn('Cloud load dishes failed:', libRes.status === 'fulfilled' ? libRes.value.error : libRes.reason);
@@ -3026,6 +3051,28 @@ async function saveMenu() {
   return syncPending();
 }
 
+// Merge instead of replacing, so unsynced local changes survive and a dish another device already saved is not added twice.
+function applyCloudLibrary(rows) {
+  const merged = MenuWorkflows.mergeCloudLibrary(rows, library, { localPending: pendingSaves.library, deletes: pendingSaves.deletes });
+  library = merged.library;
+  if (merged.dropped) pendingSaves.library = true;
+  return merged.dropped;
+}
+
+// Another device may have changed the library while this page stayed open.
+async function refreshLibraryFromCloud() {
+  if (!isCloud || !currentUser || syncPromise) return;
+  const owner = cacheOwner, revision = editRevision;
+  try {
+    const { data, error } = await applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })).abortSignal(AbortSignal.timeout(15000));
+    if (error || !data || owner !== cacheOwner || revision !== editRevision || syncPromise) return;
+    const dropped = applyCloudLibrary(data);
+    saveLocal();
+    renderLibrary();
+    if (dropped) await syncPending();
+  } catch {}
+}
+
 async function saveLibrary() {
   pendingSaves.library = true;
   editRevision++;
@@ -3058,6 +3105,13 @@ async function syncPending() {
         const revision = editRevision;
         const batch = JSON.parse(JSON.stringify(pendingSaves));
         const currentPacket = menuPacket($('menuDate').value);
+        syncUI('syncing', 'Sincronizando…');
+        if (batch.library) {
+          // Another device may already have saved the same dish: merge with the cloud list before uploading.
+          const { data, error } = await applyOwnerFilter(supabase.from('dishes').select('*').order('created_at', { ascending: false })).abortSignal(AbortSignal.timeout(15000));
+          if (error || generation !== authGeneration) throw error || new Error('Session changed');
+          if (applyCloudLibrary(data || [])) renderLibrary();
+        }
         const dishes = library.map((d, i) => withOwner({ ...d, order_index: i, updated_at: new Date().toISOString() }));
         const settings = {
           ...printSettings,
@@ -3069,7 +3123,6 @@ async function syncPending() {
           const { error } = await query.abortSignal(AbortSignal.timeout(15000));
           if (error || generation !== authGeneration) throw error || new Error('Session changed');
         };
-        syncUI('syncing', 'Sincronizando…');
         // Keep failed history writes pending; retries are idempotent.
         for (const [date, packet] of Object.entries(batch.menus)) {
           await checked(supabase.from('menu_history').upsert(withOwner({ date, dishes: unpackMenu(packet), updated_at: new Date().toISOString() }), { onConflict: 'date' }));
@@ -3348,7 +3401,7 @@ async function addToMenu() {
 
   const alsoLibrary = !!$('inputSaveLibrary').checked;
   const inMenu = todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase());
-  const inLibrary = library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat);
+  const inLibrary = library.some(d => MenuWorkflows.key(d.spanish, d.category) === MenuWorkflows.key(es, cat));
   if (inMenu && (!alsoLibrary || inLibrary)) {
     toast('Ya está en el menú', 'info');
     return;
@@ -3373,7 +3426,7 @@ async function addToLibrary() {
   const cat = $('inputCategory').value;
   if (!es || !ca) { toast('Falta nombre o traducción', 'error'); return; }
   
-  if (library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat)) {
+  if (library.some(d => MenuWorkflows.key(d.spanish, d.category) === MenuWorkflows.key(es, cat))) {
     toast('Ya existe en la biblioteca', 'info');
     return;
   }
@@ -3442,7 +3495,7 @@ async function saveLibraryEdit(id) {
   const ca = row.querySelector('.edit-ca').value.trim();
   const category = row.querySelector('.edit-category').value;
   if (!es || !ca) { toast('Falta nombre o traducción', 'error'); return; }
-  if (library.some(d => d.id !== id && d.category === category && d.spanish.toLowerCase() === es.toLowerCase())) {
+  if (library.some(d => d.id !== id && MenuWorkflows.key(d.spanish, d.category) === MenuWorkflows.key(es, category))) {
     toast('Ya existe en la biblioteca', 'info'); return;
   }
   Object.assign(dish, { spanish: es, catalan: ca, category, updated_at: new Date().toISOString() });
@@ -3661,9 +3714,9 @@ function renderPreview() {
   const frame = $('menuPreview');
   let root = frame.querySelector('.pt-root');
   if (!root) { root = document.createElement('div'); frame.replaceChildren(root); }
-  fillDailyPage(root, previewMode);
+  fillDailyPage(root, printSettings.pdfStyle);
   updatePreviewScale();
-  for (const btn of $('previewMode').querySelectorAll('[data-mode]')) btn.setAttribute('aria-pressed', String(btn.dataset.mode === previewMode));
+  for (const btn of $('previewMode').querySelectorAll('[data-mode]')) btn.setAttribute('aria-pressed', String(btn.dataset.mode === printSettings.pdfStyle));
   renderPreviewIssues();
   renderWeekStrip();
   renderDailyShortcuts();
@@ -3794,12 +3847,73 @@ function bindBatchEvents() {
   });
 }
 
+function renderDuplicates() {
+  const el = $('libraryDuplicates');
+  const favorites = new Set(dishPreferences.favorites.map(String));
+  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites);
+  const extra = groups.reduce((n, g) => n + g.dishes.length - 1, 0);
+  $('libraryCount').textContent = `(${library.length}${extra ? ` · ${extra} repetidos` : ''})`;
+  if (!groups.length) { duplicateReviewOpen = false; el.innerHTML = ''; return; }
+  if (!duplicateReviewOpen) {
+    el.innerHTML = `<div class="dup-notice">⚠️ ${extra} platos repetidos en ${groups.length} grupos. <button class="btn btn-secondary btn-small" data-dup="open">Revisar y fusionar</button></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="dup-panel">
+    <div class="dup-head">
+      <strong>Platos repetidos</strong>
+      <p class="hint">Marca el que quieres conservar; los demás se borran de la biblioteca. Si alguno era favorito, la ★ pasa al que conservas. Los menús y el historial no cambian.</p>
+      <div class="action-row"><button class="btn btn-primary btn-small" data-dup="all">Fusionar todos (${groups.length})</button><button class="btn btn-secondary btn-small" data-dup="close">Cerrar</button></div>
+    </div>
+    ${groups.map((g, gi) => `<fieldset class="dup-group" data-key="${esc(g.key)}">
+      <legend>${CATEGORY_LABELS[g.category] || ''} · ${g.dishes.length} copias</legend>
+      ${g.dishes.map(d => `<label class="dup-option"><input type="radio" name="dup-${gi}" value="${esc(d.id)}" ${String(d.id) === String(duplicateChoice[g.key] ?? g.keepId) ? 'checked' : ''}>
+        <span>${favorites.has(String(d.id)) ? '★ ' : ''}${esc(d.spanish)}</span> <em>${esc(d.catalan)}</em>${d.created_at ? ` <small>${esc(menuDateLabel(String(d.created_at).slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }))}</small>` : ''}</label>`).join('')}
+      <button class="btn btn-secondary btn-small" data-dup="one">Fusionar este grupo</button>
+    </fieldset>`).join('')}
+  </div>`;
+}
+
+async function mergeDuplicates(keys) {
+  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites).filter(g => keys.includes(g.key));
+  if (!groups.length) return;
+  const before = { library: MenuWorkflows.clone(library), favorites: [...dishPreferences.favorites] };
+  const result = MenuWorkflows.mergeLibraryDuplicates(library, dishPreferences.favorites, groups.map(g => ({ dishes: g.dishes, keepId: duplicateChoice[g.key] ?? g.keepId })));
+  library = result.library;
+  dishPreferences.favorites = result.favorites;
+  for (const id of result.removedIds) if (!pendingSaves.deletes.includes(id)) pendingSaves.deletes.push(id);
+  pendingSaves.settings = true;
+  editRevision++;
+  saveLocal();
+  renderLibrary();
+  toast(`${result.removedIds.length} platos repetidos eliminados`, 'success', { label: 'Deshacer', run: () => undoMergeDuplicates(before, result.removedIds) });
+  await syncPending();
+}
+
+async function undoMergeDuplicates(before, removedIds) {
+  const removed = new Set(removedIds.map(String));
+  const current = new Map(library.map(d => [String(d.id), d]));
+  const known = new Set(before.library.map(d => String(d.id)));
+  library = [
+    ...library.filter(d => !known.has(String(d.id))),
+    ...before.library.filter(d => current.has(String(d.id)) || removed.has(String(d.id))).map(d => current.get(String(d.id)) || d)
+  ];
+  dishPreferences.favorites = before.favorites;
+  pendingSaves.deletes = pendingSaves.deletes.filter(id => !removed.has(String(id)));
+  pendingSaves.library = true;
+  pendingSaves.settings = true;
+  editRevision++;
+  saveLocal();
+  renderLibrary();
+  toast('Platos recuperados', 'success');
+  await syncPending();
+}
+
 function renderLibrary() {
   renderDailyShortcuts();
+  renderDuplicates();
   const search = ($('librarySearch')?.value || '').toLowerCase();
   const favorites = new Set(dishPreferences.favorites.map(String));
   const served = lastServedIndex($('menuDate').value);
-  $('libraryCount').textContent = `(${library.length})`;
   for (const btn of $('libraryFilters').querySelectorAll('[data-filter]')) btn.setAttribute('aria-pressed', String(btn.dataset.filter === libraryFilter));
   
   let html = '';
@@ -4008,9 +4122,10 @@ function bindEvents() {
   $('previewMode').addEventListener('click', e => {
     const btn = e.target.closest('[data-mode]');
     if (!btn) return;
-    previewMode = btn.dataset.mode === 'bw' ? 'bw' : 'color';
-    try { localStorage.setItem('dia_preview_mode', previewMode); } catch {}
+    // Stored in the synced settings so every device prints the same style.
+    printSettings = normalizePrintSettings({ ...printSettings, pdfStyle: btn.dataset.mode });
     renderPreview();
+    saveSettings();
   });
   $('weekStrip').addEventListener('click', e => {
     const btn = e.target.closest('[data-date]');
@@ -4056,6 +4171,21 @@ function bindEvents() {
     libraryFilter = btn.dataset.filter;
     renderLibrary();
   });
+  $('libraryDuplicates').addEventListener('click', e => {
+    const btn = e.target.closest('[data-dup]');
+    if (!btn) return;
+    const action = btn.dataset.dup;
+    if (action === 'open' || action === 'close') { duplicateReviewOpen = action === 'open'; renderLibrary(); return; }
+    const keys = action === 'all'
+      ? [...$('libraryDuplicates').querySelectorAll('.dup-group')].map(g => g.dataset.key)
+      : [btn.closest('.dup-group').dataset.key];
+    mergeDuplicates(keys);
+  });
+  $('libraryDuplicates').addEventListener('change', e => {
+    const group = e.target.closest('.dup-group');
+    if (group && e.target.type === 'radio') duplicateChoice[group.dataset.key] = e.target.value;
+  });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshLibraryFromCloud(); });
   $('historyDish').addEventListener('input', () => {
     if (!$('historyDish').value.trim()) $('historySearchStatus').textContent = '';
     renderHistory();
@@ -4411,8 +4541,6 @@ function esc(str) {
 }
 
 // ==================== DAILY PAGE (preview = PDF) ====================
-let previewMode = 'color';
-try { if (localStorage.getItem('dia_preview_mode') === 'bw') previewMode = 'bw'; } catch {}
 
 const SECTION_NAMES = { primer: 'Primer plato', segundo: 'Segundo plato', postre: 'Postres' };
 
@@ -4429,7 +4557,47 @@ function currentMenuPrice() {
   return $('menuPrice').value.trim() || (date ? defaultPriceFor(date).price : printSettings.priceWeekday);
 }
 
+// The original plain layout: black text, a rule under the header and above the hours, top-aligned.
+// Uses the original pixel sizes (still stored in printSettings) scaled by the Diseño percentages.
+function fillSimplePage(root) {
+  const s = printSettings;
+  const px = (base, scale = 100) => `${Math.round(base * scale) / 100}px`;
+  root.className = 'pt-root pt-simple';
+  let body = '';
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    const dishes = todayMenu[cat] || [];
+    if (!dishes.length) continue;
+    const [esSize, caSize] = cat === 'postre' ? [s.postreEs, s.postreCa] : [s.mainEs, s.mainCa];
+    const items = cat === 'postre'
+      ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
+      : dishes;
+    body += `<div class="ps-section" style="margin-bottom:${s.sectionMargin}px">
+      <div class="ps-section-title" style="font-size:${s.sectionSize}px">${CATEGORY_LABELS[cat]}</div>
+      ${items.map(d => `<div class="ps-item" style="margin-bottom:${s.itemMargin}px">
+        <div class="ps-es" style="font-size:${px(esSize, s.dishScale)}">${esc(d.spanish)}</div>
+        <div class="ps-ca" style="font-size:${px(caSize, s.caScale)}">${esc(d.catalan || '')}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+  root.innerHTML = `<div class="pt-page ps-page"><div class="ps-content">
+    <div class="ps-header">
+      <div class="ps-title" style="font-size:${px(s.titleSize, s.titleScale)};text-align:${s.titleAlign}">Menú del día</div>
+      <div class="ps-restaurant">${esc(s.restaurantName)}</div>
+      <div class="ps-meta" style="font-size:${s.priceSize}px"><span>${esc(currentMenuPrice())}</span><span>${esc(menuDateLabel($('menuDate').value))}</span></div>
+    </div>
+    ${body}
+    <div class="ps-hours">HORARIO DE MENÚ ${esc(s.hours)}</div>
+  </div></div>`;
+  // Only shrink when the text does not fit the A4 area inside the margins.
+  const content = root.querySelector('.ps-content');
+  const available = 1123 - 2 * 76;
+  if (content.offsetHeight > available) {
+    content.style.transform = `scale(${available / content.offsetHeight})`;
+  }
+}
+
 function fillDailyPage(root, mode) {
+  if (mode === 'simple') return fillSimplePage(root);
   const s = printSettings;
   const total = menuDishCount();
   root.className = `pt-root ${mode === 'bw' ? 'pt-bw' : 'pt-color'}`;
@@ -4541,17 +4709,20 @@ async function buildDailyPdf(mode) {
   const tpl = $('pdf-template');
   fillDailyPage(tpl, mode);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  // B&W → PNG at 3× (sharp lines); color → JPEG at 2.5× (smaller)
+  // Black-and-white styles → PNG at 3× (sharp text); color → JPEG at 2.5× (smaller)
+  const mono = mode !== 'color';
   const canvas = await html2canvas(tpl.querySelector('.pt-page'), {
-    width: 794, height: 1123, scale: mode === 'bw' ? 3 : 2.5,
-    useCORS: true, allowTaint: true, backgroundColor: mode === 'bw' ? '#ffffff' : '#faf8f5', logging: false, imageTimeout: 0
+    width: 794, height: 1123, scale: mono ? 3 : 2.5,
+    useCORS: true, allowTaint: true, backgroundColor: mono ? '#ffffff' : '#faf8f5', logging: false, imageTimeout: 0
   });
   const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-  doc.addImage(mode === 'bw' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.97), mode === 'bw' ? 'PNG' : 'JPEG', 0, 0, 210, 297);
+  // 'FAST' compresses the PNG stream; without it a page is ~30 MB.
+  if (mono) doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+  else doc.addImage(canvas.toDataURL('image/jpeg', 0.97), 'JPEG', 0, 0, 210, 297);
   return { doc, filename: `menu-${mode}-${$('menuDate').value || localDate()}.pdf` };
 }
 
-async function openDailyPdf(mode = previewMode) {
+async function openDailyPdf(mode = printSettings.pdfStyle) {
   if (!confirmDailyOutput()) return;
   try {
     toast('Generando PDF…', 'info');
@@ -4593,7 +4764,7 @@ async function shareMenu() {
     let file = null;
     try {
       toast('Preparando PDF…', 'info');
-      const { doc, filename } = await buildDailyPdf(previewMode);
+      const { doc, filename } = await buildDailyPdf(printSettings.pdfStyle);
       file = new File([doc.output('blob')], filename, { type: 'application/pdf' });
     } catch (err) { console.warn('Share PDF failed:', err); }
     if (file && navigator.canShare({ files: [file] })) {

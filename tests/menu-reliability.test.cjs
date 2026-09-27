@@ -512,3 +512,22 @@ test('last served index only looks at dates before the menu date', () => {
   const idx = h.api.lastServedIndex('2026-09-06');
   assert.equal(idx.get('paella'), '2026-09-04');
 });
+
+test('print style defaults to the plain layout and only accepts known styles', () => {
+  const {api} = harness({user:false});
+  assert.equal(api.normalizePrintSettings({}).pdfStyle, 'simple');
+  assert.equal(api.normalizePrintSettings({ pdfStyle: 'bw' }).pdfStyle, 'bw');
+  assert.equal(api.normalizePrintSettings({ pdfStyle: 'fancy' }).pdfStyle, 'simple');
+});
+
+test('saving the library does not upload a dish another device already saved', async () => {
+  const cloudDish = { id: 500, spanish: 'Sopa de verduras', catalan: 'Sopa de verdures', category: 'primer' };
+  const h = harness({ response: ({ table, op }) => ({ error: null, data: table === 'dishes' && op === 'select' ? [cloudDish] : table === 'menu_history' ? [] : null }) });
+  h.api.setLibrary([]);
+  h.el('inputEs').value = 'Sopa de verduras'; h.el('inputCa').value = 'Sopa de verdures'; h.el('inputCategory').value = 'primer'; h.el('inputSaveLibrary').checked = true;
+  await h.api.addToMenu();
+  const upload = h.writes.filter(w => w.table === 'dishes' && w.op === 'upsert').pop();
+  assert.deepEqual(upload.payload.map(d => d.id), [500]);
+  assert.deepEqual(h.api.state().library.map(d => d.id), [500]);
+  assert.equal(h.api.state().todayMenu.primer.length, 1);
+});

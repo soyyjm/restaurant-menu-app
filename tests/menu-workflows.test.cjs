@@ -137,3 +137,35 @@ test('dish price is split from a single trailing price and formatted for the car
  assert.equal(W.formatDishPrice('S/M'),'S/M');
  assert.equal(W.formatDishPrice(''),'');
 });
+
+test('library duplicates group same dish ignoring case, spaces, accents and trailing dots; favorite is kept', () => {
+  const lib = [
+    { id: 1, spanish: 'Macarrones a la boloñesa', catalan: 'Macarrons', category: 'primer', created_at: '2026-01-01' },
+    { id: 2, spanish: 'macarrones  a la bolonesa.', catalan: 'Macarrons', category: 'primer', created_at: '2025-01-01' },
+    { id: 3, spanish: 'Macarrones a la boloñesa', catalan: 'Macarrons', category: 'segundo' },
+    { id: 4, spanish: 'Flan', catalan: 'Flam', category: 'postre' }
+  ];
+  let groups = W.libraryDuplicates(lib, []);
+  assert.equal(groups.length, 1);
+  assert.deepEqual(groups[0].dishes.map(d => d.id), [1, 2]);
+  assert.equal(groups[0].keepId, 2); // oldest
+  groups = W.libraryDuplicates(lib, ['1']);
+  assert.equal(groups[0].keepId, 1); // favorite wins
+  const merged = W.mergeLibraryDuplicates(lib, ['2'], [{ dishes: groups[0].dishes, keepId: 1 }]);
+  assert.deepEqual(merged.library.map(d => d.id), [1, 3, 4]);
+  assert.deepEqual(merged.removedIds, [2]);
+  assert.deepEqual(merged.favorites, ['1']);
+});
+
+test('cloud library merge keeps unsynced local edits and drops a dish another device already saved', () => {
+  const cloud = [{ id: 10, spanish: 'Sopa', catalan: 'Sopa', category: 'primer' }, { id: 11, spanish: 'Pollo', catalan: 'Pollastre', category: 'segundo' }];
+  const local = [{ id: 20, spanish: ' sopa ', catalan: 'Sopa', category: 'primer' }, { id: 21, spanish: 'Lomo', catalan: 'Llom', category: 'segundo' }, { id: 11, spanish: 'Pollo asado', catalan: 'Pollastre rostit', category: 'segundo' }];
+  const r = W.mergeCloudLibrary(cloud, local, { localPending: true, deletes: [10] });
+  assert.equal(r.dropped, 0); // the cloud Sopa is being deleted here, so the local one stays
+  assert.deepEqual(r.library.map(d => d.id), [20, 21, 11]);
+  const r2 = W.mergeCloudLibrary(cloud, local, { localPending: true });
+  assert.equal(r2.dropped, 1);
+  assert.deepEqual(r2.library.map(d => d.id), [21, 10, 11]);
+  assert.equal(r2.library.find(d => d.id === 11).spanish, 'Pollo asado');
+  assert.deepEqual(W.mergeCloudLibrary(cloud, local).library.map(d => d.id), [10, 11]);
+});
