@@ -595,83 +595,28 @@ body {
 }
 
 .menu-preview-frame {
-  background: white;
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  aspect-ratio: 794 / 1123;
+  overflow: hidden;
   border: 1px solid var(--cream);
   border-radius: var(--radius);
-  padding: 32px 28px;
-  font-family: var(--font-display);
-  font-weight: 600;
   box-shadow: var(--shadow-sm);
+  background: white;
 }
-
-.mp-header {
-  text-align: center;
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1.5px solid var(--ink);
+.menu-preview-frame > .pt-root {
+  position: absolute; left: 0; top: 0;
+  transform-origin: top left;
+  transform: scale(var(--preview-scale, 0.4));
 }
-
-.mp-title {
-  font-size: 28px;
-  font-weight: 600;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  margin-bottom: 4px;
-}
-
-.mp-restaurant {
-  font-size: 14px;
-  color: var(--ink-faint);
-  font-style: italic;
-  margin-bottom: 12px;
-}
-
-.mp-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.mp-section {
-  margin-bottom: 18px;
-}
-
-.mp-section-title {
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 8px;
-  color: var(--ink);
-}
-
-.mp-item {
-  margin-bottom: 8px;
-}
-
-.mp-item-es {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.mp-item-ca {
-  font-size: 13px;
-  font-weight: 500;
-  font-style: italic;
-  color: var(--ink-faint);
-}
-
-.mp-hours {
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ink);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-}
+.preview-mode-toggle { display: inline-flex; border: 1px solid var(--cream); border-radius: var(--radius); overflow: hidden; }
+.preview-mode-toggle button { border: 0; background: white; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; color: var(--ink-soft); }
+.preview-mode-toggle button[aria-pressed="true"] { background: var(--ink); color: white; }
+.preview-issues { margin: 0 0 14px; padding: 10px 12px; border-radius: var(--radius); background: #fff4e5; border: 1px solid #f0c98a; font-size: 13px; color: #7a4b00; }
+.preview-issues ul { margin: 4px 0 0 18px; padding: 0; }
+.preview-issues.ok { background: var(--olive-light); border-color: transparent; color: var(--ink-soft); }
 
 .preview-actions {
   padding: 16px 24px;
@@ -903,18 +848,6 @@ button:disabled { opacity: .55; cursor: not-allowed; }
 [hidden] { display: none !important; }
 .preview-actions { flex-wrap: wrap; }
 
-@media print {
-  body * { visibility: hidden; }
-  .menu-preview-frame, .menu-preview-frame * { visibility: visible; }
-  .menu-preview-frame {
-    position: absolute;
-    left: 0; top: 0;
-    width: 100%;
-    border: none;
-    box-shadow: none;
-    padding: 20mm;
-  }
-}
 
 /* ==========================================
    EDIT INLINE
@@ -979,27 +912,6 @@ kbd {
   font-family: var(--font-body);
 }
 
-/* ==========================================
-   BEAUTIFUL PDF BUTTONS
-   ========================================== */
-.btn-pdf-color {
-  background: linear-gradient(135deg, #c4652a, #a14f1b);
-  color: white;
-}
-.btn-pdf-color:hover { background: linear-gradient(135deg, #a14f1b, #893e13); transform: translateY(-1px); }
-
-.btn-pdf-bw {
-  background: #2a2a2a;
-  color: white;
-}
-.btn-pdf-bw:hover { background: #111; transform: translateY(-1px); }
-
-.preview-actions-row2 {
-  padding: 0 16px 16px;
-  display: flex;
-  gap: 8px;
-}
-.preview-actions-row2 .btn { flex: 1; justify-content: center; }
 
 /* ==========================================
    BEAUTIFUL PDF TEMPLATE (off-screen render)
@@ -1011,9 +923,14 @@ kbd {
   width: 794px;
   height: 1123px;
   overflow: hidden;
-  font-family: 'Cormorant Garamond', Georgia, serif;
   box-sizing: border-box;
   pointer-events: none;
+}
+.pt-root {
+  width: 794px;
+  height: 1123px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  --pt-title-scale: 1; --pt-dish-scale: 1; --pt-ca-scale: 1;
 }
 
 .pt-page {
@@ -1026,34 +943,34 @@ kbd {
 }
 
 /* Color mode */
-#pdf-template.pt-color .pt-page { background: #faf8f5; }
-#pdf-template.pt-color .pt-accent-bar { background: #c4652a; }
-#pdf-template.pt-color .pt-restaurant-name { color: #c4652a; }
-#pdf-template.pt-color .pt-ornament { color: #c4652a; }
-#pdf-template.pt-color .pt-title { color: #14110d; }
-#pdf-template.pt-color .pt-rule { background: #c4652a; }
-#pdf-template.pt-color .pt-rule-double { border-color: #c4652a; }
-#pdf-template.pt-color .pt-meta { color: #14110d; }
-#pdf-template.pt-color .pt-section-line { background: #c4652a; opacity: 0.35; }
-#pdf-template.pt-color .pt-section-title { color: #c4652a; }
-#pdf-template.pt-color .pt-dish-es { color: #14110d; }
-#pdf-template.pt-color .pt-dish-ca { color: #7a6a5d; }
-#pdf-template.pt-color .pt-hours { color: #14110d; }
+.pt-root.pt-color .pt-page { background: #faf8f5; }
+.pt-root.pt-color .pt-accent-bar { background: #c4652a; }
+.pt-root.pt-color .pt-restaurant-name { color: #c4652a; }
+.pt-root.pt-color .pt-ornament { color: #c4652a; }
+.pt-root.pt-color .pt-title { color: #14110d; }
+.pt-root.pt-color .pt-rule { background: #c4652a; }
+.pt-root.pt-color .pt-rule-double { border-color: #c4652a; }
+.pt-root.pt-color .pt-meta { color: #14110d; }
+.pt-root.pt-color .pt-section-line { background: #c4652a; opacity: 0.35; }
+.pt-root.pt-color .pt-section-title { color: #c4652a; }
+.pt-root.pt-color .pt-dish-es { color: #14110d; }
+.pt-root.pt-color .pt-dish-ca { color: #7a6a5d; }
+.pt-root.pt-color .pt-hours { color: #14110d; }
 
 /* B&W mode */
-#pdf-template.pt-bw .pt-page { background: #fff; }
-#pdf-template.pt-bw .pt-accent-bar { background: #000; height: 4px; }
-#pdf-template.pt-bw .pt-restaurant-name { color: #000; }
-#pdf-template.pt-bw .pt-ornament { color: #000; }
-#pdf-template.pt-bw .pt-title { color: #000; }
-#pdf-template.pt-bw .pt-rule { background: #000; }
-#pdf-template.pt-bw .pt-rule-double { border-color: #000; }
-#pdf-template.pt-bw .pt-meta { color: #000; }
-#pdf-template.pt-bw .pt-section-line { background: #000; opacity: 0.25; }
-#pdf-template.pt-bw .pt-section-title { color: #000; }
-#pdf-template.pt-bw .pt-dish-es { color: #000; }
-#pdf-template.pt-bw .pt-dish-ca { color: #444; }
-#pdf-template.pt-bw .pt-hours { color: #000; }
+.pt-root.pt-bw .pt-page { background: #fff; }
+.pt-root.pt-bw .pt-accent-bar { background: #000; height: 4px; }
+.pt-root.pt-bw .pt-restaurant-name { color: #000; }
+.pt-root.pt-bw .pt-ornament { color: #000; }
+.pt-root.pt-bw .pt-title { color: #000; }
+.pt-root.pt-bw .pt-rule { background: #000; }
+.pt-root.pt-bw .pt-rule-double { border-color: #000; }
+.pt-root.pt-bw .pt-meta { color: #000; }
+.pt-root.pt-bw .pt-section-line { background: #000; opacity: 0.25; }
+.pt-root.pt-bw .pt-section-title { color: #000; }
+.pt-root.pt-bw .pt-dish-es { color: #000; }
+.pt-root.pt-bw .pt-dish-ca { color: #444; }
+.pt-root.pt-bw .pt-hours { color: #000; }
 
 /* Shared layout */
 .pt-accent-bar { height: 7px; flex-shrink: 0; }
@@ -1089,7 +1006,7 @@ kbd {
 }
 
 .pt-title {
-  font-size: 72px;
+  font-size: calc(72px * var(--pt-title-scale));
   font-weight: 400;
   font-style: italic;
   line-height: 1.0;
@@ -1152,39 +1069,39 @@ kbd {
 .pt-dish { margin-bottom: 11px; }
 
 .pt-dish-es {
-  font-size: 19px;
+  font-size: calc(19px * var(--pt-dish-scale));
   font-weight: 600;
   line-height: 1.2;
 }
 
 .pt-dish-ca {
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--pt-ca-scale));
   font-style: italic;
   font-weight: 400;
   line-height: 1.2;
   margin-top: 2px;
 }
 
-.pt-section--postre .pt-dish-es { font-size: 15px; }
-.pt-section--postre .pt-dish-ca { font-size: 13px; }
+.pt-section--postre .pt-dish-es { font-size: calc(15px * var(--pt-dish-scale)); }
+.pt-section--postre .pt-dish-ca { font-size: calc(13px * var(--pt-ca-scale)); }
 
 /* Compact layout — 7-9 dishes */
-.pt-compact .pt-title { font-size: 60px; margin-bottom: 14px; }
+.pt-compact .pt-title { font-size: calc(60px * var(--pt-title-scale)); margin-bottom: 14px; }
 .pt-compact .pt-header { margin-bottom: 12px; }
 .pt-compact .pt-body { padding: 10px 0 4px; }
 .pt-compact .pt-section { margin-bottom: 14px; }
 .pt-compact .pt-dish { margin-bottom: 8px; }
 
 /* Tight layout — 10+ dishes */
-.pt-tight .pt-title { font-size: 50px; margin-bottom: 10px; }
+.pt-tight .pt-title { font-size: calc(50px * var(--pt-title-scale)); margin-bottom: 10px; }
 .pt-tight .pt-ornament { display: none; }
 .pt-tight .pt-header { margin-bottom: 8px; }
 .pt-tight .pt-body { padding: 6px 0 2px; }
 .pt-tight .pt-section { margin-bottom: 10px; }
 .pt-tight .pt-dish { margin-bottom: 6px; }
-.pt-tight .pt-dish-es { font-size: 17px; }
-.pt-tight .pt-dish-ca { font-size: 13px; }
-.pt-tight .pt-section--postre .pt-dish-es { font-size: 14px; }
+.pt-tight .pt-dish-es { font-size: calc(17px * var(--pt-dish-scale)); }
+.pt-tight .pt-dish-ca { font-size: calc(13px * var(--pt-ca-scale)); }
+.pt-tight .pt-section--postre .pt-dish-es { font-size: calc(14px * var(--pt-dish-scale)); }
 
 /* Contact info (color version only) */
 .pt-contact {
@@ -1194,7 +1111,7 @@ kbd {
   font-style: normal;
   display: none;
 }
-#pdf-template.pt-color .pt-contact { color: #9b8d82; }
+.pt-root.pt-color .pt-contact { color: #9b8d82; }
 
 .pt-footer {
   text-align: center;
@@ -2066,11 +1983,7 @@ kbd {
     max-height: none;
   }
   .preview-sidebar { border-left: none; border-top: 1px solid var(--cream); }
-  .preview-actions,
-  .preview-actions-row2 {
-    position: sticky; bottom: 0; background: white; z-index: 20;
-    border-top: 1px solid var(--cream);
-  }
+  .preview-actions { border-top: 1px solid var(--cream); }
 
   #panelCerrado { overflow: visible; }
   .mc-layout {
@@ -2119,6 +2032,62 @@ kbd {
 .batch-row small { grid-column: 2 / -1; }
 .library-item .favorite-toggle { border: 0; background: none; color: var(--terracotta); padding: 8px; cursor: pointer; }
 @media (max-width: 600px) { .batch-row { grid-template-columns: 24px minmax(0,1fr); } .batch-row input[data-field="catalan"] { grid-column: 2; } }
+/* ===== Menú del Día: planning, menu card, library tools ===== */
+.week-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 4px 0 10px; }
+.week-day { border: 1px solid var(--cream); background: white; border-radius: var(--radius); padding: 6px 4px; font: inherit; cursor: pointer; text-align: center; line-height: 1.2; min-width: 0; }
+.week-day .wd-name { display: block; font-size: 11px; color: var(--ink-faint); text-transform: capitalize; }
+.week-day .wd-num { display: block; font-size: 16px; font-weight: 600; }
+.week-day .wd-state { display: block; font-size: 11px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.week-day.is-ready .wd-state { color: var(--olive); font-weight: 600; }
+.week-day.is-partial .wd-state { color: var(--terracotta); }
+.week-day[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.week-day.is-holiday .wd-name::after { content: " ·F"; color: var(--terracotta); }
+.inline-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-soft); }
+.shortcut-block { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--cream); }
+.shortcut-block h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--ink-soft); }
+.menu-card { margin-bottom: 16px; }
+.menu-card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+.menu-card-head h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin-right: auto; }
+.menu-card-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
+.menu-card-tools .btn { white-space: normal; }
+.dish-served { font-size: 11px; color: var(--terracotta); }
+.library-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.library-filters button { border: 1px solid var(--cream); background: white; border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.library-filters button[aria-pressed="true"] { background: var(--ink); color: white; border-color: var(--ink); }
+.library-item .lib-last { font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
+.library-item .lib-edit { border: 0; background: none; cursor: pointer; padding: 2px 4px; font-size: 13px; opacity: 0; }
+.library-item:hover .lib-edit, .library-item:focus-within .lib-edit { opacity: 1; }
+@media (hover: none) { .library-item .lib-edit, .library-item .lib-delete { opacity: 1; } }
+.library-edit-row { margin: 4px 0 8px; }
+.autocomplete-item .ac-last { font-size: 11px; color: var(--terracotta); margin-left: 6px; }
+.history-dish-label { display: block; margin-top: 10px; font-size: 12px; }
+.history-match { font-size: 12px; color: var(--ink-soft); flex-basis: 100%; }
+.toast { display: flex; align-items: center; gap: 12px; }
+.toast-action { background: none; border: 1px solid rgba(255,255,255,.5); color: white; border-radius: var(--radius); padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.dia-mobile-bar { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: white; border-top: 1px solid var(--cream); box-shadow: 0 -4px 12px rgba(26,22,18,.08); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); gap: 8px; }
+.dia-mobile-bar button { flex: 1; min-height: 44px; border: 1px solid var(--cream); border-radius: var(--radius); background: white; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.dia-mobile-bar #mobilePDF { background: var(--ink); color: white; border-color: var(--ink); }
+.tab-panel:not(.active) .dia-mobile-bar { display: none !important; }
+#previewSidebar { scroll-margin-top: 50px; }
+@media (max-width: 900px) {
+  /* The preview sits below the workspace here: keep print/share one tap away. */
+  #panelDia { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .dia-mobile-bar { display: flex; }
+}
+.settings-group { border: 1px solid var(--cream); border-radius: var(--radius); margin-bottom: 14px; background: white; }
+.settings-group > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; font-size: 14px; }
+.settings-group > .settings-body { padding: 0 14px 14px; }
+.settings-group textarea { width: 100%; font-family: var(--font-body); font-size: 13px; padding: 8px 10px; border: 1px solid var(--cream); border-radius: var(--radius); }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.settings-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.settings-grid input { font-family: var(--font-body); font-size: 13px; padding: 7px 10px; border: 1px solid var(--cream); border-radius: var(--radius); }
+@media (max-width: 600px) {
+  .week-strip { grid-template-columns: repeat(7, minmax(44px, 1fr)); overflow-x: auto; }
+  .week-day .wd-state { font-size: 10px; }
+  .dia-mobile-bar { gap: 6px; padding-left: 8px; padding-right: 8px; }
+  .dia-mobile-bar button { font-size: 13px; white-space: nowrap; }
+}
+@media (max-width: 360px) { .dia-mobile-bar .bar-icon { display: none; } }
 </style>
 </head>
 <body>
@@ -2142,41 +2111,34 @@ kbd {
         <button class="btn btn-secondary btn-small" id="btnRetrySync" hidden>Reintentar</button>
       </div>
       <div class="date-price-bar">
-        <label for="menuDate">Preparar menú</label>
+        <label for="menuDate">Fecha</label>
         <input type="date" id="menuDate">
-        <button class="btn btn-secondary btn-small" id="planToday">Hoy</button>
-        <button class="btn btn-secondary btn-small" id="planTomorrow">Mañana</button>
-        <button class="btn btn-secondary btn-small" id="planAfterTomorrow">Pasado mañana</button>
+        <label for="menuPrice">Precio</label>
         <input type="text" id="menuPrice" style="width:90px" placeholder="14.50 €">
-        <button class="price-save-btn" id="saveSpecialPrice" title="Guardar precio especial para esta fecha">⭐</button>
+        <button class="btn btn-secondary btn-small" id="resetPrice" hidden>↺ Precio por defecto</button>
         <span class="price-badge" id="priceInfo"></span>
       </div>
     </div>
 
+    <div class="week-strip" id="weekStrip" role="group" aria-label="Próximos 7 días"></div>
     <p id="dateNotice" class="hint" hidden></p>
-
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
-      <button class="btn btn-secondary btn-small" id="copyYesterday">Copiar menú de ayer</button>
-      <button class="btn btn-secondary btn-small" id="copyLastWeek" style="max-width:100%;white-space:normal;">Copiar mismo día de la semana pasada</button>
-    </div>
-    <p class="hint">Respecto a la fecha seleccionada. Se conservan la fecha y el precio actuales.</p>
 
     <!-- QUICK INPUT -->
     <div class="quick-input-section">
       <h2>Añadir plato</h2>
       <div class="input-row">
         <div class="field autocomplete-wrapper">
-          <label>Español</label>
+          <label for="inputEs">Español</label>
           <input type="text" id="inputEs" placeholder="Escribe el nombre del plato..." autocomplete="off" spellcheck="true" lang="es">
           <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
         </div>
         <button class="btn-icon" id="btnTranslate" title="Traducir">🔄</button>
         <div class="field">
-          <label>Català</label>
+          <label for="inputCa">Català</label>
           <input type="text" id="inputCa" placeholder="Traducción automática..." autocomplete="off">
         </div>
         <div class="field" style="min-width:130px">
-          <label>Categoría</label>
+          <label for="inputCategory">Categoría</label>
           <select id="inputCategory">
             <option value="primer">Primer Plato</option>
             <option value="segundo">Segundo Plato</option>
@@ -2186,17 +2148,31 @@ kbd {
       </div>
       <div class="action-row">
         <button class="btn btn-primary" id="btnAddMenu">➕ Añadir al menú</button>
-        <button class="btn btn-secondary" id="btnSaveLib">💾 Guardar en biblioteca</button>
-        <button class="btn btn-secondary" id="btnBoth">✅ Menú + biblioteca</button>
+        <label class="inline-check"><input type="checkbox" id="inputSaveLibrary" checked> Guardar también en la biblioteca</label>
+        <button class="btn btn-secondary btn-small" id="btnSaveLib">Solo biblioteca</button>
       </div>
-      <p class="hint"><kbd>Enter</kbd> traduce y añade al menú &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> traduce y guarda en biblioteca &nbsp;·&nbsp; Escribe para buscar platos existentes</p>
+      <p class="hint"><kbd>Enter</kbd> traduce y añade al menú &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> solo a la biblioteca &nbsp;·&nbsp; Escribe para buscar platos existentes</p>
+      <div class="shortcut-block" aria-label="Platos habituales">
+        <h3>Favoritos y frecuentes</h3>
+        <div id="dailyShortcuts" class="shortcut-list"></div>
+      </div>
     </div>
 
-    <section class="quick-input-section" aria-label="Platos habituales">
-      <h2>Favoritos y frecuentes</h2>
-      <div id="dailyShortcuts" class="shortcut-list"></div>
-      <p class="hint">Marca ★ en la biblioteca. Los frecuentes se calculan con los últimos 30 menús guardados.</p>
+    <!-- MENU OF THE SELECTED DATE -->
+    <section class="menu-card" aria-labelledby="menuCardTitle">
+      <div class="menu-card-head">
+        <h2 id="menuCardTitle">Menú</h2>
+        <div class="menu-card-tools" title="Respecto a la fecha seleccionada. Se conservan la fecha y el precio actuales.">
+          <span>Copiar de:</span>
+          <button class="btn btn-secondary btn-small" id="copyYesterday">día anterior</button>
+          <button class="btn btn-secondary btn-small" id="copyLastWeek">mismo día, semana pasada</button>
+        </div>
+      </div>
+      <div id="menuBuilder">
+        <!-- Rendered by JS -->
+      </div>
     </section>
+
     <details class="quick-input-section" id="batchPanel">
       <summary>Añadir varios platos</summary>
       <p class="hint">Un plato por línea. Opcional: Español | Català. Máximo 50 platos.</p>
@@ -2211,11 +2187,6 @@ kbd {
       <p id="batchStatus" class="hint" role="status"></p>
     </details>
 
-    <!-- TODAY'S MENU -->
-    <div id="menuBuilder">
-      <!-- Rendered by JS -->
-    </div>
-
     <!-- DISH LIBRARY -->
     <div class="library-section">
       <button class="library-toggle" id="libraryToggle">
@@ -2225,6 +2196,13 @@ kbd {
       </button>
       <div class="library-content" id="libraryContent">
         <input type="text" class="library-search" id="librarySearch" placeholder="Buscar platos...">
+        <div class="library-filters" id="libraryFilters" role="group" aria-label="Filtrar biblioteca">
+          <button data-filter="all" aria-pressed="true">Todos</button>
+          <button data-filter="fav" aria-pressed="false">★ Favoritos</button>
+          <button data-filter="primer" aria-pressed="false">Primeros</button>
+          <button data-filter="segundo" aria-pressed="false">Segundos</button>
+          <button data-filter="postre" aria-pressed="false">Postres</button>
+        </div>
         <div id="libraryList"></div>
       </div>
     </div>
@@ -2240,6 +2218,8 @@ kbd {
         <input type="month" id="historyMonth">
         <button class="btn btn-secondary btn-small" id="searchHistoryMonth">Buscar</button>
         <button class="btn btn-secondary btn-small" id="recentHistory">Ver recientes</button>
+        <label for="historyDish" class="history-dish-label">Buscar plato en las fechas cargadas</label>
+        <input type="search" id="historyDish" class="library-search" placeholder="Ej.: paella">
         <p id="historySearchStatus" role="status" class="hint"></p>
         <div id="historyList"></div>
       </div>
@@ -2247,28 +2227,34 @@ kbd {
   </div>
 
   <!-- ========== RIGHT: PREVIEW ========== -->
-  <div class="preview-sidebar">
+  <div class="preview-sidebar" id="previewSidebar">
     <div class="preview-header">
       <h2>Vista Previa</h2>
-      <button class="btn-icon" id="btnSettings" title="Ajustes de impresión">⚙️</button>
+      <div class="preview-mode-toggle" id="previewMode" role="group" aria-label="Versión del PDF">
+        <button data-mode="color" aria-pressed="true">Color</button>
+        <button data-mode="bw" aria-pressed="false">B&amp;N</button>
+      </div>
+      <button class="btn-icon" id="btnSettings" title="Ajustes">⚙️</button>
     </div>
     <div class="preview-body">
+      <div id="previewIssues" class="preview-issues" role="status"></div>
       <div class="menu-preview-frame" id="menuPreview">
-        <!-- Rendered by JS -->
+        <!-- Rendered by JS: same page that is exported to PDF -->
       </div>
     </div>
     <div class="preview-actions">
-      <button class="btn btn-primary" id="btnPrint">🖨️ Imprimir</button>
+      <button class="btn btn-primary" id="btnPDF">🖨️ Imprimir / PDF</button>
       <button class="btn btn-olive" id="btnShare">📤 Compartir</button>
       <button class="btn btn-secondary" id="btnUndo" disabled>↶ Deshacer</button>
       <button class="btn btn-secondary" id="btnClear" style="color:var(--wine)">🗑️ Vaciar</button>
     </div>
-    <div class="preview-actions-row2">
-      <button class="btn btn-pdf-color" id="btnPDFColor">🎨 PDF Color</button>
-      <button class="btn btn-pdf-bw" id="btnPDFBW">◑ PDF B&amp;N</button>
-    </div>
   </div>
   </div><!-- /app-layout -->
+  <nav class="dia-mobile-bar" aria-label="Acciones del menú">
+    <button type="button" id="mobilePreview"><span class="bar-icon" aria-hidden="true">👁 </span>Vista previa</button>
+    <button type="button" id="mobilePDF"><span class="bar-icon" aria-hidden="true">🖨️ </span>PDF</button>
+    <button type="button" id="mobileShare"><span class="bar-icon" aria-hidden="true">📤 </span>Compartir</button>
+  </nav>
   </div><!-- /panelDia -->
 
   <div class="tab-panel" id="panelCerrado">
@@ -2311,31 +2297,7 @@ kbd {
 </div><!-- /app-shell -->
 
 <!-- BEAUTIFUL PDF TEMPLATE (off-screen, populated by JS before capture) -->
-<div id="pdf-template">
-  <div class="pt-page">
-    <div class="pt-accent-bar"></div>
-    <div class="pt-content">
-      <div class="pt-header">
-        <div class="pt-restaurant-name" id="pt-restaurant">RESTAURANTE SOL</div>
-        <div class="pt-ornament">✦</div>
-        <div class="pt-title">Menú del Día</div>
-        <div class="pt-rule"></div>
-        <div class="pt-meta">
-          <span id="pt-price"></span>
-          <span id="pt-date"></span>
-        </div>
-        <div class="pt-rule-double"></div>
-      </div>
-      <div class="pt-body" id="pt-body"></div>
-      <div class="pt-footer">
-        <div class="pt-rule"></div>
-        <div class="pt-hours">Horario de Menú &nbsp;·&nbsp; 13:00 – 16:00</div>
-        <div class="pt-contact" id="pt-contact"></div>
-      </div>
-    </div>
-    <div class="pt-accent-bar"></div>
-  </div>
-</div>
+<div id="pdf-template" class="pt-root" aria-hidden="true"></div>
 
 <!-- MC PDF TEMPLATE (off-screen, populated by JS before capture) -->
 <div id="mc-pdf-template" class="mcp-root">
@@ -2387,36 +2349,43 @@ kbd {
   <div class="modal">
     <button class="modal-close" id="closeSettings">&times;</button>
     <h2>Ajustes</h2>
-    <div style="padding:14px;border:1px solid var(--cream);border-radius:var(--radius);margin-bottom:20px;">
-      <h3 style="font-size:15px;margin-bottom:8px;">Copia del menú diario</h3>
-      <p style="font-size:12px;margin-bottom:10px;">La copia local incluye las fechas cargadas; la exportación de la nube consulta todas las fechas y añade los borradores pendientes. Incluye la biblioteca y favoritos cargados. No incluye ajustes ni claves de acceso. Los menús cerrados se exportan desde su pestaña (⬇ Exportar copia de seguridad).</p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia local</button>
-        <button class="btn btn-secondary btn-small" id="downloadCloudBackup" style="white-space:normal;max-width:100%;">Exportar todo el historial de la nube</button>
-        <button class="btn btn-secondary btn-small" id="chooseDailyBackup">Abrir copia…</button>
-      </div>
-      <input id="dailyBackupFile" type="file" accept=".json,application/json" hidden>
-      <p id="dailyBackupSummary" role="status" style="font-size:12px;margin-top:10px;white-space:pre-line;"></p>
-      <button class="btn btn-primary btn-small" id="restoreDailyBackup" style="max-width:100%;white-space:normal;" hidden>Añadir datos faltantes y sincronizar</button>
-    </div>
 
-    <div style="background:var(--olive-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
-      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔐 Cuenta Supabase</div>
-      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Necesario para el modo estricto (002). Usa email + contraseña.</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <input type="email" id="authEmail" placeholder="email@dominio.com" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
-        <input type="password" id="authPassword" placeholder="Contraseña" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+    <details class="settings-group" open>
+      <summary>🏠 Restaurante, precios y horario</summary>
+      <div class="settings-body">
+        <p class="hint" style="margin:0 0 10px;">Se guarda en tu cuenta y se usa en la vista previa, el PDF y al compartir.</p>
+        <div class="settings-grid">
+          <label>Nombre del restaurante<input type="text" id="bizName" placeholder="Restaurante Sol"></label>
+          <label>Horario del menú<input type="text" id="bizHours" placeholder="13:00 – 16:00"></label>
+          <label>Teléfono (pie del PDF a color)<input type="text" id="restaurantPhone" placeholder="93 123 45 67"></label>
+          <label>Dirección (pie del PDF a color)<input type="text" id="restaurantAddress" placeholder="Carrer Major 12"></label>
+          <label>Precio laborable<input type="text" id="bizPriceWeekday" placeholder="14.50 €"></label>
+          <label>Precio fin de semana y festivos<input type="text" id="bizPriceWeekend" placeholder="20.00 €"></label>
+        </div>
+        <label for="bizHolidays" style="font-size:12px;color:var(--ink-soft);">Festivos (una fecha AAAA-MM-DD por línea)</label>
+        <textarea id="bizHolidays" rows="6" spellcheck="false"></textarea>
+        <p class="hint" id="bizHolidaysStatus"></p>
+        <p class="hint">Los precios nuevos solo se aplican a fechas sin precio guardado. Revisa cada año el calendario oficial de festivos.</p>
       </div>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-        <button class="btn btn-primary btn-small" id="authSignIn" style="font-size:12px;padding:6px 12px;">Entrar</button>
-        <button class="btn btn-secondary btn-small" id="authSignUp" style="font-size:12px;padding:6px 12px;">Crear cuenta</button>
-        <button class="btn btn-secondary btn-small" id="authSignOut" style="font-size:12px;padding:6px 12px;">Salir</button>
+    </details>
+
+    <details class="settings-group">
+      <summary>🎨 Diseño del PDF</summary>
+      <div class="settings-body">
+        <p class="hint" style="margin:0 0 10px;">La vista previa muestra exactamente la página que se imprime.</p>
+        <div class="settings-grid">
+          <label>Título (%)<input type="number" id="psTitleScale" min="60" max="130" step="5"></label>
+          <label>Platos en español (%)<input type="number" id="psDishScale" min="70" max="140" step="5"></label>
+          <label>Traducción al catalán (%)<input type="number" id="psCaScale" min="70" max="140" step="5"></label>
+        </div>
+        <button class="btn btn-secondary btn-small" id="resetPrintScale">Restablecer tamaños</button>
       </div>
-      <button class="btn btn-secondary btn-small" id="recoverGuestDraft" hidden>Recuperar borrador sin sesión</button>
-      <div id="authStatus" style="font-size:12px;color:var(--ink-faint);margin-top:8px;"></div>
-    </div>
-    
-    <div style="background:var(--terracotta-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
+    </details>
+
+    <details class="settings-group">
+      <summary>🔑 Traducción (Gemini)</summary>
+      <div class="settings-body">
+<div style="background:var(--terracotta-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
       <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔑 API de Traducción (Gemini)</div>
       <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">
         Obtén tu clave gratis en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--terracotta)">aistudio.google.com/apikey</a><br>
@@ -2439,26 +2408,50 @@ kbd {
       <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;">Se guarda solo en este dispositivo.</div>
     </div>
 
-    <div style="background:var(--paper-warm);padding:14px;border-radius:var(--radius);margin-bottom:20px;border:1px solid var(--cream);">
-      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🎨 PDF Color — Información del restaurante</div>
-      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Aparece en el pie del PDF a color. Déjalo vacío para no mostrarlo.</div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="restaurantPhone" placeholder="Teléfono (ej: 93 123 45 67)" style="flex:1;font-family:var(--font-body);font-size:13px;padding:7px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
-        <input type="text" id="restaurantAddress" placeholder="Dirección (ej: Carrer Major 12)" style="flex:2;font-family:var(--font-body);font-size:13px;padding:7px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+          </div>
+    </details>
+
+    <details class="settings-group">
+      <summary>🔐 Cuenta</summary>
+      <div class="settings-body">
+<div style="background:var(--olive-light);padding:14px;border-radius:var(--radius);margin-bottom:20px;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:8px;">🔐 Cuenta Supabase</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-bottom:10px;">Necesario para el modo estricto (002). Usa email + contraseña.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <input type="email" id="authEmail" placeholder="email@dominio.com" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
+        <input type="password" id="authPassword" placeholder="Contraseña" style="width:100%;font-family:var(--font-body);font-size:13px;padding:8px 10px;border:1px solid var(--cream);border-radius:var(--radius);outline:none;">
       </div>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button class="btn btn-primary btn-small" id="authSignIn" style="font-size:12px;padding:6px 12px;">Entrar</button>
+        <button class="btn btn-secondary btn-small" id="authSignUp" style="font-size:12px;padding:6px 12px;">Crear cuenta</button>
+        <button class="btn btn-secondary btn-small" id="authSignOut" style="font-size:12px;padding:6px 12px;">Salir</button>
+      </div>
+      <button class="btn btn-secondary btn-small" id="recoverGuestDraft" hidden>Recuperar borrador sin sesión</button>
+      <div id="authStatus" style="font-size:12px;color:var(--ink-faint);margin-top:8px;"></div>
     </div>
 
-    <h3 style="font-family:var(--font-display);font-size:16px;margin-bottom:12px;">Estilo de Impresión</h3>
-    <div class="modal-row"><label>Tamaño título</label><input type="number" id="psTitleSize" min="16" max="48" step="1"></div>
-    <div class="modal-row"><label>Alineación título</label><select id="psTitleAlign"><option value="center">Centro</option><option value="left">Izquierda</option></select></div>
-    <div class="modal-row"><label>Tamaño precio/fecha</label><input type="number" id="psPriceSize" min="10" max="30" step="1"></div>
-    <div class="modal-row"><label>Tamaño categoría</label><input type="number" id="psSectionSize" min="10" max="28" step="1"></div>
-    <div class="modal-row"><label>Fuente plato (ES)</label><input type="number" id="psMainEs" min="8" max="24" step="1"></div>
-    <div class="modal-row"><label>Fuente plato (CA)</label><input type="number" id="psMainCa" min="8" max="24" step="1"></div>
-    <div class="modal-row"><label>Fuente postre (ES)</label><input type="number" id="psPostreEs" min="8" max="24" step="1"></div>
-    <div class="modal-row"><label>Fuente postre (CA)</label><input type="number" id="psPostreCa" min="8" max="24" step="1"></div>
-    <div class="modal-row"><label>Espacio entre categorías</label><input type="number" id="psSectionMargin" min="0" max="50" step="1"></div>
-    <div class="modal-row"><label>Espacio entre platos</label><input type="number" id="psItemMargin" min="0" max="50" step="1"></div>
+          </div>
+    </details>
+
+    <details class="settings-group">
+      <summary>💾 Copias de seguridad</summary>
+      <div class="settings-body">
+<div style="padding:14px;border:1px solid var(--cream);border-radius:var(--radius);margin-bottom:20px;">
+      <h3 style="font-size:15px;margin-bottom:8px;">Copia del menú diario</h3>
+      <p style="font-size:12px;margin-bottom:10px;">La copia local incluye las fechas cargadas; la exportación de la nube consulta todas las fechas y añade los borradores pendientes. Incluye la biblioteca y favoritos cargados. No incluye ajustes ni claves de acceso. Los menús cerrados se exportan desde su pestaña (⬇ Exportar copia de seguridad).</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="btn btn-secondary btn-small" id="downloadDailyBackup">Descargar copia local</button>
+        <button class="btn btn-secondary btn-small" id="downloadCloudBackup" style="white-space:normal;max-width:100%;">Exportar todo el historial de la nube</button>
+        <button class="btn btn-secondary btn-small" id="chooseDailyBackup">Abrir copia…</button>
+      </div>
+      <input id="dailyBackupFile" type="file" accept=".json,application/json" hidden>
+      <p id="dailyBackupSummary" role="status" style="font-size:12px;margin-top:10px;white-space:pre-line;"></p>
+      <button class="btn btn-primary btn-small" id="restoreDailyBackup" style="max-width:100%;white-space:normal;" hidden>Añadir datos faltantes y sincronizar</button>
+    </div>
+
+          </div>
+    </details>
+
     <div class="modal-actions">
       <button class="btn btn-secondary" id="closeSettingsBtn">Cerrar</button>
     </div>
@@ -2481,8 +2474,10 @@ kbd {
 const SUPABASE_URL = 'https://nkteqmgslcrqiglzcsyv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rdGVxbWdzbGNycWlnbHpjc3l2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzE4NzMsImV4cCI6MjA3MTYwNzg3M30.XmyXU4LAUYorfwsXjEEjHQsOHDWGa3gESxu2xq3XPm0';
 
-const HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-06-24','2025-08-15','2025-09-11','2025-09-24','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25','2025-12-26',
-                  '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26'];
+// Catalonia + Barcelona (Segunda Pascua, La Mercè). Editable in Ajustes; check the official calendar each year.
+const DEFAULT_HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2025-05-01','2025-06-09','2025-06-24','2025-08-15','2025-09-11','2025-09-24','2025-10-12','2025-11-01','2025-12-06','2025-12-08','2025-12-25','2025-12-26',
+                  '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-05-25','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26',
+                  '2027-01-01','2027-01-06','2027-03-26','2027-03-29','2027-05-01','2027-05-17','2027-06-24','2027-08-15','2027-09-11','2027-09-24','2027-10-12','2027-11-01','2027-12-06','2027-12-08','2027-12-25','2027-12-26'];
 
 const CATEGORY_LABELS = { primer: 'PRIMER PLATO', segundo: 'SEGUNDO PLATO', postre: 'POSTRES' };
 const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-lite';
@@ -2512,7 +2507,9 @@ let library = [];     // All saved dishes
 let todayMenu = { primer: [], segundo: [], postre: [] };
 let menuHistory = {};  // { 'YYYY-MM-DD': { primer: [...], segundo: [...], postre: [...] } }
 let specialPrices = {}; // { 'YYYY-MM-DD': '21.50 €' }
-const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18 };
+const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18,
+  titleScale: 100, dishScale: 100, caScale: 100,
+  restaurantName: 'Restaurante Sol', hours: '13:00 – 16:00', priceWeekday: '14.50 €', priceWeekend: '20.00 €', phone: '', address: '', holidays: DEFAULT_HOLIDAYS };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 let editingId = null;
 let autocompleteHighlight = -1;
@@ -2534,6 +2531,8 @@ let dishPreferences = { favorites: [] };
 let batchDraft = { text: '', category: 'primer', rows: [] };
 let batchRunning = false;
 let batchGeneration = 0;
+let libraryFilter = 'all';
+let libraryEditingId = null;
 
 function localDate(now = new Date()) {
   return new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
@@ -2585,7 +2584,7 @@ async function restoreUndo() {
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
-const SETTINGS_MAP = { psTitleSize: 'titleSize', psTitleAlign: 'titleAlign', psPriceSize: 'priceSize', psSectionSize: 'sectionSize', psMainEs: 'mainEs', psMainCa: 'mainCa', psPostreEs: 'postreEs', psPostreCa: 'postreCa', psSectionMargin: 'sectionMargin', psItemMargin: 'itemMargin' };
+const SETTINGS_MAP = { psTitleScale: 'titleScale', psDishScale: 'dishScale', psCaScale: 'caScale', bizName: 'restaurantName', bizHours: 'hours', restaurantPhone: 'phone', restaurantAddress: 'address', bizPriceWeekday: 'priceWeekday', bizPriceWeekend: 'priceWeekend', bizHolidays: 'holidays' };
 
 function normalizeGeminiModel(value) {
   return GEMINI_MODEL_OPTIONS.includes(value) ? value : DEFAULT_GEMINI_MODEL;
@@ -2622,8 +2621,27 @@ function normalizePrintSettings(input = {}) {
     postreCa: toIntInRange(base.postreCa, DEFAULT_PRINT_SETTINGS.postreCa, 8, 28),
     sectionMargin: toIntInRange(base.sectionMargin, DEFAULT_PRINT_SETTINGS.sectionMargin, 6, 40),
     itemMargin: toIntInRange(base.itemMargin, DEFAULT_PRINT_SETTINGS.itemMargin, 4, 28),
-    priceSize: toIntInRange(base.priceSize, DEFAULT_PRINT_SETTINGS.priceSize, 10, 36)
+    priceSize: toIntInRange(base.priceSize, DEFAULT_PRINT_SETTINGS.priceSize, 10, 36),
+    titleScale: toIntInRange(base.titleScale, 100, 60, 130),
+    dishScale: toIntInRange(base.dishScale, 100, 70, 140),
+    caScale: toIntInRange(base.caScale, 100, 70, 140),
+    restaurantName: textSetting(base.restaurantName, DEFAULT_PRINT_SETTINGS.restaurantName),
+    hours: textSetting(base.hours, DEFAULT_PRINT_SETTINGS.hours),
+    priceWeekday: textSetting(base.priceWeekday, DEFAULT_PRINT_SETTINGS.priceWeekday, 20),
+    priceWeekend: textSetting(base.priceWeekend, DEFAULT_PRINT_SETTINGS.priceWeekend, 20),
+    phone: textSetting(base.phone, '', 60),
+    address: textSetting(base.address, '', 120),
+    holidays: parseHolidays(base.holidays)
   };
+}
+
+function textSetting(value, fallback, max = 60) {
+  return (typeof value === 'string' && value.trim()) ? value.trim().slice(0, max) : fallback;
+}
+
+function parseHolidays(value) {
+  const list = Array.isArray(value) ? value : String(value ?? '').split(/[\s,;]+/);
+  return [...new Set(list.map(d => String(d).trim()).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && Number.isFinite(Date.parse(d))))].sort();
 }
 
 function withOwner(record) {
@@ -2870,7 +2888,8 @@ async function loadAll() {
   menuHistory = readCache('history', {});
   menuMetadata = readCache('metadata', {});
   specialPrices = readCache('specialPrices', {});
-  printSettings = normalizePrintSettings(readCache('printSettings', {}));
+  // Phone and address used to live only on this device; carry them into the synced settings once.
+  printSettings = normalizePrintSettings({ phone: localStorage.getItem('v2_restaurantPhone') || '', address: localStorage.getItem('v2_restaurantAddress') || '', ...readCache('printSettings', {}) });
   const draft = readCache('draft', {});
   activeDate = draft.date || localDate();
   $('menuDate').value = activeDate;
@@ -3249,7 +3268,7 @@ async function doTranslate() {
   const revision = ++translationRevision;
   const previousCa = $('inputCa').value;
   translating = true;
-  for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'btnBoth', 'inputCategory']) $(id).disabled = true;
+  for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'inputSaveLibrary', 'inputCategory']) $(id).disabled = true;
   $('inputCa').classList.add('translating');
   $('inputCa').placeholder = 'Traduciendo…';
   try {
@@ -3264,7 +3283,7 @@ async function doTranslate() {
     return false;
   } finally {
     translating = false;
-    for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'btnBoth', 'inputCategory']) $(id).disabled = false;
+    for (const id of ['btnTranslate', 'btnAddMenu', 'btnSaveLib', 'inputSaveLibrary', 'inputCategory']) $(id).disabled = false;
     $('inputCa').classList.remove('translating');
     $('inputCa').placeholder = 'Traducción automática...';
   }
@@ -3283,12 +3302,16 @@ function showAutocomplete(query) {
   if (matches.length === 0) { dropdown.classList.remove('visible'); return; }
   
   autocompleteHighlight = -1;
-  dropdown.innerHTML = matches.map((d, i) => `
+  const selected = $('menuDate').value;
+  const served = lastServedIndex(selected);
+  dropdown.innerHTML = matches.map((d, i) => {
+    const last = served.get(d.spanish.trim().toLowerCase());
+    return `
     <div class="autocomplete-item" data-id="${d.id}" data-index="${i}">
-      <span>${highlightMatch(d.spanish, q)} <em>· ${esc(d.catalan)}</em></span>
+      <span>${highlightMatch(d.spanish, q)} <em>· ${esc(d.catalan)}</em>${last ? `<span class="ac-last">${servedLabel(last, selected)}</span>` : ''}</span>
       <span class="cat-tag">${CATEGORY_LABELS[d.category] || ''}</span>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
   dropdown.classList.add('visible');
 }
 
@@ -3316,28 +3339,31 @@ async function addToMenu() {
   let ca = $('inputCa').value.trim();
   const cat = $('inputCategory').value;
   if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
-  if (!ca) { 
+  if (!ca) {
     if (!await doTranslate()) return;
     es = $('inputEs').value.trim();
     ca = $('inputCa').value.trim();
     if (!ca) { toast('Falta la traducción', 'error'); return; }
   }
-  
-  const finalCa = ca;
-  
-  // Check duplicate
-  if (todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase())) {
+
+  const alsoLibrary = !!$('inputSaveLibrary').checked;
+  const inMenu = todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase());
+  const inLibrary = library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat);
+  if (inMenu && (!alsoLibrary || inLibrary)) {
     toast('Ya está en el menú', 'info');
     return;
   }
-  
-  const dish = { id: uid(), spanish: es, catalan: finalCa, category: cat };
-  todayMenu[cat].push(dish);
-  await saveMenu();
+  if (alsoLibrary && !inLibrary) {
+    library.unshift({ id: uid(), spanish: es, catalan: ca, category: cat, created_at: new Date().toISOString() });
+    await saveLibrary();
+  }
+  if (!inMenu) {
+    todayMenu[cat].push({ id: uid(), spanish: es, catalan: ca, category: cat });
+    await saveMenu();
+  }
   clearInputs();
-  renderMenuBuilder();
-  renderPreview();
-  toast('Añadido al menú', 'success');
+  renderAll();
+  toast(alsoLibrary && !inLibrary ? (inMenu ? 'Guardado en biblioteca' : 'Añadido al menú y a la biblioteca') : 'Añadido al menú', 'success');
 }
 
 async function addToLibrary() {
@@ -3360,37 +3386,6 @@ async function addToLibrary() {
   toast('Guardado en biblioteca', 'success');
 }
 
-async function addBoth() {
-  if (translating) return;
-  let es = $('inputEs').value.trim();
-  let ca = $('inputCa').value.trim();
-  const cat = $('inputCategory').value;
-  if (!es) { toast('Escribe el nombre del plato', 'error'); return; }
-  if (!ca) {
-    if (!await doTranslate()) return;
-    es = $('inputEs').value.trim();
-    ca = $('inputCa').value.trim();
-  }
-  const finalCa = ca;
-  if (!finalCa) { toast('Falta la traducción', 'error'); return; }
-  
-  // Add to library if not exists
-  if (!library.some(d => d.spanish.toLowerCase() === es.toLowerCase() && d.category === cat)) {
-    library.unshift({ id: uid(), spanish: es, catalan: finalCa, category: cat, created_at: new Date().toISOString() });
-    await saveLibrary();
-  }
-
-  // Add to menu if not exists
-  if (!todayMenu[cat].some(d => d.spanish.toLowerCase() === es.toLowerCase())) {
-    todayMenu[cat].push({ id: uid(), spanish: es, catalan: finalCa, category: cat });
-    await saveMenu();
-  }
-  
-  clearInputs();
-  renderAll();
-  toast('Añadido al menú y biblioteca', 'success');
-}
-
 async function addFromLibrary(id) {
   const dish = library.find(d => d.id === id);
   if (!dish) return;
@@ -3408,20 +3403,53 @@ async function addFromLibrary(id) {
 }
 
 async function removeFromMenu(id, category) {
+  const dish = (todayMenu[category] || []).find(d => d.id === id);
+  if (!dish) return;
   rememberUndo();
   todayMenu[category] = todayMenu[category].filter(d => d.id !== id);
   await saveMenu();
   renderMenuBuilder();
   renderPreview();
   renderLibrary();
+  toast(`Quitado: ${dish.spanish}`, 'info', { label: 'Deshacer', run: restoreUndo });
 }
 
 async function deleteFromLibrary(id) {
-  if (!confirm('¿Eliminar de la biblioteca?')) return;
-  library = library.filter(d => d.id !== id);
-  await deleteFromCloud(id);
+  const index = library.findIndex(d => d.id === id);
+  if (index === -1) return;
+  const dish = library[index];
+  library.splice(index, 1);
+  if (libraryEditingId === id) libraryEditingId = null;
   renderLibrary();
-  toast('Eliminado', 'success');
+  await deleteFromCloud(id);
+  toast(`Eliminado de la biblioteca: ${dish.spanish}`, 'info', { label: 'Deshacer', run: () => restoreLibraryDish(dish, index) });
+}
+
+async function restoreLibraryDish(dish, index) {
+  if (library.some(d => d.id === dish.id)) return;
+  library.splice(Math.min(index, library.length), 0, dish);
+  pendingSaves.deletes = pendingSaves.deletes.filter(x => x !== dish.id);
+  renderLibrary();
+  await saveLibrary();
+  toast('Plato recuperado', 'success');
+}
+
+async function saveLibraryEdit(id) {
+  const row = document.querySelector(`.library-edit-row[data-id="${id}"]`);
+  const dish = library.find(d => d.id === id);
+  if (!row || !dish) return;
+  const es = row.querySelector('.edit-es').value.trim();
+  const ca = row.querySelector('.edit-ca').value.trim();
+  const category = row.querySelector('.edit-category').value;
+  if (!es || !ca) { toast('Falta nombre o traducción', 'error'); return; }
+  if (library.some(d => d.id !== id && d.category === category && d.spanish.toLowerCase() === es.toLowerCase())) {
+    toast('Ya existe en la biblioteca', 'info'); return;
+  }
+  Object.assign(dish, { spanish: es, catalan: ca, category, updated_at: new Date().toISOString() });
+  libraryEditingId = null;
+  renderLibrary();
+  await saveLibrary();
+  toast('Plato de la biblioteca actualizado', 'success');
 }
 
 async function moveInMenu(id, category, direction) {
@@ -3501,7 +3529,7 @@ async function clearMenu() {
   todayMenu = { primer: [], segundo: [], postre: [] };
   await saveMenu();
   renderAll();
-  toast('Menú vaciado', 'info');
+  toast('Menú vaciado', 'info', { label: 'Deshacer', run: restoreUndo });
 }
 
 async function copyRelativeMenu(days) {
@@ -3547,7 +3575,28 @@ function renderAll() {
   renderHistory();
 }
 
+// Latest date before `beforeDate` on which each dish (by Spanish name) appeared, from loaded history.
+function lastServedIndex(beforeDate) {
+  const index = new Map();
+  for (const [date, menu] of Object.entries(menuHistory)) {
+    if (!beforeDate || date >= beforeDate) continue;
+    for (const d of Object.values(menu || {}).flat()) {
+      const key = String(d?.spanish || '').trim().toLowerCase();
+      if (key && (!index.has(key) || index.get(key) < date)) index.set(key, date);
+    }
+  }
+  return index;
+}
+
+function servedLabel(date, reference) {
+  const days = Math.round((Date.parse(`${reference}T12:00:00Z`) - Date.parse(`${date}T12:00:00Z`)) / 86400000);
+  return days === 1 ? 'servido el día anterior' : `servido hace ${days} días`;
+}
+
 function renderMenuBuilder() {
+  const selected = $('menuDate').value;
+  $('menuCardTitle').textContent = selected ? `Menú · ${menuDateLabel(selected, { weekday: 'long', day: 'numeric', month: 'long' })}` : 'Menú';
+  const served = lastServedIndex(selected);
   let html = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
     const dishes = todayMenu[cat] || [];
@@ -3559,7 +3608,7 @@ function renderMenuBuilder() {
       <div class="dish-list" data-category="${cat}">`;
     
     if (dishes.length === 0) {
-      html += `<div class="drop-hint">Sin platos — escribe arriba o busca en la biblioteca</div>`;
+      html += `<div class="drop-hint">Sin platos — añade uno arriba, un favorito o desde la biblioteca</div>`;
     } else {
       dishes.forEach((dish, i) => {
         if (dish.id === editingId) {
@@ -3578,11 +3627,14 @@ function renderMenuBuilder() {
             </div>
           </div>`;
         } else {
+          const last = served.get(dish.spanish.trim().toLowerCase());
+          const recent = last && Date.parse(`${selected}T12:00:00Z`) - Date.parse(`${last}T12:00:00Z`) <= 7 * 86400000;
           html += `<div class="dish-card" data-id="${dish.id}" data-cat="${cat}" draggable="true">
             <span class="drag-handle">⋮⋮</span>
             <div class="dish-text">
               <div class="dish-es">${esc(dish.spanish)}</div>
               <div class="dish-ca">${esc(dish.catalan)}</div>
+              ${recent ? `<div class="dish-served">↺ ${servedLabel(last, selected)}</div>` : ''}
             </div>
             <div class="dish-actions">
               <button class="dish-action-btn" data-action="move" data-direction="up" data-id="${dish.id}" data-cat="${cat}" title="Subir">▲</button>
@@ -3600,51 +3652,38 @@ function renderMenuBuilder() {
 }
 
 function renderPreview() {
-  $('dateNotice').hidden = false;
   const selectedDate = $('menuDate').value;
-  const relative = selectedDate === planningDate(0) ? 'Hoy' : selectedDate === planningDate(1) ? 'Mañana' : selectedDate === planningDate(2) ? 'Pasado mañana' : selectedDate < localDate() ? 'Historial' : 'Planificado';
-  $('dateNotice').textContent = `Preparando: ${selectedDate} · ${relative}`;
+  const relative = selectedDate === planningDate(0) ? 'Hoy' : selectedDate === planningDate(1) ? 'Mañana' : selectedDate === planningDate(2) ? 'Pasado mañana' : selectedDate < localDate() ? 'Fecha pasada' : 'Planificado';
+  $('dateNotice').hidden = false;
+  $('dateNotice').textContent = `Preparando: ${menuDateLabel(selectedDate, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · ${relative}`;
   $('dateNotice').style.fontWeight = '600';
-  const price = $('menuPrice').value || '14.50 €';
-  const dateVal = $('menuDate').value;
-  const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : '';
-  const safePrice = esc(price);
-  const safeDate = esc(dateStr);
-
-  let html = `<div class="mp-header">
-    <div class="mp-title" style="font-size:${printSettings.titleSize}px;text-align:${printSettings.titleAlign}">Menú del día</div>
-    <div class="mp-restaurant">Restaurante Sol</div>
-    <div class="mp-meta" style="font-size:${printSettings.priceSize}px"><span>${safePrice}</span><span>${safeDate}</span></div>
-  </div>`;
-
-  for (const cat of ['primer', 'segundo', 'postre']) {
-    const dishes = todayMenu[cat] || [];
-    if (dishes.length === 0) continue;
-    
-    html += `<div class="mp-section" data-category="${cat}" style="margin-bottom:${printSettings.sectionMargin}px">
-      <div class="mp-section-title" style="font-size:${printSettings.sectionSize}px">${CATEGORY_LABELS[cat]}</div>`;
-    
-    if (cat === 'postre') {
-      const esText = dishes.map(d => d.spanish).join(', ');
-      const caText = dishes.map(d => d.catalan).join(', ');
-      html += `<div class="mp-item" style="margin-bottom:${printSettings.itemMargin}px">
-        <div class="mp-item-es" style="font-size:${printSettings.postreEs}px">${esc(esText)}</div>
-        <div class="mp-item-ca" style="font-size:${printSettings.postreCa}px">${esc(caText)}</div>
-      </div>`;
-    } else {
-      dishes.forEach(d => {
-        html += `<div class="mp-item" style="margin-bottom:${printSettings.itemMargin}px">
-          <div class="mp-item-es" style="font-size:${printSettings.mainEs}px">${esc(d.spanish)}</div>
-          <div class="mp-item-ca" style="font-size:${printSettings.mainCa}px">${esc(d.catalan)}</div>
-        </div>`;
-      });
-    }
-    html += '</div>';
-  }
-  
-  html += '<div class="mp-hours">HORARIO DE MENÚ 13:00 – 16:00</div>';
-  $('menuPreview').innerHTML = html;
+  updatePriceInfo();
+  const frame = $('menuPreview');
+  let root = frame.querySelector('.pt-root');
+  if (!root) { root = document.createElement('div'); frame.replaceChildren(root); }
+  fillDailyPage(root, previewMode);
+  updatePreviewScale();
+  for (const btn of $('previewMode').querySelectorAll('[data-mode]')) btn.setAttribute('aria-pressed', String(btn.dataset.mode === previewMode));
+  renderPreviewIssues();
+  renderWeekStrip();
   renderDailyShortcuts();
+}
+
+function renderWeekStrip() {
+  const selected = $('menuDate').value;
+  $('weekStrip').innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const date = planningDate(i);
+    const menu = date === selected ? todayMenu : menuHistory[date];
+    const counts = ['primer', 'segundo', 'postre'].map(c => (menu?.[c] || []).length);
+    const total = counts.reduce((a, b) => a + b, 0);
+    const name = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : menuDateLabel(date, { weekday: 'short' }).replace('.', '');
+    const ready = counts.every(Boolean);
+    const cls = ['week-day', ready ? 'is-ready' : total ? 'is-partial' : '', isHoliday(date) ? 'is-holiday' : ''].filter(Boolean).join(' ');
+    const title = `${menuDateLabel(date, { weekday: 'long', day: 'numeric', month: 'long' })} · ${defaultPriceFor(date).label.slice(3)} · ${total ? `${total} platos` : 'sin menú'}`;
+    return `<button type="button" class="${cls}" data-date="${date}" aria-pressed="${date === selected}" title="${esc(title)}">
+      <span class="wd-name">${esc(name)}</span><span class="wd-num">${Number(date.slice(8))}</span><span class="wd-state">${ready ? `✓ ${total}` : total ? `${total} pl.` : 'Vacío'}</span>
+    </button>`;
+  }).join('');
 }
 
 function renderDailyShortcuts() {
@@ -3654,7 +3693,7 @@ function renderDailyShortcuts() {
   el.innerHTML = items.map(d => {
     const inMenu = (todayMenu[d.category] || []).some(x => MenuWorkflows.key(x.spanish,d.category) === MenuWorkflows.key(d.spanish,d.category));
     return `<button class="btn btn-secondary" data-dish="${d.id}" ${inMenu ? 'disabled' : ''}>${d.favorite ? '★ ' : ''}${esc(d.spanish)}${inMenu ? ' ✓' : ''}</button>`;
-  }).join('') || '<p class="hint">Guarda platos en la biblioteca y marca tus favoritos con ☆.</p>';
+  }).join('') || '<p class="hint">Marca ☆ en la biblioteca. Los frecuentes salen de los últimos 30 menús guardados.</p>';
 }
 async function toggleFavorite(id) {
   const favorites = new Set(dishPreferences.favorites.map(String));
@@ -3758,42 +3797,73 @@ function bindBatchEvents() {
 function renderLibrary() {
   renderDailyShortcuts();
   const search = ($('librarySearch')?.value || '').toLowerCase();
+  const favorites = new Set(dishPreferences.favorites.map(String));
+  const served = lastServedIndex($('menuDate').value);
   $('libraryCount').textContent = `(${library.length})`;
-  
-  // Identify which dishes are in today's menu
-  const menuNames = new Set();
-  Object.values(todayMenu).forEach(arr => arr.forEach(d => menuNames.add(d.spanish.toLowerCase())));
+  for (const btn of $('libraryFilters').querySelectorAll('[data-filter]')) btn.setAttribute('aria-pressed', String(btn.dataset.filter === libraryFilter));
   
   let html = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
+    if (['primer', 'segundo', 'postre'].includes(libraryFilter) && libraryFilter !== cat) continue;
     let dishes = library.filter(d => d.category === cat);
+    if (libraryFilter === 'fav') dishes = dishes.filter(d => favorites.has(String(d.id)));
     if (search) dishes = dishes.filter(d => d.spanish.toLowerCase().includes(search) || d.catalan.toLowerCase().includes(search));
     if (dishes.length === 0) continue;
     
     html += `<div class="library-category">
       <div class="library-category-title">${CATEGORY_LABELS[cat]} (${dishes.length})</div>`;
     dishes.forEach(d => {
-      const inMenu = menuNames.has(d.spanish.toLowerCase());
+      if (d.id === libraryEditingId) {
+        html += `<div class="inline-edit-row library-edit-row" data-id="${d.id}">
+          <input class="edit-es" value="${esc(d.spanish)}" placeholder="Español" aria-label="Español">
+          <input class="edit-ca" value="${esc(d.catalan)}" placeholder="Català" aria-label="Català">
+          <select class="edit-category" aria-label="Categoría">
+            <option value="primer" ${cat === 'primer' ? 'selected' : ''}>Primer Plato</option>
+            <option value="segundo" ${cat === 'segundo' ? 'selected' : ''}>Segundo Plato</option>
+            <option value="postre" ${cat === 'postre' ? 'selected' : ''}>Postres</option>
+          </select>
+          <div class="inline-edit-actions">
+            <button class="dish-action-btn" data-action="save-library" data-id="${d.id}" title="Guardar">✓</button>
+            <button class="dish-action-btn" data-action="cancel-library" title="Cancelar">✕</button>
+          </div>
+        </div>`;
+        return;
+      }
+      const inMenu = (todayMenu[cat] || []).some(x => x.spanish.toLowerCase() === d.spanish.toLowerCase());
+      const isFavorite = favorites.has(String(d.id));
+      const last = served.get(d.spanish.trim().toLowerCase());
       html += `<div class="library-item ${inMenu ? 'in-menu' : ''}" data-action="add-from-library" data-id="${d.id}">
-        <button class="favorite-toggle" data-favorite="${d.id}" aria-label="Favorito: ${esc(d.spanish)}" aria-pressed="${dishPreferences.favorites.map(String).includes(String(d.id))}">${dishPreferences.favorites.map(String).includes(String(d.id)) ? '★' : '☆'}</button>
+        <button class="favorite-toggle" data-favorite="${d.id}" aria-label="Favorito: ${esc(d.spanish)}" aria-pressed="${isFavorite}">${isFavorite ? '★' : '☆'}</button>
         <span class="lib-es">${esc(d.spanish)}</span>
         <span class="lib-ca">${esc(d.catalan)}</span>
+        ${last ? `<span class="lib-last" title="Última vez en el menú">${esc(menuDateLabel(last, { day: 'numeric', month: 'short' }))}</span>` : ''}
         <span class="lib-add">${inMenu ? '✓' : '+'}</span>
-        <button class="lib-delete" data-action="delete-from-library" data-id="${d.id}" title="Eliminar">🗑️</button>
+        <button class="lib-edit" data-action="edit-library" data-id="${d.id}" title="Editar" aria-label="Editar ${esc(d.spanish)}">✏️</button>
+        <button class="lib-delete" data-action="delete-from-library" data-id="${d.id}" title="Eliminar" aria-label="Eliminar ${esc(d.spanish)}">🗑️</button>
       </div>`;
     });
     html += '</div>';
   }
   
-  if (!html) html = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">No hay platos guardados. Usa "Guardar en biblioteca" para añadir.</p>';
+  if (!html) html = `<p style="color:var(--ink-faint);font-size:13px;padding:12px">${library.length ? 'Ningún plato coincide con el filtro.' : 'No hay platos guardados. Marca «Guardar también en la biblioteca» al añadir.'}</p>`;
   $('libraryList').innerHTML = html;
 }
 
 function renderHistory() {
   const available = Object.keys(menuHistory).sort().reverse();
-  const dates = historyFilter ? available.filter(date=>date.startsWith(historyFilter+'-')) : available.slice(0,60);
+  const dishQuery = ($('historyDish')?.value || '').trim().toLowerCase();
+  let dates = historyFilter ? available.filter(date=>date.startsWith(historyFilter+'-')) : dishQuery ? available : available.slice(0,60);
+  const matches = {};
+  if (dishQuery) {
+    dates = dates.filter(date => {
+      const found = Object.values(menuHistory[date] || {}).flat().filter(d => String(d?.spanish || '').toLowerCase().includes(dishQuery) || String(d?.catalan || '').toLowerCase().includes(dishQuery));
+      if (found.length) matches[date] = found.map(d => d.spanish);
+      return found.length > 0;
+    });
+    $('historySearchStatus').textContent = `${dates.length} fecha(s) con «${$('historyDish').value.trim()}» entre las fechas cargadas. Busca un mes para cargar más.`;
+  }
   if (dates.length === 0) {
-    $('historyList').innerHTML = '<p style="color:var(--ink-faint);font-size:13px;padding:12px">No hay menús cargados para esta vista. Busca un mes para consultar la nube.</p>';
+    $('historyList').innerHTML = `<p style="color:var(--ink-faint);font-size:13px;padding:12px">${dishQuery ? 'Este plato no aparece en las fechas cargadas.' : 'No hay menús cargados para esta vista. Busca un mes para consultar la nube.'}</p>`;
     return;
   }
   
@@ -3805,6 +3875,7 @@ function renderHistory() {
     return `<div class="history-item" data-date="${esc(dateStr)}">
       <span class="history-date">${esc(displayDate)}</span>
       <span class="history-summary">${total} platos · ${esc(sample || '...')}</span>
+      ${matches[dateStr] ? `<span class="history-match">🔎 ${esc(matches[dateStr].join(', '))}</span>` : ''}
       <button class="history-load-btn" data-restore="false">Copiar a fecha actual ↗</button>
       <button class="history-load-btn" data-restore="true">Restaurar fecha y precio</button>
     </div>`;
@@ -3911,6 +3982,9 @@ function bindEvents() {
       await deleteFromLibrary(id);
       return;
     }
+    if (action === 'edit-library') { libraryEditingId = id; renderLibrary(); document.querySelector(`.library-edit-row[data-id="${id}"] .edit-es`)?.focus(); return; }
+    if (action === 'cancel-library') { libraryEditingId = null; renderLibrary(); return; }
+    if (action === 'save-library') { await saveLibraryEdit(id); return; }
 
     if (action === 'add-from-library') {
       await addFromLibrary(id);
@@ -3921,12 +3995,33 @@ function bindEvents() {
   $('btnTranslate').addEventListener('click', doTranslate);
   $('btnAddMenu').addEventListener('click', addToMenu);
   $('btnSaveLib').addEventListener('click', addToLibrary);
-  $('btnBoth').addEventListener('click', addBoth);
-  $('saveSpecialPrice').addEventListener('click', saveSpecialPriceForDate);
-  $('btnPrint').addEventListener('click', printMenu);
+  try { $('inputSaveLibrary').checked = localStorage.getItem('dia_save_library') !== '0'; } catch {}
+  $('inputSaveLibrary').addEventListener('change', e => { try { localStorage.setItem('dia_save_library', e.target.checked ? '1' : '0'); } catch {} });
+  // Keep focus in the price field: its blur starts a save whose sync badge can shift the header mid-click.
+  $('resetPrice').addEventListener('mousedown', e => e.preventDefault());
+  $('resetPrice').addEventListener('click', resetPriceForDate);
+  $('btnPDF').addEventListener('click', () => openDailyPdf());
   $('btnShare').addEventListener('click', shareMenu);
-  $('btnPDFColor').addEventListener('click', () => generateDesignPDF('color'));
-  $('btnPDFBW').addEventListener('click', () => generateDesignPDF('bw'));
+  $('mobilePDF').addEventListener('click', () => openDailyPdf());
+  $('mobileShare').addEventListener('click', shareMenu);
+  $('mobilePreview').addEventListener('click', () => $('previewSidebar').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  $('previewMode').addEventListener('click', e => {
+    const btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    previewMode = btn.dataset.mode === 'bw' ? 'bw' : 'color';
+    try { localStorage.setItem('dia_preview_mode', previewMode); } catch {}
+    renderPreview();
+  });
+  $('weekStrip').addEventListener('click', e => {
+    const btn = e.target.closest('[data-date]');
+    if (!btn || btn.dataset.date === $('menuDate').value) return;
+    $('menuDate').value = btn.dataset.date;
+    changeMenuDate();
+  });
+  // The page preview needs layout to fit; refresh it when it becomes visible or resizes, and once fonts load.
+  $('tabDia').addEventListener('click', () => requestAnimationFrame(renderPreview));
+  if (window.ResizeObserver) new ResizeObserver(updatePreviewScale).observe($('menuPreview'));
+  document.fonts?.ready.then(() => renderPreview());
   $('btnClear').addEventListener('click', clearMenu);
   $('btnUndo').addEventListener('click', restoreUndo);
   $('copyYesterday').addEventListener('click', () => copyRelativeMenu(1));
@@ -3936,9 +4031,6 @@ function bindEvents() {
 
   // Date change
   $('menuDate').addEventListener('change', changeMenuDate);
-  for (const [id,offset] of [['planToday',0],['planTomorrow',1],['planAfterTomorrow',2]]) {
-    $(id).addEventListener('click', () => { $('menuDate').value = planningDate(offset); changeMenuDate(); });
-  }
   $('menuPrice').addEventListener('input', () => { renderPreview(); stageMenu(); });
   $('menuPrice').addEventListener('change', saveMenu);
 
@@ -3956,8 +4048,18 @@ function bindEvents() {
     $('historyArrow').classList.toggle('open');
   });
 
-  // Library search
+  // Library search and filters
   $('librarySearch').addEventListener('input', () => renderLibrary());
+  $('libraryFilters').addEventListener('click', e => {
+    const btn = e.target.closest('[data-filter]');
+    if (!btn) return;
+    libraryFilter = btn.dataset.filter;
+    renderLibrary();
+  });
+  $('historyDish').addEventListener('input', () => {
+    if (!$('historyDish').value.trim()) $('historySearchStatus').textContent = '';
+    renderHistory();
+  });
 
   // Settings modal
   $('downloadDailyBackup').addEventListener('click',downloadDailyBackup);
@@ -3970,20 +4072,17 @@ function bindEvents() {
     $('geminiKeyInput').value = savedKey;
     $('geminiStatus').textContent = savedKey ? '✅ Key guardada (solo este dispositivo)' : '⚠️ Sin configurar — usa Google Translate como respaldo';
     $('geminiModelSelect').value = getGeminiModel();
-    $('restaurantPhone').value = localStorage.getItem('v2_restaurantPhone') || '';
-    $('restaurantAddress').value = localStorage.getItem('v2_restaurantAddress') || '';
+    initSettingsUI();
     refreshAuthUI();
   });
 
-  function saveRestaurantInfo() {
-    localStorage.setItem('v2_restaurantPhone', $('restaurantPhone').value.trim());
-    localStorage.setItem('v2_restaurantAddress', $('restaurantAddress').value.trim());
-  }
-
-  $('closeSettings').addEventListener('click', () => { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); });
-  $('closeSettingsBtn').addEventListener('click', () => { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); });
-  $('settingsModal').addEventListener('click', e => {
-    if (e.target === $('settingsModal')) { syncSettingsFromUI(); saveRestaurantInfo(); $('settingsModal').classList.remove('visible'); }
+  const closeSettings = () => { syncSettingsFromUI(); initSettingsUI(); $('settingsModal').classList.remove('visible'); };
+  $('closeSettings').addEventListener('click', closeSettings);
+  $('closeSettingsBtn').addEventListener('click', closeSettings);
+  $('settingsModal').addEventListener('click', e => { if (e.target === $('settingsModal')) closeSettings(); });
+  $('resetPrintScale').addEventListener('click', () => {
+    for (const id of ['psTitleScale', 'psDishScale', 'psCaScale']) $(id).value = 100;
+    syncSettingsFromUI();
   });
 
   $('authSignIn').addEventListener('click', async () => {
@@ -4080,19 +4179,20 @@ function bindEvents() {
     for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
       const el = $(inputId);
       if (!el) continue;
-      printSettings[key] = el.tagName === 'SELECT' ? el.value : parseInt(el.value) || 0;
+      printSettings[key] = settingValue(el);
     }
     printSettings = normalizePrintSettings(printSettings);
     saveLocal();
-    renderPreview();
+    renderAll();
     saveSettings();
   }
   
   let settingsSaveTimer = null;
   for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
     const handler = e => {
-      printSettings[key] = e.target.tagName === 'SELECT' ? e.target.value : parseInt(e.target.value) || 0;
+      printSettings[key] = settingValue(e.target);
       printSettings = normalizePrintSettings(printSettings);
+      if (key === 'holidays') renderHolidayStatus();
       pendingSaves.settings = true;
       editRevision++;
       saveLocal();
@@ -4216,53 +4316,44 @@ async function changeMenuDate() {
   await syncPending();
 }
 
+function isHoliday(date) {
+  return printSettings.holidays.includes(date);
+}
+
+function defaultPriceFor(date) {
+  const day = new Date(`${date}T12:00:00Z`).getUTCDay();
+  if (isHoliday(date)) return { price: printSettings.priceWeekend, label: '🎉 Festivo' };
+  if (day === 0 || day === 6) return { price: printSettings.priceWeekend, label: '📅 Fin de semana' };
+  return { price: printSettings.priceWeekday, label: '📋 Laborable' };
+}
+
+const samePrice = (a, b) => String(a).replace(/\s|€/g, '').replace(',', '.') === String(b).replace(/\s|€/g, '').replace(',', '.');
+
+// Price shown for a date without a saved price. Saved prices (menuMetadata) are applied by callers.
 function setDate() {
   const input = $('menuDate');
   if (!input.value) input.value = localDate();
-  const d = new Date(input.value);
-  const day = d.getUTCDay();
-  const isWeekend = day === 0 || day === 6;
-  const isHoliday = HOLIDAYS.includes(input.value);
-  const specialPrice = specialPrices[input.value];
-
-  if (specialPrice) {
-    $('menuPrice').value = specialPrice;
-    $('priceInfo').textContent = '⭐ Precio especial';
-    return;
-  }
-  
-  if (isWeekend || isHoliday) {
-    $('menuPrice').value = '20.00 €';
-    $('priceInfo').textContent = isHoliday ? '🎉 Festivo' : '📅 Fin de semana';
-  } else {
-    $('menuPrice').value = '14.50 €';
-    $('priceInfo').textContent = '📋 Laborable';
-  }
+  $('menuPrice').value = specialPrices[input.value] || defaultPriceFor(input.value).price;
+  updatePriceInfo();
 }
 
-function saveSpecialPriceForDate() {
-  const dateStr = $('menuDate').value;
-  const price = $('menuPrice').value.trim();
-  if (!dateStr) {
-    toast('Elige una fecha primero', 'error');
-    return;
-  }
-  if (!price) {
-    delete specialPrices[dateStr];
-    saveLocal();
-    setDate();
-    saveMenu();
-    renderPreview();
-    toast('Precio especial eliminado', 'info');
-    return;
-  }
+function updatePriceInfo() {
+  const date = $('menuDate').value;
+  if (!date) return;
+  const rule = defaultPriceFor(date);
+  const custom = !samePrice($('menuPrice').value.trim(), rule.price);
+  $('priceInfo').textContent = custom ? `✏️ Precio personalizado · ${rule.label.slice(3)}: ${rule.price}` : rule.label;
+  $('resetPrice').hidden = !custom;
+}
 
-  specialPrices[dateStr] = price;
-  saveLocal();
-  setDate();
+async function resetPriceForDate() {
+  const date = $('menuDate').value;
+  if (!date) return;
+  delete specialPrices[date];
+  $('menuPrice').value = defaultPriceFor(date).price;
+  await saveMenu();
   renderPreview();
-  saveMenu();
-  toast('Precio especial guardado', 'success');
+  toast('Precio por defecto aplicado', 'info');
 }
 
 function clearInputs() {
@@ -4272,11 +4363,22 @@ function clearInputs() {
   $('inputEs').focus();
 }
 
+// normalizePrintSettings parses and clamps; an empty number field falls back to its default.
+const settingValue = el => el.value;
+
+function renderHolidayStatus() {
+  const nextYear = String(Number(localDate().slice(0, 4)) + 1);
+  const upcoming = printSettings.holidays.filter(d => d >= localDate()).slice(0, 3).map(d => menuDateLabel(d));
+  const missingNext = !printSettings.holidays.some(d => d.startsWith(nextYear));
+  $('bizHolidaysStatus').textContent = `${printSettings.holidays.length} festivos · próximos: ${upcoming.join(', ') || 'ninguno'}${missingNext ? ` · ⚠️ faltan los de ${nextYear}` : ''}`;
+}
+
 function initSettingsUI() {
   for (const [inputId, key] of Object.entries(SETTINGS_MAP)) {
     const el = $(inputId);
-    if (el) el.value = printSettings[key];
+    if (el) el.value = key === 'holidays' ? printSettings.holidays.join('\n') : printSettings[key];
   }
+  renderHolidayStatus();
   const modelEl = $('geminiModelSelect');
   if (modelEl) modelEl.value = getGeminiModel();
 }
@@ -4288,436 +4390,234 @@ function syncUI(status, msg) {
   text.textContent = msg;
 }
 
-function toast(msg, type = 'info') {
+function toast(msg, type = 'info', action = null) {
   const t = document.createElement('div');
   t.className = `toast ${type}`;
   t.textContent = msg;
+  if (action) {
+    const btn = document.createElement('button');
+    btn.className = 'toast-action';
+    btn.type = 'button';
+    btn.textContent = action.label;
+    btn.addEventListener('click', () => { t.remove(); action.run(); });
+    t.appendChild(btn);
+  }
   $('toastContainer').appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, action ? 6000 : 2500);
 }
 
 function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-async function shareMenu() {
-  const price = $('menuPrice').value || '14.50 €';
-  const dateVal = $('menuDate').value;
-  const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Hoy';
+// ==================== DAILY PAGE (preview = PDF) ====================
+let previewMode = 'color';
+try { if (localStorage.getItem('dia_preview_mode') === 'bw') previewMode = 'bw'; } catch {}
 
-  // Build plain text version of the menu
-  let text = `🍽️ MENÚ DEL DÍA\n📍 Restaurante Sol\n📅 ${dateStr} — ${price}\n\n`;
-  
+const SECTION_NAMES = { primer: 'Primer plato', segundo: 'Segundo plato', postre: 'Postres' };
+
+function menuDishCount(menu = todayMenu) {
+  return ['primer', 'segundo', 'postre'].reduce((n, c) => n + (menu?.[c] || []).length, 0);
+}
+
+function menuDateLabel(date, options = { day: 'numeric', month: 'long' }) {
+  return date ? new Date(`${date}T12:00:00Z`).toLocaleDateString('es-ES', { ...options, timeZone: 'UTC' }) : '';
+}
+
+function currentMenuPrice() {
+  const date = $('menuDate').value;
+  return $('menuPrice').value.trim() || (date ? defaultPriceFor(date).price : printSettings.priceWeekday);
+}
+
+function fillDailyPage(root, mode) {
+  const s = printSettings;
+  const total = menuDishCount();
+  root.className = `pt-root ${mode === 'bw' ? 'pt-bw' : 'pt-color'}`;
+  root.style.setProperty('--pt-title-scale', s.titleScale / 100);
+  root.style.setProperty('--pt-dish-scale', s.dishScale / 100);
+  root.style.setProperty('--pt-ca-scale', s.caScale / 100);
+  let body = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
     const dishes = todayMenu[cat] || [];
-    if (dishes.length === 0) continue;
-    text += `▸ ${CATEGORY_LABELS[cat]}\n`;
-    if (cat === 'postre') {
-      text += dishes.map(d => `  ${d.spanish} / ${d.catalan}`).join(', ') + '\n';
-    } else {
-      dishes.forEach(d => { text += `  ${d.spanish}\n  ${d.catalan}\n`; });
-    }
-    text += '\n';
+    if (!dishes.length) continue;
+    body += `<div class="pt-section${cat === 'postre' ? ' pt-section--postre' : ''}">
+      <div class="pt-section-header"><div class="pt-section-line"></div><div class="pt-section-title">${SECTION_NAMES[cat]}</div><div class="pt-section-line"></div></div>`;
+    const items = cat === 'postre'
+      ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
+      : dishes;
+    for (const d of items) body += `<div class="pt-dish"><div class="pt-dish-es">${esc(d.spanish)}</div><div class="pt-dish-ca">${esc(d.catalan || '')}</div></div>`;
+    body += '</div>';
   }
-  text += '🕐 HORARIO: 13:00 – 16:00';
+  const contact = mode === 'color' ? [s.phone, s.address].filter(Boolean).join('  ·  ') : '';
+  root.innerHTML = `<div class="pt-page${total >= 10 ? ' pt-tight' : total >= 7 ? ' pt-compact' : ''}">
+    <div class="pt-accent-bar"></div>
+    <div class="pt-content">
+      <div class="pt-header">
+        <div class="pt-restaurant-name">${esc(s.restaurantName)}</div>
+        <div class="pt-ornament">✦</div>
+        <div class="pt-title">Menú del Día</div>
+        <div class="pt-rule"></div>
+        <div class="pt-meta"><span>${esc(currentMenuPrice())}</span><span>${esc(menuDateLabel($('menuDate').value))}</span></div>
+        <div class="pt-rule-double"></div>
+      </div>
+      <div class="pt-body">${body}</div>
+      <div class="pt-footer">
+        <div class="pt-rule"></div>
+        <div class="pt-hours">Horario de Menú &nbsp;·&nbsp; ${esc(s.hours)}</div>
+        ${contact ? `<div class="pt-contact" style="display:block">${esc(contact)}</div>` : ''}
+      </div>
+    </div>
+    <div class="pt-accent-bar"></div>
+  </div>`;
+  fitDailyPage(root);
+}
 
-  // Try Web Share API (works great on mobile — WhatsApp, Telegram, etc.)
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: `Menú del Día — ${dateStr}`,
-        text: text
-      });
-      toast('Compartido', 'success');
-      return;
-    } catch(e) {
-      if (e.name === 'AbortError') return; // User cancelled
+// Spread spare height across dishes, or scale the content down when it overflows. Needs a laid-out page.
+function fitDailyPage(root) {
+  const contentEl = root.querySelector('.pt-content');
+  const bodyEl = root.querySelector('.pt-body');
+  const bodyH = bodyEl.offsetHeight;
+  const sections = Array.from(bodyEl.querySelectorAll('.pt-section'));
+  const dishes = Array.from(bodyEl.querySelectorAll('.pt-dish'));
+  if (bodyH <= 100 || !dishes.length) return;
+  const bodyStyle = getComputedStyle(bodyEl);
+  let occupiedH = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
+  sections.forEach((sec, i) => {
+    occupiedH += sec.offsetHeight;
+    if (i < sections.length - 1) occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
+  });
+  const surplus = bodyH - occupiedH;
+  if (surplus > 0) {
+    const extra = surplus / dishes.length;
+    dishes.forEach(el => { el.style.marginBottom = `${(parseFloat(getComputedStyle(el).marginBottom) || 0) + extra}px`; });
+  } else if (surplus < -20) {
+    Object.assign(contentEl.style, { position: 'absolute', height: 'auto', flex: 'none' });
+    const naturalH = contentEl.scrollHeight;
+    Object.assign(contentEl.style, { position: '', height: '', flex: '' });
+    if (naturalH > 1109) {
+      contentEl.style.transform = `scale(${1109 / naturalH})`;
+      contentEl.style.transformOrigin = 'top center';
     }
-  }
-  
-  // Fallback: copy to clipboard
-  try {
-    await navigator.clipboard.writeText(text);
-    toast('Menú copiado al portapapeles — pégalo en WhatsApp/Telegram', 'success');
-  } catch(e) {
-    // Last resort: show in a prompt
-    prompt('Copia este menú:', text);
   }
 }
 
-async function generateDesignPDF(mode) {
-  const hasContent = ['primer','segundo','postre'].some(c => (todayMenu[c] || []).length > 0);
-  if (!hasContent) { toast('El menú está vacío', 'error'); return; }
-  if (!window.html2canvas) { toast('Error: html2canvas no cargado. Revisa tu conexión.', 'error'); return; }
-  if (!window.jspdf) { toast('Error: jsPDF no cargado. Revisa tu conexión.', 'error'); return; }
+function updatePreviewScale() {
+  const frame = $('menuPreview');
+  if (frame?.clientWidth) frame.style.setProperty('--preview-scale', frame.clientWidth / 794);
+}
 
-  const LABELS = { primer: 'Primer Plato', segundo: 'Segundo Plato', postre: 'Postres' };
+function dailyMenuIssues() {
+  const date = $('menuDate').value;
+  if (!menuDishCount()) return ['El menú está vacío.'];
+  const issues = [];
+  const missing = { primer: 'Falta el primer plato.', segundo: 'Falta el segundo plato.', postre: 'Faltan los postres.' };
+  for (const cat of ['primer', 'segundo', 'postre']) if (!(todayMenu[cat] || []).length) issues.push(missing[cat]);
+  const untranslated = Object.values(todayMenu).flat().filter(d => !String(d.catalan || '').trim());
+  if (untranslated.length) issues.push(`Sin traducción al catalán: ${untranslated.map(d => d.spanish).join(', ')}.`);
+  if (!$('menuPrice').value.trim()) issues.push('Falta el precio.');
+  if (date && date < localDate()) issues.push(`La fecha (${menuDateLabel(date)}) ya ha pasado.`);
+  if (date && !printSettings.holidays.some(d => d.startsWith(date.slice(0, 4)))) issues.push(`No hay festivos configurados para ${date.slice(0, 4)}: revísalos en Ajustes.`);
+  return issues;
+}
 
+function renderPreviewIssues() {
+  const issues = dailyMenuIssues();
+  const el = $('previewIssues');
+  el.classList.toggle('ok', !issues.length);
+  el.innerHTML = issues.length
+    ? `<strong>Revisa antes de imprimir</strong><ul>${issues.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`
+    : '✓ Listo para imprimir';
+}
+
+function confirmDailyOutput() {
+  if (!menuDishCount()) { toast('El menú está vacío', 'error'); return false; }
+  const issues = dailyMenuIssues();
+  return !issues.length || confirm(`Antes de continuar:\n\n• ${issues.join('\n• ')}\n\n¿Continuar igualmente?`);
+}
+
+async function buildDailyPdf(mode) {
+  if (!window.html2canvas || !window.jspdf) throw new Error('librerías PDF no cargadas. Revisa tu conexión.');
+  await document.fonts.ready;
+  const tpl = $('pdf-template');
+  fillDailyPage(tpl, mode);
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // B&W → PNG at 3× (sharp lines); color → JPEG at 2.5× (smaller)
+  const canvas = await html2canvas(tpl.querySelector('.pt-page'), {
+    width: 794, height: 1123, scale: mode === 'bw' ? 3 : 2.5,
+    useCORS: true, allowTaint: true, backgroundColor: mode === 'bw' ? '#ffffff' : '#faf8f5', logging: false, imageTimeout: 0
+  });
+  const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  doc.addImage(mode === 'bw' ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.97), mode === 'bw' ? 'PNG' : 'JPEG', 0, 0, 210, 297);
+  return { doc, filename: `menu-${mode}-${$('menuDate').value || localDate()}.pdf` };
+}
+
+async function openDailyPdf(mode = previewMode) {
+  if (!confirmDailyOutput()) return;
   try {
     toast('Generando PDF…', 'info');
-
-    const dateVal = $('menuDate').value;
-    const dateStr = dateVal
-      ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })
-      : '';
-    const price = $('menuPrice').value || '14.50 €';
-    const filename = `menu-${mode}-${dateVal || new Date().toISOString().slice(0,10)}.pdf`;
-
-    const tpl = $('pdf-template');
-    const pageEl = tpl.querySelector('.pt-page');
-    const contentEl = tpl.querySelector('.pt-content');
-
-    // Mode class
-    tpl.className = mode === 'color' ? 'pt-color' : 'pt-bw';
-    $('pt-price').textContent = price;
-    $('pt-date').textContent = dateStr;
-
-    // Contact info — color version only
-    const ptContact = $('pt-contact');
-    const phone = localStorage.getItem('v2_restaurantPhone') || '';
-    const address = localStorage.getItem('v2_restaurantAddress') || '';
-    if (mode === 'color' && (phone || address)) {
-      ptContact.textContent = [phone, address].filter(Boolean).join('  ·  ');
-      ptContact.style.display = 'block';
-    } else {
-      ptContact.style.display = 'none';
-    }
-
-    // Auto compact/tight class based on total dishes
-    const totalDishes = ['primer','segundo','postre'].reduce((n, c) => n + (todayMenu[c]||[]).length, 0);
-    pageEl.classList.toggle('pt-compact', totalDishes >= 7 && totalDishes < 10);
-    pageEl.classList.toggle('pt-tight', totalDishes >= 10);
-
-    // Build menu body
-    let bodyHtml = '';
-    for (const cat of ['primer', 'segundo', 'postre']) {
-      const dishes = todayMenu[cat] || [];
-      if (dishes.length === 0) continue;
-      bodyHtml += `<div class="pt-section${cat === 'postre' ? ' pt-section--postre' : ''}">
-        <div class="pt-section-header">
-          <div class="pt-section-line"></div>
-          <div class="pt-section-title">${LABELS[cat]}</div>
-          <div class="pt-section-line"></div>
-        </div>`;
-      if (cat === 'postre') {
-        bodyHtml += `<div class="pt-dish">
-          <div class="pt-dish-es">${esc(dishes.map(d => d.spanish).join(', '))}</div>
-          <div class="pt-dish-ca">${esc(dishes.map(d => d.catalan).join(', '))}</div>
-        </div>`;
-      } else {
-        dishes.forEach(d => {
-          bodyHtml += `<div class="pt-dish">
-            <div class="pt-dish-es">${esc(d.spanish)}</div>
-            <div class="pt-dish-ca">${esc(d.catalan)}</div>
-          </div>`;
-        });
-      }
-      bodyHtml += '</div>';
-    }
-    $('pt-body').innerHTML = bodyHtml;
-
-    // Fonts ready
-    await document.fonts.ready;
-
-    // Reset any previous transforms and dish spacing
-    contentEl.style.transform = '';
-    Array.from($('pt-body').querySelectorAll('.pt-dish')).forEach(el => el.style.marginBottom = '');
-
-    await new Promise(r => setTimeout(r, 90));
-
-    // === Smart fill: distribute surplus space at dish level ===
-    const bodyEl = $('pt-body');
-    const bodyH = bodyEl.offsetHeight;
-    const bodyStyle = getComputedStyle(bodyEl);
-    const bodyPad = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
-    const allSecEls = Array.from(bodyEl.querySelectorAll('.pt-section'));
-    const allDishEls = Array.from(bodyEl.querySelectorAll('.pt-dish'));
-
-    if (bodyH > 100 && allDishEls.length > 0 && allSecEls.length > 0) {
-      // Measure total occupied height (sections + inter-section margins + body padding)
-      let occupiedH = bodyPad;
-      allSecEls.forEach((sec, i) => {
-        occupiedH += sec.offsetHeight;
-        if (i < allSecEls.length - 1) {
-          occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
-        }
-      });
-
-      const surplus = bodyH - occupiedH;
-
-      if (surplus > 0) {
-        // Spread surplus evenly as extra margin-bottom on every dish
-        const extra = surplus / allDishEls.length;
-        allDishEls.forEach(el => {
-          const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
-          el.style.marginBottom = `${base + extra}px`;
-        });
-      } else if (surplus < -20) {
-        // Content overflows: scale down to fit
-        const savedPos = contentEl.style.position;
-        const savedH = contentEl.style.height;
-        const savedFlex = contentEl.style.flex;
-        contentEl.style.position = 'absolute';
-        contentEl.style.height = 'auto';
-        contentEl.style.flex = 'none';
-        await new Promise(r => setTimeout(r, 80));
-        const naturalH = contentEl.scrollHeight;
-        contentEl.style.position = savedPos;
-        contentEl.style.height = savedH;
-        contentEl.style.flex = savedFlex;
-        if (naturalH > 1109) {
-          contentEl.style.transform = `scale(${1109 / naturalH})`;
-          contentEl.style.transformOrigin = 'top center';
-        }
-      }
-    }
-
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-    // Capture: B&W at 3×, color at 2.5×
-    const renderScale = mode === 'bw' ? 3 : 2.5;
-    const bg = mode === 'color' ? '#faf8f5' : '#ffffff';
-
-    const canvas = await html2canvas(pageEl, {
-      width: 794,
-      height: 1123,
-      scale: renderScale,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: bg,
-      logging: false,
-      imageTimeout: 0
-    });
-
-    // B&W → PNG (lossless, sharp lines); color → JPEG (smaller, good enough for screens)
-    const imgData = mode === 'bw'
-      ? canvas.toDataURL('image/png')
-      : canvas.toDataURL('image/jpeg', 0.97);
-    const imgType = mode === 'bw' ? 'PNG' : 'JPEG';
-
-    const jsPDF = window.jspdf.jsPDF;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    doc.addImage(imgData, imgType, 0, 0, 210, 297);
-
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    const w = window.open(pdfUrl, '_blank');
-
-    if (w) {
-      toast('PDF abierto en nueva pestaña', 'success');
+    const { doc, filename } = await buildDailyPdf(mode);
+    const pdfUrl = URL.createObjectURL(doc.output('blob'));
+    if (window.open(pdfUrl, '_blank')) {
+      toast('PDF abierto en una pestaña nueva: imprímelo o guárdalo desde allí', 'success');
       setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
     } else {
       doc.save(filename);
       toast('PDF descargado', 'success');
     }
   } catch (err) {
-    console.error('Design PDF error:', err);
+    console.error('Daily PDF error:', err);
     toast('Error al generar PDF: ' + err.message, 'error');
   }
 }
 
-function printMenu() {
-  const content = $('menuPreview').innerHTML;
-  const w = window.open('', '_blank');
-  if (!w) { toast('Permite ventanas emergentes o usa PDF para imprimir.', 'error'); return; }
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Menú del Día</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-    <style>
-      @page { size: A4; margin: 20mm; }
-      body { font-family: 'Cormorant Garamond', Georgia, serif; color: #000; margin: 0; font-weight: 600; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .mp-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
-      .mp-title { font-size: ${printSettings.titleSize}px; font-style: italic; text-align: ${printSettings.titleAlign}; }
-      .mp-restaurant { font-size: 14px; color: #333; font-style: italic; margin-bottom: 12px; }
-      .mp-meta { display: flex; justify-content: space-between; font-weight: 700; font-size: ${printSettings.priceSize}px; }
-      .mp-section { margin-bottom: ${printSettings.sectionMargin}px; break-inside: avoid; }
-      .mp-section-title { font-size: ${printSettings.sectionSize}px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-      .mp-item { margin-bottom: ${printSettings.itemMargin}px; }
-      .mp-item-es { font-size: ${printSettings.mainEs}px; font-weight: 600; color: #000; }
-      .mp-item-ca { font-size: ${printSettings.mainCa}px; font-weight: 500; font-style: italic; color: #333; }
-      [data-category="postre"] .mp-item-es { font-size: ${printSettings.postreEs}px; }
-      [data-category="postre"] .mp-item-ca { font-size: ${printSettings.postreCa}px; }
-      .mp-hours { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #000; font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
-    </style></head><body>${content}</body></html>`);
-  w.document.close();
-  w.focus();
-  setTimeout(() => { try { w.print(); w.close(); } catch(e) {} }, 600);
+function dailyMenuText() {
+  const dateVal = $('menuDate').value;
+  const dateStr = menuDateLabel(dateVal, { weekday: 'long', day: 'numeric', month: 'long' }) || 'Hoy';
+  let text = `🍽️ MENÚ DEL DÍA\n📍 ${printSettings.restaurantName}\n📅 ${dateStr} — ${currentMenuPrice()}\n\n`;
+  for (const cat of ['primer', 'segundo', 'postre']) {
+    const dishes = todayMenu[cat] || [];
+    if (!dishes.length) continue;
+    text += `▸ ${CATEGORY_LABELS[cat]}\n`;
+    if (cat === 'postre') text += `  ${dishes.map(d => d.spanish).join(', ')}\n  ${dishes.map(d => d.catalan).filter(Boolean).join(', ')}\n`;
+    else dishes.forEach(d => { text += `  ${d.spanish}\n  ${d.catalan}\n`; });
+    text += '\n';
+  }
+  return { title: `Menú del Día — ${dateStr}`, text: text + `🕐 HORARIO: ${printSettings.hours}` };
 }
 
-async function generatePDF() {
-  const hasContent = ['primer','segundo','postre'].some(c => (todayMenu[c] || []).length > 0);
-  if (!hasContent) { toast('El menú está vacío', 'error'); return; }
-  if (!window.jspdf) { toast('Error: librería PDF no cargada. Revisa tu conexión.', 'error'); return; }
-
+async function shareMenu() {
+  if (!confirmDailyOutput()) return;
+  const { title, text } = dailyMenuText();
+  // Prefer sharing the same PDF as the preview (WhatsApp, Telegram…); fall back to text.
+  if (navigator.canShare && window.html2canvas && window.jspdf) {
+    let file = null;
+    try {
+      toast('Preparando PDF…', 'info');
+      const { doc, filename } = await buildDailyPdf(previewMode);
+      file = new File([doc.output('blob')], filename, { type: 'application/pdf' });
+    } catch (err) { console.warn('Share PDF failed:', err); }
+    if (file && navigator.canShare({ files: [file] })) {
+      const sharePdf = async () => {
+        try { await navigator.share({ files: [file], title }); toast('Compartido', 'success'); }
+        catch (e) {
+          if (e.name === 'AbortError') return;
+          // Generating the PDF can outlast the tap that allows sharing; ask for one more tap.
+          if (e.name === 'NotAllowedError') toast('PDF listo', 'success', { label: 'Compartir PDF', run: sharePdf });
+          else toast('No se pudo compartir el PDF', 'error');
+        }
+      };
+      return sharePdf();
+    }
+  }
+  if (navigator.share) {
+    try { await navigator.share({ title, text }); toast('Compartido', 'success'); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
   try {
-    const dateVal = $('menuDate').value;
-    const dateStr = dateVal ? new Date(dateVal + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) : 'hoy';
-    const filename = 'menu-' + (dateVal || new Date().toISOString().slice(0, 10)) + '.pdf';
-    const price = $('menuPrice').value || '14.50 €';
-
-    toast('Generando PDF…', 'success');
-
-    const jsPDF = window.jspdf.jsPDF;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    const margin = 18;
-    const contentW = pw - margin * 2;
-    const bottomY = ph - margin;
-    const availableH = bottomY - margin;
-
-    const renderMenu = (scale, draw) => {
-      let y = margin;
-
-      const titleSize = (printSettings.titleSize * 0.75 || 24) * scale;
-      const metaSize = (printSettings.priceSize * 0.75 || 13) * scale;
-      const baseSecSize = (printSettings.sectionSize * 0.75 || 12) * scale;
-      const baseMainEs = (printSettings.mainEs * 0.75 || 12) * scale;
-      const baseMainCa = (printSettings.mainCa * 0.75 || 10) * scale;
-      const basePostreEs = (printSettings.postreEs * 0.75 || 11) * scale;
-      const basePostreCa = (printSettings.postreCa * 0.75 || 10) * scale;
-
-      const lineGap = 1.2 * scale;
-      const secGap = Math.max(2.5, (printSettings.sectionMargin * 0.28 || 5) * scale);
-      const itemGap = Math.max(1.8, (printSettings.itemMargin * 0.25 || 3) * scale);
-
-      if (draw) {
-        doc.setFont('helvetica', 'bolditalic');
-        doc.setFontSize(titleSize);
-        const titleAlign = printSettings.titleAlign === 'left' ? margin : pw / 2;
-        const titleAlignOpt = printSettings.titleAlign === 'left' ? { align: 'left' } : { align: 'center' };
-        doc.text('Menú del día', titleAlign, y, titleAlignOpt);
-      }
-      y += Math.max(6, titleSize * 0.28);
-
-      if (draw) {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(Math.max(8, 11 * scale));
-        doc.setTextColor(100);
-        doc.text('Restaurante Sol', pw / 2, y, { align: 'center' });
-        doc.setTextColor(0);
-      }
-      y += Math.max(5, 7 * scale);
-
-      if (draw) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(metaSize);
-        doc.text(price, margin, y);
-        if (dateStr && dateStr !== 'hoy') doc.text(dateStr, pw - margin, y, { align: 'right' });
-      }
-      y += Math.max(3, 3.5 * scale);
-
-      if (draw) {
-        doc.setLineWidth(0.35);
-        doc.line(margin, y, pw - margin, y);
-      }
-      y += Math.max(4, 7 * scale);
-
-      for (const cat of ['primer', 'segundo', 'postre']) {
-        const dishes = todayMenu[cat] || [];
-        if (dishes.length === 0) continue;
-
-        if (draw) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(baseSecSize);
-          doc.setTextColor(0);
-          doc.text(CATEGORY_LABELS[cat].toUpperCase(), margin, y);
-        }
-        y += Math.max(4, 6 * scale);
-
-        if (cat === 'postre') {
-          const esText = dishes.map(d => d.spanish).join(', ');
-          const caText = dishes.map(d => d.catalan).join(', ');
-
-          if (draw) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(basePostreEs);
-          }
-          const esLines = doc.splitTextToSize(esText, contentW);
-          if (draw) {
-            doc.setTextColor(0);
-            doc.text(esLines, margin, y);
-          }
-          y += esLines.length * basePostreEs * 0.36 + lineGap;
-
-          if (draw) {
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(basePostreCa);
-          }
-          const caLines = doc.splitTextToSize(caText, contentW);
-          if (draw) {
-            doc.setTextColor(100);
-            doc.text(caLines, margin, y);
-          }
-          y += caLines.length * basePostreCa * 0.36 + itemGap;
-        } else {
-          for (const d of dishes) {
-            if (draw) {
-              doc.setFont('helvetica', 'bold');
-              doc.setFontSize(baseMainEs);
-            }
-            const esLines = doc.splitTextToSize(d.spanish, contentW);
-            if (draw) {
-              doc.setTextColor(0);
-              doc.text(esLines, margin, y);
-            }
-            y += esLines.length * baseMainEs * 0.36 + lineGap;
-
-            if (draw) {
-              doc.setFont('helvetica', 'italic');
-              doc.setFontSize(baseMainCa);
-            }
-            const caLines = doc.splitTextToSize(d.catalan, contentW);
-            if (draw) {
-              doc.setTextColor(100);
-              doc.text(caLines, margin, y);
-            }
-            y += caLines.length * baseMainCa * 0.36 + itemGap;
-          }
-        }
-
-        y += secGap;
-      }
-
-      if (draw) {
-        doc.setTextColor(0);
-        doc.setLineWidth(0.3);
-        doc.line(margin, y, pw - margin, y);
-      }
-      y += Math.max(4, 5 * scale);
-
-      if (draw) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(Math.max(8, 10 * scale));
-        doc.text('HORARIO DE MENÚ  13:00 – 16:00', pw / 2, y, { align: 'center' });
-      }
-
-      return y - margin;
-    };
-
-    let scale = 1;
-    for (let i = 0; i < 5; i++) {
-      const needed = renderMenu(scale, false);
-      if (needed <= availableH) break;
-      scale = Math.max(0.5, scale * (availableH / needed) * 0.98);
-    }
-
-    renderMenu(scale, true);
-
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    const previewWin = window.open(pdfUrl, '_blank');
-
-    if (previewWin) {
-      toast('PDF预览已打开（新标签页）', 'success');
-      setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
-      return;
-    }
-
-    doc.save(filename);
-    toast('预览被浏览器拦截，已直接下载 PDF', 'info');
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    toast('Error al generar PDF: ' + err.message, 'error');
+    await navigator.clipboard.writeText(text);
+    toast('Menú copiado al portapapeles — pégalo en WhatsApp/Telegram', 'success');
+  } catch {
+    prompt('Copia este menú:', text);
   }
 }
 

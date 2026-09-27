@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -128,12 +128,12 @@ test('translation cannot insert loading text or overwrite newer user input', asy
   h.api.setTranslate(()=>new Promise(resolve=>finish=resolve));
   h.el('inputEs').value='Soup'; h.el('inputCategory').value='primer';
   const pending=h.api.doTranslate();
-  assert.equal(h.el('inputCa').value,''); assert.equal(h.el('btnBoth').disabled,true);
+  assert.equal(h.el('inputCa').value,''); assert.equal(h.el('btnAddMenu').disabled,true);
   await h.api.addToMenu(); assert.equal(h.api.state().todayMenu.primer.length,0);
   h.el('inputEs').value='Fish'; h.api.bumpTranslation();
   finish({catalan:'Sopa',correctedSpanish:'Soup',provider:'gemini'});
   assert.equal(await pending,false); assert.equal(h.el('inputEs').value,'Fish');
-  assert.equal(h.el('inputCa').value,''); assert.equal(h.el('btnBoth').disabled,false);
+  assert.equal(h.el('inputCa').value,''); assert.equal(h.el('btnAddMenu').disabled,false);
 });
 
 test('closed-menu translation failure rejects instead of treating original as translated',async()=>{
@@ -442,4 +442,73 @@ test('layout tweaks store only non-default values and ignore unknown ones',()=>{
  const layout=h.api.mcGetLayout({tags:['status:listo','layout:'+tag]});
  assert.equal(layout.size,'lg');assert.equal(layout.align,'template');assert.equal(layout.showType,true);
  assert.equal(h.api.mcGetLayout({tags:['layout:{broken']}).size,'md');
+});
+
+test('price rules: weekday, weekend and configurable holidays incl. 2027; saved price is flagged as custom', () => {
+  const h = harness({user:false});
+  assert.equal(h.api.defaultPriceFor('2026-09-28').price, '14.50 €');
+  assert.equal(h.api.defaultPriceFor('2026-09-27').price, '20.00 €');
+  assert.equal(h.api.defaultPriceFor('2027-01-06').label, '🎉 Festivo');
+  h.api.setPrint(h.api.normalizePrintSettings({ priceWeekday: '15.00 €', holidays: '2027-02-01\nbad-date, 2027-02-01' }));
+  assert.deepEqual(plain(h.api.state().printSettings.holidays), ['2027-02-01']);
+  assert.equal(h.api.defaultPriceFor('2027-02-01').price, '20.00 €');
+  h.el('menuDate').value = '2027-02-02'; h.api.setDate();
+  assert.equal(h.el('menuPrice').value, '15.00 €'); assert.equal(h.el('resetPrice').hidden, true);
+  h.el('menuPrice').value = '16,00 €'; h.api.setDate(); // setDate re-applies the rule price
+  assert.equal(h.el('menuPrice').value, '15.00 €');
+});
+
+test('old print settings stay readable and new text settings fall back to defaults when empty', () => {
+  const {api} = harness({user:false});
+  const s = api.normalizePrintSettings({ mainEs: 19, restaurantName: '  ', hours: '12:30 – 15:30', dishScale: 'x', caScale: 500 });
+  assert.equal(s.mainEs, 19); assert.equal(s.restaurantName, 'Restaurante Sol'); assert.equal(s.hours, '12:30 – 15:30');
+  assert.equal(s.dishScale, 100); assert.equal(s.caScale, 140);
+  assert.ok(s.holidays.includes('2027-12-25'));
+});
+
+test('add to menu can also save to the library in one step without duplicates', async () => {
+  const h = harness({user:false});
+  h.el('inputEs').value = 'Sopa'; h.el('inputCa').value = 'Sopa'; h.el('inputCategory').value = 'primer'; h.el('inputSaveLibrary').checked = true;
+  await h.api.addToMenu();
+  assert.equal(h.api.state().todayMenu.primer.length, 1); assert.equal(h.api.state().library.length, 1);
+  h.el('inputEs').value = 'Sopa'; h.el('inputCa').value = 'Sopa';
+  await h.api.addToMenu();
+  assert.equal(h.api.state().todayMenu.primer.length, 1); assert.equal(h.api.state().library.length, 1);
+  h.el('inputSaveLibrary').checked = false; h.el('inputEs').value = 'Crema'; h.el('inputCa').value = 'Crema';
+  await h.api.addToMenu();
+  assert.equal(h.api.state().todayMenu.primer.length, 2); assert.equal(h.api.state().library.length, 1);
+});
+
+test('library delete can be undone at the same position and cancels the pending delete', async () => {
+  const h = harness({fail:true});
+  const dishes = [1,2,3].map(id => ({ id, spanish: 'D'+id, catalan: 'D'+id, category: 'primer' }));
+  h.api.setLibrary(plain(dishes));
+  await h.api.deleteFromLibrary(2);
+  assert.deepEqual(h.api.state().library.map(d => d.id), [1,3]);
+  assert.deepEqual(plain(h.api.state().pendingSaves.deletes), [2]);
+  await h.api.restoreLibraryDish(dishes[1], 1);
+  assert.deepEqual(h.api.state().library.map(d => d.id), [1,2,3]);
+  assert.deepEqual(plain(h.api.state().pendingSaves.deletes), []);
+  assert.equal(h.api.state().pendingSaves.library, true);
+});
+
+test('pre-print checks list empty sections, missing Catalan, missing price, past dates and missing holidays', () => {
+  const h = harness({user:false});
+  h.api.setMenu({ primer: [], segundo: [], postre: [] });
+  assert.deepEqual(plain(h.api.dailyMenuIssues()), ['El menú está vacío.']);
+  h.el('menuDate').value = '2099-03-02'; h.el('menuPrice').value = '';
+  h.api.setMenu({ primer: [{ id: 1, spanish: 'Sopa', catalan: '', category: 'primer' }], segundo: [], postre: [] });
+  const issues = h.api.dailyMenuIssues().join(' | ');
+  assert.match(issues, /Falta el segundo plato/); assert.match(issues, /Faltan los postres/);
+  assert.match(issues, /Sin traducción al catalán: Sopa/); assert.match(issues, /Falta el precio/);
+  assert.match(issues, /No hay festivos configurados para 2099/);
+  h.el('menuDate').value = '2020-01-02'; h.el('menuPrice').value = '14.50 €';
+  assert.match(h.api.dailyMenuIssues().join(' | '), /ya ha pasado/);
+});
+
+test('last served index only looks at dates before the menu date', () => {
+  const h = harness({user:false});
+  h.api.setHistory({ '2026-09-01': menu('Paella'), '2026-09-04': menu('paella'), '2026-09-10': menu('Paella') });
+  const idx = h.api.lastServedIndex('2026-09-06');
+  assert.equal(idx.get('paella'), '2026-09-04');
 });
