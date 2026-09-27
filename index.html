@@ -294,7 +294,8 @@ body {
   position: absolute;
   top: 100%;
   left: 0;
-  right: 0;
+  /* Wider than a narrow input so long dish names stay on one or two lines. */
+  width: max(100%, min(520px, calc(100vw - 32px)));
   background: white;
   border: 1px solid var(--cream);
   border-top: none;
