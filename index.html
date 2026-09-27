@@ -607,16 +607,16 @@ body {
   background: white;
 }
 .pt-page.ps-page { display: block; padding: 76px; background: #fff; color: #000; font-weight: 600; }
-.ps-content { transform-origin: top center; }
-.ps-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: 14px; margin-bottom: 20px; }
+.ps-content { --pt-fit: 1; transform-origin: top center; }
+.ps-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: calc(14px * var(--pt-fit)); margin-bottom: calc(20px * var(--pt-fit)); }
 .ps-title { font-style: italic; }
-.ps-restaurant { font-size: 14px; color: #333; font-style: italic; margin-bottom: 12px; }
+.ps-restaurant { font-size: calc(14px * var(--pt-fit)); color: #333; font-style: italic; margin-bottom: calc(12px * var(--pt-fit)); }
 .ps-meta { display: flex; justify-content: space-between; font-weight: 700; }
 .ps-section { break-inside: avoid; }
-.ps-section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.ps-section-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: calc(8px * var(--pt-fit)); }
 .ps-es { font-weight: 600; color: #000; }
 .ps-ca { font-weight: 500; font-style: italic; color: #333; }
-.ps-hours { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #000; font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
+.ps-hours { text-align: center; margin-top: calc(24px * var(--pt-fit)); padding-top: calc(16px * var(--pt-fit)); border-top: 1px solid #000; font-weight: 700; font-size: calc(13px * var(--pt-fit)); letter-spacing: 0.04em; }
 .menu-preview-frame > .pt-root {
   position: absolute; left: 0; top: 0;
   transform-origin: top left;
@@ -1033,16 +1033,14 @@ kbd {
 
 .pt-rule-double {
   border-top: 1px solid;
-  border-bottom: 1px solid;
-  height: 5px;
-  box-sizing: border-box;
+  height: 0;
 }
 
 .pt-meta {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   margin-bottom: 13px;
   letter-spacing: 0.02em;
@@ -1052,67 +1050,62 @@ kbd {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  padding: 16px 0 8px;
+  padding: 18px 0 10px;
   min-height: 0;
+  text-align: center;
 }
+/* --pt-fit is set by fitDailyPage: text grows or shrinks to fill the page. */
+.pt-body-inner { --pt-fit: 1; transform-origin: top center; }
 
-.pt-section { margin-bottom: 20px; }
+.pt-section { margin-bottom: calc(22px * var(--pt-fit)); }
+.pt-section:last-child { margin-bottom: 0; }
 
 .pt-section-header {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 11px;
+  margin-bottom: calc(12px * var(--pt-fit));
 }
 
 .pt-section-line { flex: 1; height: 1px; }
 
 .pt-section-title {
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: calc(11.5px * var(--pt-fit));
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   font-weight: 700;
   white-space: nowrap;
   font-style: normal;
 }
 
-.pt-dish { margin-bottom: 11px; }
+.pt-dish { margin-bottom: calc(11px * var(--pt-fit)); }
+.pt-dish:last-child { margin-bottom: 0; }
 
 .pt-dish-es {
-  font-size: calc(19px * var(--pt-dish-scale));
+  font-size: calc(19px * var(--pt-dish-scale) * var(--pt-fit));
   font-weight: 600;
   line-height: 1.2;
 }
 
 .pt-dish-ca {
-  font-size: calc(14.5px * var(--pt-ca-scale));
+  font-size: calc(14.5px * var(--pt-ca-scale) * var(--pt-fit));
   font-style: italic;
   font-weight: 400;
   line-height: 1.2;
   margin-top: 2px;
 }
 
-.pt-section--postre .pt-dish-es { font-size: calc(15px * var(--pt-dish-scale)); }
-.pt-section--postre .pt-dish-ca { font-size: calc(13px * var(--pt-ca-scale)); }
+.pt-section--postre .pt-dish-es { font-size: calc(17px * var(--pt-dish-scale) * var(--pt-fit)); }
+.pt-section--postre .pt-dish-ca { font-size: calc(13.5px * var(--pt-ca-scale) * var(--pt-fit)); }
+.pt-sep { padding: 0 0.45em; opacity: 0.55; }
 
-/* Compact layout — 7-9 dishes */
+/* Busier menus give the header less room (7-9 and 10+ dishes) */
 .pt-compact .pt-title { font-size: calc(60px * var(--pt-title-scale)); margin-bottom: 14px; }
-.pt-compact .pt-header { margin-bottom: 12px; }
-.pt-compact .pt-body { padding: 10px 0 4px; }
-.pt-compact .pt-section { margin-bottom: 14px; }
-.pt-compact .pt-dish { margin-bottom: 8px; }
-
-/* Tight layout — 10+ dishes */
+.pt-compact .pt-header { margin-bottom: 10px; }
 .pt-tight .pt-title { font-size: calc(50px * var(--pt-title-scale)); margin-bottom: 10px; }
 .pt-tight .pt-ornament { display: none; }
-.pt-tight .pt-header { margin-bottom: 8px; }
-.pt-tight .pt-body { padding: 6px 0 2px; }
-.pt-tight .pt-section { margin-bottom: 10px; }
-.pt-tight .pt-dish { margin-bottom: 6px; }
-.pt-tight .pt-dish-es { font-size: calc(17px * var(--pt-dish-scale)); }
-.pt-tight .pt-dish-ca { font-size: calc(13px * var(--pt-ca-scale)); }
-.pt-tight .pt-section--postre .pt-dish-es { font-size: calc(14px * var(--pt-dish-scale)); }
+.pt-tight .pt-header { margin-bottom: 6px; }
+.pt-tight .pt-body { padding: 10px 0 4px; }
 
 /* Contact info (color version only) */
 .pt-contact {
@@ -4561,7 +4554,7 @@ function currentMenuPrice() {
 // Uses the original pixel sizes (still stored in printSettings) scaled by the Diseño percentages.
 function fillSimplePage(root) {
   const s = printSettings;
-  const px = (base, scale = 100) => `${Math.round(base * scale) / 100}px`;
+  const px = (base, scale = 100) => `calc(${Math.round(base * scale) / 100}px * var(--pt-fit))`;
   root.className = 'pt-root pt-simple';
   let body = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
@@ -4571,9 +4564,9 @@ function fillSimplePage(root) {
     const items = cat === 'postre'
       ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
       : dishes;
-    body += `<div class="ps-section" style="margin-bottom:${s.sectionMargin}px">
-      <div class="ps-section-title" style="font-size:${s.sectionSize}px">${CATEGORY_LABELS[cat]}</div>
-      ${items.map(d => `<div class="ps-item" style="margin-bottom:${s.itemMargin}px">
+    body += `<div class="ps-section" style="margin-bottom:${px(s.sectionMargin)}">
+      <div class="ps-section-title" style="font-size:${px(s.sectionSize)}">${CATEGORY_LABELS[cat]}</div>
+      ${items.map(d => `<div class="ps-item" style="margin-bottom:${px(s.itemMargin)}">
         <div class="ps-es" style="font-size:${px(esSize, s.dishScale)}">${esc(d.spanish)}</div>
         <div class="ps-ca" style="font-size:${px(caSize, s.caScale)}">${esc(d.catalan || '')}</div>
       </div>`).join('')}
@@ -4583,17 +4576,13 @@ function fillSimplePage(root) {
     <div class="ps-header">
       <div class="ps-title" style="font-size:${px(s.titleSize, s.titleScale)};text-align:${s.titleAlign}">Menú del día</div>
       <div class="ps-restaurant">${esc(s.restaurantName)}</div>
-      <div class="ps-meta" style="font-size:${s.priceSize}px"><span>${esc(currentMenuPrice())}</span><span>${esc(menuDateLabel($('menuDate').value))}</span></div>
+      <div class="ps-meta" style="font-size:${px(s.priceSize)}"><span>${esc(currentMenuPrice())}</span><span>${esc(menuDateLabel($('menuDate').value, { weekday: 'long', day: 'numeric', month: 'long' }))}</span></div>
     </div>
     ${body}
     <div class="ps-hours">HORARIO DE MENÚ ${esc(s.hours)}</div>
   </div></div>`;
-  // Only shrink when the text does not fit the A4 area inside the margins.
-  const content = root.querySelector('.ps-content');
-  const available = 1123 - 2 * 76;
-  if (content.offsetHeight > available) {
-    content.style.transform = `scale(${available / content.offsetHeight})`;
-  }
+  // Keep the original look, but let short menus use more of the sheet (up to 1.5×) and long ones shrink.
+  if (root.querySelector('.ps-content').offsetHeight) fitText(root.querySelector('.ps-content'), 1123 - 2 * 76, { min: 0.6, max: 1.5, target: 0.85 });
 }
 
 function fillDailyPage(root, mode) {
@@ -4610,10 +4599,11 @@ function fillDailyPage(root, mode) {
     if (!dishes.length) continue;
     body += `<div class="pt-section${cat === 'postre' ? ' pt-section--postre' : ''}">
       <div class="pt-section-header"><div class="pt-section-line"></div><div class="pt-section-title">${SECTION_NAMES[cat]}</div><div class="pt-section-line"></div></div>`;
+    const sep = '<span class="pt-sep">·</span>';
     const items = cat === 'postre'
-      ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
-      : dishes;
-    for (const d of items) body += `<div class="pt-dish"><div class="pt-dish-es">${esc(d.spanish)}</div><div class="pt-dish-ca">${esc(d.catalan || '')}</div></div>`;
+      ? [{ es: dishes.map(d => esc(d.spanish)).join(sep), ca: dishes.map(d => d.catalan).filter(Boolean).map(esc).join(sep) }]
+      : dishes.map(d => ({ es: esc(d.spanish), ca: esc(d.catalan || '') }));
+    for (const d of items) body += `<div class="pt-dish"><div class="pt-dish-es">${d.es}</div><div class="pt-dish-ca">${d.ca}</div></div>`;
     body += '</div>';
   }
   const contact = mode === 'color' ? [s.phone, s.address].filter(Boolean).join('  ·  ') : '';
@@ -4625,10 +4615,10 @@ function fillDailyPage(root, mode) {
         <div class="pt-ornament">✦</div>
         <div class="pt-title">Menú del Día</div>
         <div class="pt-rule"></div>
-        <div class="pt-meta"><span>${esc(currentMenuPrice())}</span><span>${esc(menuDateLabel($('menuDate').value))}</span></div>
+        <div class="pt-meta"><span>${esc(menuDateLabel($('menuDate').value, { weekday: 'long', day: 'numeric', month: 'long' }))}</span><span>${esc(currentMenuPrice())}</span></div>
         <div class="pt-rule-double"></div>
       </div>
-      <div class="pt-body">${body}</div>
+      <div class="pt-body"><div class="pt-body-inner">${body}</div></div>
       <div class="pt-footer">
         <div class="pt-rule"></div>
         <div class="pt-hours">Horario de Menú &nbsp;·&nbsp; ${esc(s.hours)}</div>
@@ -4640,33 +4630,45 @@ function fillDailyPage(root, mode) {
   fitDailyPage(root);
 }
 
-// Spread spare height across dishes, or scale the content down when it overflows. Needs a laid-out page.
-function fitDailyPage(root) {
-  const contentEl = root.querySelector('.pt-content');
-  const bodyEl = root.querySelector('.pt-body');
-  const bodyH = bodyEl.offsetHeight;
-  const sections = Array.from(bodyEl.querySelectorAll('.pt-section'));
-  const dishes = Array.from(bodyEl.querySelectorAll('.pt-dish'));
-  if (bodyH <= 100 || !dishes.length) return;
-  const bodyStyle = getComputedStyle(bodyEl);
-  let occupiedH = parseFloat(bodyStyle.paddingTop) + parseFloat(bodyStyle.paddingBottom);
-  sections.forEach((sec, i) => {
-    occupiedH += sec.offsetHeight;
-    if (i < sections.length - 1) occupiedH += parseFloat(getComputedStyle(sec).marginBottom) || 0;
-  });
-  const surplus = bodyH - occupiedH;
-  if (surplus > 0) {
-    const extra = surplus / dishes.length;
-    dishes.forEach(el => { el.style.marginBottom = `${(parseFloat(getComputedStyle(el).marginBottom) || 0) + extra}px`; });
-  } else if (surplus < -20) {
-    Object.assign(contentEl.style, { position: 'absolute', height: 'auto', flex: 'none' });
-    const naturalH = contentEl.scrollHeight;
-    Object.assign(contentEl.style, { position: '', height: '', flex: '' });
-    if (naturalH > 1109) {
-      contentEl.style.transform = `scale(${1109 / naturalH})`;
-      contentEl.style.transformOrigin = 'top center';
-    }
+// Grow the text of `inner` (through --pt-fit) until it fills about `target` of the available height;
+// shrink only when it overflows. Needs a laid-out page. Scales down as a last resort.
+function fitText(inner, available, { min = 0.7, max = 1.35, target = 0.9 } = {}) {
+  let fit = 1;
+  inner.style.setProperty('--pt-fit', fit);
+  const floor = inner.offsetHeight > available ? min : 1;
+  for (let i = 0; i < 6 && inner.offsetHeight; i++) {
+    const next = Math.max(floor, Math.min(max, fit * available * target / inner.offsetHeight));
+    if (Math.abs(next - fit) < 0.005) break;
+    fit = next;
+    inner.style.setProperty('--pt-fit', fit);
   }
+  while (inner.offsetHeight > available && fit > min) { fit = Math.max(min, fit - 0.02); inner.style.setProperty('--pt-fit', fit); }
+  if (inner.offsetHeight > available) inner.style.transform = `scale(${available / inner.offsetHeight})`;
+  return fit;
+}
+
+// Color/B&N: size the text to the page, then give leftover room to the gaps (capped) and centre the block.
+function fitDailyPage(root) {
+  const bodyEl = root.querySelector('.pt-body');
+  const inner = root.querySelector('.pt-body-inner');
+  const style = getComputedStyle(bodyEl);
+  const available = bodyEl.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+  if (available <= 100 || !inner.children.length) return;
+  fitText(inner, available);
+  const spare = available - inner.offsetHeight;
+  if (spare <= 0) return;
+  const sections = Array.from(inner.querySelectorAll('.pt-section'));
+  const sectionGaps = sections.length - 1;
+  const dishGaps = sections.reduce((n, sec) => n + Math.max(0, sec.querySelectorAll('.pt-dish').length - 1), 0);
+  const perSection = sectionGaps ? Math.min(40, spare * 0.5 / sectionGaps) : 0;
+  const perDish = dishGaps ? Math.min(16, (spare - perSection * sectionGaps) * 0.7 / dishGaps) : 0;
+  sections.forEach((sec, i) => {
+    if (i < sectionGaps) sec.style.marginBottom = `calc(22px * var(--pt-fit) + ${perSection}px)`;
+    const dishes = sec.querySelectorAll('.pt-dish');
+    dishes.forEach((d, j) => { if (j < dishes.length - 1) d.style.marginBottom = `calc(11px * var(--pt-fit) + ${perDish}px)`; });
+  });
+  // Slightly above the middle reads as centred on a printed page.
+  inner.style.marginTop = `${Math.max(0, (available - inner.offsetHeight) * 0.4)}px`;
 }
 
 function updatePreviewScale() {
