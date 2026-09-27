@@ -1414,7 +1414,10 @@ kbd {
   border-radius: var(--radius); resize: vertical; margin-bottom: 6px;
 }
 .mc-paste-actions { display: flex; gap: 6px; }
-.mc-dish-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.mc-dish-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; border-radius: var(--radius); }
+.mc-dish-row.active { background: var(--terracotta-light); box-shadow: -8px 0 0 var(--terracotta-light), -11px 0 0 var(--terracotta); }
+.mc-order-bar { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin: 0 0 8px; }
+.mc-order-bar .order-hint { margin-right: auto; }
 .mc-dish-name-input, .mc-dish-tr-input, .mc-dish-supp-input {
   font-family: var(--font-body); font-size: 13px; padding: 7px 8px;
   border: 1px solid var(--cream); border-radius: var(--radius);
@@ -2060,6 +2063,19 @@ kbd {
 .menu-card-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
 .menu-card-tools .btn { white-space: normal; }
 .dish-served { font-size: 11px; color: var(--terracotta); }
+.menu-section .section-header { flex-wrap: wrap; }
+.order-tools { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.order-hint { font-size: 12px; color: var(--ink-faint); margin-right: 4px; white-space: nowrap; }
+.order-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 32px; border: 1px solid var(--cream); border-radius: var(--radius); background: white; color: var(--ink-soft); cursor: pointer; }
+.order-btn:not(:disabled):hover { border-color: var(--ink); color: var(--ink); }
+.dish-card { cursor: pointer; }
+.dish-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.dish-card.selected { border-color: var(--terracotta); box-shadow: inset 4px 0 0 var(--terracotta); background: var(--terracotta-light); }
+@media (max-width: 600px) {
+  .order-tools { width: 100%; margin-left: 0; justify-content: flex-end; }
+  .order-hint { margin-right: auto; }
+  .order-btn { min-width: 44px; height: 40px; }
+}
 .library-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
 .library-filters button { border: 1px solid var(--cream); background: white; border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
 .library-filters button[aria-pressed="true"] { background: var(--ink); color: white; border-color: var(--ink); }
@@ -2554,6 +2570,7 @@ let batchDraft = { text: '', category: 'primer', rows: [] };
 let batchRunning = false;
 let batchGeneration = 0;
 let libraryFilter = 'all';
+let selectedDish = null; // { id, cat } chosen for the reorder buttons in its category header
 let duplicateReviewOpen = false;
 const duplicateChoice = {};
 let libraryEditingId = null;
@@ -3507,13 +3524,24 @@ async function saveLibraryEdit(id) {
 }
 
 async function moveInMenu(id, category, direction) {
-  const list = todayMenu[category];
+  const list = todayMenu[category] || [];
   const idx = list.findIndex(d => d.id === id);
-  if (direction === 'up' && idx > 0) [list[idx-1], list[idx]] = [list[idx], list[idx-1]];
-  if (direction === 'down' && idx < list.length - 1) [list[idx+1], list[idx]] = [list[idx], list[idx+1]];
+  if (idx === -1) return;
+  const target = { top: 0, up: idx - 1, down: idx + 1, bottom: list.length - 1 }[direction];
+  if (target === undefined || target < 0 || target >= list.length || target === idx) return;
+  list.splice(target, 0, list.splice(idx, 1)[0]);
   await saveMenu();
   renderMenuBuilder();
   renderPreview();
+  const card = document.querySelector(`#menuBuilder .dish-card[data-id="${id}"]`);
+  card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  card?.focus({ preventScroll: true });
+}
+
+function selectDish(id, cat) {
+  selectedDish = selectedDish && selectedDish.id === id ? null : { id, cat };
+  renderMenuBuilder();
+  document.querySelector(`#menuBuilder .dish-card[data-id="${id}"]`)?.focus({ preventScroll: true });
 }
 
 async function startInlineEdit(id, category) {
@@ -3647,17 +3675,32 @@ function servedLabel(date, reference) {
   return days === 1 ? 'servido el día anterior' : `servido hace ${days} días`;
 }
 
+const orderIcon = path => `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+const ORDER_ICONS = {
+  top: orderIcon('<path d="M3 2.5h10M4 10l4-4 4 4M8 6v8"/>'),
+  up: orderIcon('<path d="M4 10l4-4 4 4"/>'),
+  down: orderIcon('<path d="M4 6l4 4 4-4"/>'),
+  bottom: orderIcon('<path d="M3 13.5h10M4 6l4 4 4-4M8 2v8"/>')
+};
+
 function renderMenuBuilder() {
   const selected = $('menuDate').value;
   $('menuCardTitle').textContent = selected ? `Menú · ${menuDateLabel(selected, { weekday: 'long', day: 'numeric', month: 'long' })}` : 'Menú';
   const served = lastServedIndex(selected);
+  if (selectedDish && !(todayMenu[selectedDish.cat] || []).some(d => d.id === selectedDish.id)) selectedDish = null;
   let html = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
     const dishes = todayMenu[cat] || [];
+    const pos = selectedDish?.cat === cat ? dishes.findIndex(d => d.id === selectedDish.id) : -1;
+    const tool = (direction, icon, label, disabled) => `<button type="button" class="order-btn" data-action="order" data-direction="${direction}" data-cat="${cat}" title="${label}" aria-label="${label}" ${disabled ? 'disabled' : ''}>${icon}</button>`;
     html += `<div class="menu-section">
       <div class="section-header">
         <h3>${CATEGORY_LABELS[cat]}</h3>
         <span class="count">${dishes.length}</span>
+        ${dishes.length > 1 ? `<div class="order-tools" role="group" aria-label="Ordenar ${SECTION_NAMES[cat].toLowerCase()}">
+          <span class="order-hint">${pos === -1 ? 'Toca un plato para moverlo' : `${pos + 1} de ${dishes.length}`}</span>
+          ${tool('top', ORDER_ICONS.top, 'Mover al principio', pos <= 0)}${tool('up', ORDER_ICONS.up, 'Subir', pos <= 0)}${tool('down', ORDER_ICONS.down, 'Bajar', pos === -1 || pos === dishes.length - 1)}${tool('bottom', ORDER_ICONS.bottom, 'Mover al final', pos === -1 || pos === dishes.length - 1)}
+        </div>` : ''}
       </div>
       <div class="dish-list" data-category="${cat}">`;
     
@@ -3683,7 +3726,8 @@ function renderMenuBuilder() {
         } else {
           const last = served.get(dish.spanish.trim().toLowerCase());
           const recent = last && Date.parse(`${selected}T12:00:00Z`) - Date.parse(`${last}T12:00:00Z`) <= 7 * 86400000;
-          html += `<div class="dish-card" data-id="${dish.id}" data-cat="${cat}" draggable="true">
+          const isSelected = selectedDish?.id === dish.id;
+          html += `<div class="dish-card${isSelected ? ' selected' : ''}" data-id="${dish.id}" data-cat="${cat}" draggable="true" tabindex="0" aria-selected="${isSelected}">
             <span class="drag-handle">⋮⋮</span>
             <div class="dish-text">
               <div class="dish-es">${esc(dish.spanish)}</div>
@@ -3691,8 +3735,6 @@ function renderMenuBuilder() {
               ${recent ? `<div class="dish-served">↺ ${servedLabel(last, selected)}</div>` : ''}
             </div>
             <div class="dish-actions">
-              <button class="dish-action-btn" data-action="move" data-direction="up" data-id="${dish.id}" data-cat="${cat}" title="Subir">▲</button>
-              <button class="dish-action-btn" data-action="move" data-direction="down" data-id="${dish.id}" data-cat="${cat}" title="Bajar">▼</button>
               <button class="dish-action-btn" data-action="start-edit" data-id="${dish.id}" data-cat="${cat}" title="Editar">✏️</button>
               <button class="dish-action-btn delete" data-action="remove" data-id="${dish.id}" data-cat="${cat}" title="Quitar">✕</button>
             </div>
@@ -4088,7 +4130,15 @@ function bindEvents() {
 
   $('menuBuilder').addEventListener('click', async e => {
     const actionEl = e.target.closest('[data-action]');
-    if (!actionEl) return;
+    if (!actionEl) {
+      const card = e.target.closest('.dish-card');
+      if (card) selectDish(Number(card.dataset.id), card.dataset.cat);
+      return;
+    }
+    if (actionEl.dataset.action === 'order') {
+      if (selectedDish?.cat === actionEl.dataset.cat) await moveInMenu(selectedDish.id, selectedDish.cat, actionEl.dataset.direction);
+      return;
+    }
 
     const action = actionEl.dataset.action;
     const id = Number(actionEl.dataset.id);
@@ -4096,9 +4146,22 @@ function bindEvents() {
 
     if (action === 'save-inline') { await saveInlineEdit(id, cat); return; }
     if (action === 'cancel-inline') { cancelInlineEdit(); return; }
-    if (action === 'move') { await moveInMenu(id, cat, actionEl.dataset.direction); return; }
     if (action === 'start-edit') { await startInlineEdit(id, cat); return; }
     if (action === 'remove') { await removeFromMenu(id, cat); }
+  });
+
+  // Keyboard: Enter/Space selects the focused dish, Alt+↑/↓ (plus Shift for top/bottom) moves it, Esc deselects.
+  $('menuBuilder').addEventListener('keydown', async e => {
+    const card = e.target.closest?.('.dish-card');
+    if (!card || e.target !== card) return;
+    const id = Number(card.dataset.id), cat = card.dataset.cat;
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDish(id, cat); return; }
+    if (e.key === 'Escape' && selectedDish) { selectedDish = null; renderMenuBuilder(); return; }
+    if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      selectedDish = { id, cat };
+      await moveInMenu(id, cat, e.key === 'ArrowUp' ? (e.shiftKey ? 'top' : 'up') : (e.shiftKey ? 'bottom' : 'down'));
+    }
   });
 
   $('libraryList').addEventListener('click', async e => {
@@ -4902,6 +4965,7 @@ let mcFilterType = 'all';
 let mcShowArchived = false;
 let mcLoaded = false;
 let mcCollapsedSections = new Set();
+let mcActiveDish = null; // { si, di }: the dish row last focused, moved by the section's order buttons
 let mcDrafts = {};
 let mcDraftError = false;
 let mcSavingIds = new Set();
@@ -5319,6 +5383,7 @@ function mcRenderLibrary() {
 }
 
 function mcRenderEditor() {
+  mcActiveDish = null;
   const area = $('mc-editor-area');
   if (!area) return;
   clearTimeout(mcEditTimer); mcEditTimer = null;
@@ -5486,6 +5551,11 @@ function mcRenderSection(menu, sec, si, count, extraLangs) {
       </details>
     </div>
     <div class="mc-section-dishes">
+      ${(sec.dishes || []).length > 1 ? `<div class="mc-order-bar" data-si="${si}" role="group" aria-label="Ordenar platos de la sección">
+        <span class="order-hint"></span>
+        ${[['top', 'Mover al principio'], ['up', 'Subir'], ['down', 'Bajar'], ['bottom', 'Mover al final']].map(([dir, label]) =>
+          `<button type="button" class="order-btn mc-dish-order" data-si="${si}" data-direction="${dir}" title="${label}" aria-label="${label}">${ORDER_ICONS[dir]}</button>`).join('')}
+      </div>` : ''}
       <input class="mc-section-subtitle-input" value="${esc(sec.subtitle||'')}" placeholder="${defaultSub ? `Subtítulo opcional · si lo dejas vacío se imprime “${esc(defaultSub)}”` : 'Subtítulo opcional'}" data-si="${si}" aria-label="Subtítulo de la sección">
       <div class="mc-paste-panel" data-si="${si}" hidden>
         <textarea rows="4" placeholder="Un plato por línea. Suplemento opcional:&#10;Chuletón a la brasa | +6"></textarea>
@@ -5531,6 +5601,25 @@ function mcRefreshSections() {
   const sections = mcCurrentMenu.sections || [];
   c.innerHTML = sections.map((s, i) => mcRenderSection(mcCurrentMenu, s, i, sections.length, extraLangs)).join('')
     || '<p class="mc-help-text">Sin secciones todavía. Pulsa “+ Añadir sección”.</p>';
+  mcSyncOrderUI();
+}
+
+// Highlight the active dish row and enable its section's order buttons, without re-rendering (keeps focus).
+function mcSyncOrderUI() {
+  const c = $('mc-sections-container');
+  if (!c) return;
+  c.querySelectorAll('.mc-dish-row').forEach(row => row.classList.toggle('active',
+    !!mcActiveDish && Number(row.dataset.si) === mcActiveDish.si && Number(row.dataset.di) === mcActiveDish.di));
+  c.querySelectorAll('.mc-order-bar').forEach(bar => {
+    const si = Number(bar.dataset.si);
+    const count = c.querySelectorAll(`.mc-section-block[data-si="${si}"] .mc-dish-row`).length;
+    const pos = mcActiveDish?.si === si ? mcActiveDish.di : -1;
+    bar.querySelector('.order-hint').textContent = pos === -1 ? 'Toca un plato para moverlo' : `${pos + 1} de ${count}`;
+    bar.querySelectorAll('.mc-dish-order').forEach(btn => {
+      const up = btn.dataset.direction === 'top' || btn.dataset.direction === 'up';
+      btn.disabled = pos === -1 || (up ? pos === 0 : pos === count - 1);
+    });
+  });
 }
 
 function mcGatherSections() {
@@ -5579,13 +5668,22 @@ function mcFocusDish(si, di) {
 }
 
 // Structural edits to sections/dishes. Always start from what is on screen.
-function mcSectionAction(action, si, di) {
+function mcSectionAction(action, si, di, direction) {
   mcCurrentMenu.sections = mcGatherSections();
   const sections = mcCurrentMenu.sections;
   const sec = sections[si];
   if (!sec && action !== 'add-section') return;
   let focus = null;
-  if (action === 'toggle') {
+  // Indexes shift after other structural edits, so only a move keeps (and follows) the selected dish.
+  if (action !== 'move-dish' && action !== 'toggle') mcActiveDish = null;
+  if (action === 'move-dish') {
+    const list = sec.dishes || [];
+    const target = { top: 0, up: di - 1, down: di + 1, bottom: list.length - 1 }[direction];
+    if (target === undefined || target < 0 || target >= list.length || target === di) return;
+    list.splice(target, 0, list.splice(di, 1)[0]);
+    mcActiveDish = { si, di: target };
+    focus = [si, target];
+  } else if (action === 'toggle') {
     if (mcCollapsedSections.has(sec.id)) mcCollapsedSections.delete(sec.id);
     else mcCollapsedSections.add(sec.id);
   } else if (action === 'up' || action === 'down') {
@@ -6483,6 +6581,7 @@ function mcBindEditorEvents() {
     else if (has('mc-section-remove')) mcSectionAction('remove', si);
     else if (has('mc-add-dish-btn')) mcSectionAction('add-dish', si);
     else if (has('mc-dish-remove')) mcSectionAction('remove-dish', si, di);
+    else if (has('mc-dish-order') && mcActiveDish?.si === si) mcSectionAction('move-dish', si, mcActiveDish.di, t.dataset.direction);
     else if (has('mc-paste-add')) mcSectionAction('paste', si);
     else if (has('mc-section-paste') || has('mc-paste-cancel')) {
       const panel = area.querySelector(`.mc-paste-panel[data-si="${si}"]`);
@@ -6490,6 +6589,22 @@ function mcBindEditorEvents() {
       panel.hidden = has('mc-paste-cancel') || !panel.hidden;
       if (!panel.hidden) panel.querySelector('textarea')?.focus();
     }
+  });
+  // Keep focus in the dish field while clicking an order button.
+  area.addEventListener('mousedown', e => { if (e.target.closest('.mc-dish-order')) e.preventDefault(); });
+  area.addEventListener('focusin', e => {
+    const row = e.target.closest('.mc-dish-row');
+    if (!row) return;
+    mcActiveDish = { si: Number(row.dataset.si), di: Number(row.dataset.di) };
+    mcSyncOrderUI();
+  });
+  // Alt+↑/↓ moves the dish being edited (Shift: to the top/bottom of the section).
+  area.addEventListener('keydown', e => {
+    const row = e.target.closest?.('.mc-dish-row');
+    if (!row || !e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+    e.preventDefault();
+    const dir = e.key === 'ArrowUp' ? (e.shiftKey ? 'top' : 'up') : (e.shiftKey ? 'bottom' : 'down');
+    mcSectionAction('move-dish', Number(row.dataset.si), Number(row.dataset.di), dir);
   });
   area.addEventListener('input', e => {
     const el = e.target;

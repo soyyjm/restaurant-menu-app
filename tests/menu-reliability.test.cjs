@@ -38,12 +38,12 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     return q;
   } };
   const context = { MenuWorkflows: require('../menu-workflows.js'), Intl, Date, AbortSignal, setTimeout, clearTimeout, console: { warn() {}, error() {} },
-    document: { getElementById: el, createElement: () => ({ className: '', textContent: '', remove() {} }) },
+    document: { getElementById: el, querySelector: () => null, createElement: () => ({ className: '', textContent: '', remove() {} }) },
     localStorage: { getItem: k => saved.get(k) ?? null, setItem: (k,v) => saved.set(k,v), removeItem: k => saved.delete(k) },
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, moveInMenu, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -537,4 +537,15 @@ test('dessert size is relative to dishes, defaults to 90% and is clamped', () =>
   assert.equal(api.normalizePrintSettings({}).postreScale, 90);
   assert.equal(api.normalizePrintSettings({ postreScale: 200 }).postreScale, 120);
   assert.equal(api.normalizePrintSettings({ postreScale: '' }).postreScale, 90);
+});
+
+test('reorder moves a dish up, down, to the top or bottom and saves; edges are no-ops', async () => {
+  const h = harness({user:false});
+  const ids = () => plain(h.api.state().todayMenu.postre.map(d => d.id));
+  h.api.setMenu({ primer: [], segundo: [], postre: [1,2,3,4].map(id => ({ id, spanish: 'P'+id, catalan: 'P'+id, category: 'postre' })) });
+  await h.api.moveInMenu(4, 'postre', 'top'); assert.deepEqual(ids(), [4,1,2,3]);
+  await h.api.moveInMenu(4, 'postre', 'up'); assert.deepEqual(ids(), [4,1,2,3]);
+  await h.api.moveInMenu(1, 'postre', 'bottom'); assert.deepEqual(ids(), [4,2,3,1]);
+  await h.api.moveInMenu(2, 'postre', 'down'); assert.deepEqual(ids(), [4,3,2,1]);
+  assert.deepEqual(plain(h.api.state().menuHistory['2026-09-06'].postre.map(d => d.id)), [4,3,2,1]);
 });
