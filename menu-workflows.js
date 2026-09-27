@@ -222,21 +222,30 @@
     }
     return {library,history,metadata,favorites:[...favorites],packets,addedDishes,skippedDishes,addedMenus,skippedMenus};
   }
-  // Looser than key(): also ignores accents and trailing dots, to surface near-identical library entries.
-  const looseKey = (name, category) => `${category}:${String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[.\s]+$/, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es')}`;
-  // Groups of library dishes that look the same. keepId: favorite first, then the oldest entry.
-  function libraryDuplicates(library, favorites = []) {
+  // Looser than key(): also ignores accents, a trailing surcharge such as "(+3.50€)", spacing around brackets and trailing dots.
+  const looseName = name => String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\(?\s*\+\s*\d+(?:[.,]\d{1,2})?\s*€\s*\)?\s*$/, '').replace(/\s*([()])\s*/g, '$1')
+    .replace(/[.\s]+$/, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es');
+  const looseKey = (name, category) => `${category}:${looseName(name)}`;
+  const duplicateIgnoreKey = dishes => dishes.map(d => String(d.id)).sort().join('+');
+  // Groups of library dishes that look like the same dish, in the same or in different categories.
+  // keepId: favorite first, then the oldest entry. Groups the user marked as "not duplicates" are skipped
+  // until one of their dishes changes or another look-alike appears.
+  function libraryDuplicates(library, favorites = [], ignored = []) {
     const fav = new Set(favorites.map(String));
+    const skip = new Set(ignored);
     const groups = new Map();
     for (const d of library) {
-      const k = looseKey(d.spanish, d.category);
+      const k = looseName(d.spanish);
+      if (!k) continue;
       if (!groups.has(k)) groups.set(k, []);
       groups.get(k).push(d);
     }
-    return [...groups.entries()].filter(([, dishes]) => dishes.length > 1).map(([k, dishes]) => {
+    return [...groups.entries()].filter(([, dishes]) => dishes.length > 1 && !skip.has(duplicateIgnoreKey(dishes))).map(([k, dishes]) => {
       const ranked = [...dishes].sort((a, b) => (fav.has(String(b.id)) - fav.has(String(a.id)))
         || String(a.created_at || '9999').localeCompare(String(b.created_at || '9999')) || (Number(a.id) - Number(b.id)));
-      return { key: k, category: dishes[0].category, dishes, keepId: ranked[0].id };
+      const categories = [...new Set(dishes.map(d => d.category))];
+      return { key: k, category: dishes[0].category, categories, crossCategory: categories.length > 1, dishes, keepId: ranked[0].id, ignoreKey: duplicateIgnoreKey(dishes) };
     });
   }
   // Keep one dish per group; a removed favorite passes its star to the kept dish.
@@ -268,7 +277,7 @@
     }
     return { library: [...added, ...byId.values()], dropped };
   }
-  const api = { looseKey, libraryDuplicates, mergeLibraryDuplicates, mergeCloudLibrary, dailyBackup, closedBackup, splitDishPrice, formatDishPrice, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
+  const api = { looseName, looseKey, duplicateIgnoreKey, libraryDuplicates, mergeLibraryDuplicates, mergeCloudLibrary, dailyBackup, closedBackup, splitDishPrice, formatDishPrice, parseClosedBackup, planClosedRestore, planDailyImport, savedMatches, key, family, version, clone, content, translatedField, editTranslatedItem, parseBatch, frequentDishes };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MenuWorkflows = api;
 })(typeof globalThis === 'undefined' ? this : globalThis);

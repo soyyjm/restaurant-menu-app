@@ -80,8 +80,9 @@ body {
    ========================================== */
 .app-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 20px;
+  gap: 12px 20px;
   margin-bottom: 32px;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--cream);
@@ -97,9 +98,12 @@ body {
 
 .date-price-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-left: auto;
+  /* Own row: beside the title it was squeezed when the preview column is present. */
+  flex-basis: 100%;
+  min-width: 0;
 }
 
 .date-price-bar input, .date-price-bar select {
@@ -942,7 +946,7 @@ kbd {
   width: 794px;
   height: 1123px;
   font-family: 'Cormorant Garamond', Georgia, serif;
-  --pt-title-scale: 1; --pt-dish-scale: 1; --pt-ca-scale: 1;
+  --pt-title-scale: 1; --pt-dish-scale: 1; --pt-ca-scale: 1; --pt-postre-scale: 0.9;
 }
 
 .pt-page {
@@ -1096,8 +1100,8 @@ kbd {
   margin-top: 2px;
 }
 
-.pt-section--postre .pt-dish-es { font-size: calc(17px * var(--pt-dish-scale) * var(--pt-fit)); }
-.pt-section--postre .pt-dish-ca { font-size: calc(13.5px * var(--pt-ca-scale) * var(--pt-fit)); }
+.pt-section--postre .pt-dish-es { font-size: calc(19px * var(--pt-dish-scale) * var(--pt-postre-scale) * var(--pt-fit)); }
+.pt-section--postre .pt-dish-ca { font-size: calc(14.5px * var(--pt-ca-scale) * var(--pt-postre-scale) * var(--pt-fit)); }
 .pt-sep { padding: 0 0.45em; opacity: 0.55; }
 
 /* Busier menus give the header less room (7-9 and 10+ dishes) */
@@ -2073,7 +2077,8 @@ kbd {
 .dup-option { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 6px 0; font-size: 14px; cursor: pointer; }
 .dup-option em { color: var(--ink-faint); font-size: 12px; }
 .dup-option small { color: var(--ink-faint); font-size: 11px; }
-.dup-group .btn { margin-top: 4px; }
+.dup-group .action-row { margin-top: 4px; }
+.dup-cat { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: 1px 6px; border-radius: 4px; background: var(--paper-warm); color: var(--ink-soft); }
 .history-dish-label { display: block; margin-top: 10px; font-size: 12px; }
 .history-match { font-size: 12px; color: var(--ink-soft); flex-basis: 100%; }
 .toast { display: flex; align-items: center; gap: 12px; }
@@ -2393,6 +2398,7 @@ kbd {
           <label>Título (%)<input type="number" id="psTitleScale" min="60" max="130" step="5"></label>
           <label>Platos en español (%)<input type="number" id="psDishScale" min="70" max="140" step="5"></label>
           <label>Traducción al catalán (%)<input type="number" id="psCaScale" min="70" max="140" step="5"></label>
+          <label>Postres, respecto a los platos (%)<input type="number" id="psPostreScale" min="60" max="120" step="5"></label>
         </div>
         <button class="btn btn-secondary btn-small" id="resetPrintScale">Restablecer tamaños</button>
       </div>
@@ -2524,7 +2530,7 @@ let todayMenu = { primer: [], segundo: [], postre: [] };
 let menuHistory = {};  // { 'YYYY-MM-DD': { primer: [...], segundo: [...], postre: [...] } }
 let specialPrices = {}; // { 'YYYY-MM-DD': '21.50 €' }
 const DEFAULT_PRINT_SETTINGS = { titleSize: 28, titleAlign: 'center', sectionSize: 15, mainEs: 14, mainCa: 12, postreEs: 13, postreCa: 11, sectionMargin: 18, itemMargin: 10, priceSize: 18,
-  titleScale: 100, dishScale: 100, caScale: 100, pdfStyle: 'simple',
+  titleScale: 100, dishScale: 100, caScale: 100, postreScale: 90, pdfStyle: 'simple',
   restaurantName: 'Restaurante Sol', hours: '13:00 – 16:00', priceWeekday: '14.50 €', priceWeekend: '20.00 €', phone: '', address: '', holidays: DEFAULT_HOLIDAYS };
 let printSettings = { ...DEFAULT_PRINT_SETTINGS };
 let editingId = null;
@@ -2602,7 +2608,7 @@ async function restoreUndo() {
 
 const $ = id => document.getElementById(id);
 const uid = () => Date.now() * 1000 + Math.floor(Math.random() * 1000);
-const SETTINGS_MAP = { psTitleScale: 'titleScale', psDishScale: 'dishScale', psCaScale: 'caScale', bizName: 'restaurantName', bizHours: 'hours', restaurantPhone: 'phone', restaurantAddress: 'address', bizPriceWeekday: 'priceWeekday', bizPriceWeekend: 'priceWeekend', bizHolidays: 'holidays' };
+const SETTINGS_MAP = { psTitleScale: 'titleScale', psDishScale: 'dishScale', psCaScale: 'caScale', psPostreScale: 'postreScale', bizName: 'restaurantName', bizHours: 'hours', restaurantPhone: 'phone', restaurantAddress: 'address', bizPriceWeekday: 'priceWeekday', bizPriceWeekend: 'priceWeekend', bizHolidays: 'holidays' };
 
 function normalizeGeminiModel(value) {
   return GEMINI_MODEL_OPTIONS.includes(value) ? value : DEFAULT_GEMINI_MODEL;
@@ -2643,6 +2649,7 @@ function normalizePrintSettings(input = {}) {
     titleScale: toIntInRange(base.titleScale, 100, 60, 130),
     dishScale: toIntInRange(base.dishScale, 100, 70, 140),
     caScale: toIntInRange(base.caScale, 100, 70, 140),
+    postreScale: toIntInRange(base.postreScale, 90, 60, 120),
     pdfStyle: ['simple', 'color', 'bw'].includes(base.pdfStyle) ? base.pdfStyle : 'simple',
     restaurantName: textSetting(base.restaurantName, DEFAULT_PRINT_SETTINGS.restaurantName),
     hours: textSetting(base.hours, DEFAULT_PRINT_SETTINGS.hours),
@@ -3844,7 +3851,7 @@ function bindBatchEvents() {
 function renderDuplicates() {
   const el = $('libraryDuplicates');
   const favorites = new Set(dishPreferences.favorites.map(String));
-  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites);
+  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites, dishPreferences.duplicateIgnores || []);
   const extra = groups.reduce((n, g) => n + g.dishes.length - 1, 0);
   $('libraryCount').textContent = `(${library.length}${extra ? ` · ${extra} repetidos` : ''})`;
   if (!groups.length) { duplicateReviewOpen = false; el.innerHTML = ''; return; }
@@ -3852,23 +3859,41 @@ function renderDuplicates() {
     el.innerHTML = `<div class="dup-notice">⚠️ ${extra} platos repetidos en ${groups.length} grupos. <button class="btn btn-secondary btn-small" data-dup="open">Revisar y fusionar</button></div>`;
     return;
   }
+  // "Merge all" never decides a category for the user: cross-category groups need an explicit choice.
+  const sameCategory = groups.filter(g => !g.crossCategory).length;
   el.innerHTML = `<div class="dup-panel">
     <div class="dup-head">
       <strong>Platos repetidos</strong>
-      <p class="hint">Marca el que quieres conservar; los demás se borran de la biblioteca. Si alguno era favorito, la ★ pasa al que conservas. Los menús y el historial no cambian.</p>
-      <div class="action-row"><button class="btn btn-primary btn-small" data-dup="all">Fusionar todos (${groups.length})</button><button class="btn btn-secondary btn-small" data-dup="close">Cerrar</button></div>
+      <p class="hint">Marca el que quieres conservar; los demás se borran de la biblioteca. Si alguno era favorito, la ★ pasa al que conservas. Si el mismo plato está en varias categorías, conserva el de la categoría correcta. Los menús y el historial no cambian.</p>
+      <div class="action-row">${sameCategory ? `<button class="btn btn-primary btn-small" data-dup="all">Fusionar todos los repetidos (${sameCategory})</button>` : ''}<button class="btn btn-secondary btn-small" data-dup="close">Cerrar</button></div>
     </div>
-    ${groups.map((g, gi) => `<fieldset class="dup-group" data-key="${esc(g.key)}">
-      <legend>${CATEGORY_LABELS[g.category] || ''} · ${g.dishes.length} copias</legend>
-      ${g.dishes.map(d => `<label class="dup-option"><input type="radio" name="dup-${gi}" value="${esc(d.id)}" ${String(d.id) === String(duplicateChoice[g.key] ?? g.keepId) ? 'checked' : ''}>
-        <span>${favorites.has(String(d.id)) ? '★ ' : ''}${esc(d.spanish)}</span> <em>${esc(d.catalan)}</em>${d.created_at ? ` <small>${esc(menuDateLabel(String(d.created_at).slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }))}</small>` : ''}</label>`).join('')}
-      <button class="btn btn-secondary btn-small" data-dup="one">Fusionar este grupo</button>
+    ${groups.map((g, gi) => `<fieldset class="dup-group" data-key="${esc(g.key)}" data-cross="${g.crossCategory}">
+      <legend>${g.crossCategory ? `⚠️ En varias categorías: ${g.categories.map(c => SECTION_NAMES[c] || c).join(' / ')}` : `${CATEGORY_LABELS[g.category] || ''} · ${g.dishes.length} copias`}</legend>
+      ${g.dishes.map(d => `<label class="dup-option"><input type="radio" name="dup-${gi}" value="${esc(d.id)}" ${String(d.id) === String(duplicateChoice[g.key] ?? (g.crossCategory ? '' : g.keepId)) ? 'checked' : ''}>
+        ${g.crossCategory ? `<span class="dup-cat">${esc(SECTION_NAMES[d.category] || d.category)}</span>` : ''}<span>${favorites.has(String(d.id)) ? '★ ' : ''}${esc(d.spanish)}</span> <em>${esc(d.catalan)}</em>${d.created_at ? ` <small>${esc(menuDateLabel(String(d.created_at).slice(0, 10), { day: 'numeric', month: 'short', year: 'numeric' }))}</small>` : ''}</label>`).join('')}
+      <div class="action-row">
+        <button class="btn btn-secondary btn-small" data-dup="one">${g.crossCategory ? 'Conservar solo el marcado' : 'Fusionar este grupo'}</button>
+        <button class="btn btn-secondary btn-small" data-dup="ignore" data-ignore="${esc(g.ignoreKey)}">No son repetidos</button>
+      </div>
     </fieldset>`).join('')}
   </div>`;
 }
 
+async function ignoreDuplicateGroup(ignoreKey) {
+  dishPreferences.duplicateIgnores = [...new Set([...(dishPreferences.duplicateIgnores || []), ignoreKey])];
+  renderLibrary();
+  toast('Grupo marcado como «no son repetidos»', 'info', { label: 'Deshacer', run: async () => {
+    dishPreferences.duplicateIgnores = (dishPreferences.duplicateIgnores || []).filter(k => k !== ignoreKey);
+    renderLibrary();
+    await saveSettings();
+  } });
+  await saveSettings();
+}
+
 async function mergeDuplicates(keys) {
-  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites).filter(g => keys.includes(g.key));
+  const groups = MenuWorkflows.libraryDuplicates(library, dishPreferences.favorites, dishPreferences.duplicateIgnores || []).filter(g => keys.includes(g.key));
+  // Never guess the category: a cross-category group needs the user's pick.
+  if (groups.some(g => g.crossCategory && duplicateChoice[g.key] === undefined)) { toast('Marca primero la categoría correcta', 'error'); return; }
   if (!groups.length) return;
   const before = { library: MenuWorkflows.clone(library), favorites: [...dishPreferences.favorites] };
   const result = MenuWorkflows.mergeLibraryDuplicates(library, dishPreferences.favorites, groups.map(g => ({ dishes: g.dishes, keepId: duplicateChoice[g.key] ?? g.keepId })));
@@ -4170,8 +4195,9 @@ function bindEvents() {
     if (!btn) return;
     const action = btn.dataset.dup;
     if (action === 'open' || action === 'close') { duplicateReviewOpen = action === 'open'; renderLibrary(); return; }
+    if (action === 'ignore') { ignoreDuplicateGroup(btn.dataset.ignore); return; }
     const keys = action === 'all'
-      ? [...$('libraryDuplicates').querySelectorAll('.dup-group')].map(g => g.dataset.key)
+      ? [...$('libraryDuplicates').querySelectorAll('.dup-group[data-cross="false"]')].map(g => g.dataset.key)
       : [btn.closest('.dup-group').dataset.key];
     mergeDuplicates(keys);
   });
@@ -4206,6 +4232,7 @@ function bindEvents() {
   $('settingsModal').addEventListener('click', e => { if (e.target === $('settingsModal')) closeSettings(); });
   $('resetPrintScale').addEventListener('click', () => {
     for (const id of ['psTitleScale', 'psDishScale', 'psCaScale']) $(id).value = 100;
+    $('psPostreScale').value = 90;
     syncSettingsFromUI();
   });
 
@@ -4561,7 +4588,8 @@ function fillSimplePage(root) {
   for (const cat of ['primer', 'segundo', 'postre']) {
     const dishes = todayMenu[cat] || [];
     if (!dishes.length) continue;
-    const [esSize, caSize] = cat === 'postre' ? [s.postreEs, s.postreCa] : [s.mainEs, s.mainCa];
+    // Desserts are sized from the dish size (Postres %), so they never look like small print.
+    const [esSize, caSize] = cat === 'postre' ? [s.mainEs * s.postreScale / 100, s.mainCa * s.postreScale / 100] : [s.mainEs, s.mainCa];
     const items = cat === 'postre'
       ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
       : dishes;
@@ -4604,6 +4632,7 @@ function fillDailyPage(root, mode) {
   root.style.setProperty('--pt-title-scale', s.titleScale / 100);
   root.style.setProperty('--pt-dish-scale', s.dishScale / 100);
   root.style.setProperty('--pt-ca-scale', s.caScale / 100);
+  root.style.setProperty('--pt-postre-scale', s.postreScale / 100);
   let body = '';
   for (const cat of ['primer', 'segundo', 'postre']) {
     const dishes = todayMenu[cat] || [];

@@ -531,3 +531,10 @@ test('saving the library does not upload a dish another device already saved', a
   assert.deepEqual(h.api.state().library.map(d => d.id), [500]);
   assert.equal(h.api.state().todayMenu.primer.length, 1);
 });
+
+test('dessert size is relative to dishes, defaults to 90% and is clamped', () => {
+  const {api} = harness({user:false});
+  assert.equal(api.normalizePrintSettings({}).postreScale, 90);
+  assert.equal(api.normalizePrintSettings({ postreScale: 200 }).postreScale, 120);
+  assert.equal(api.normalizePrintSettings({ postreScale: '' }).postreScale, 90);
+});

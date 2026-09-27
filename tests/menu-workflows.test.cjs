@@ -138,23 +138,40 @@ test('dish price is split from a single trailing price and formatted for the car
  assert.equal(W.formatDishPrice(''),'');
 });
 
-test('library duplicates group same dish ignoring case, spaces, accents and trailing dots; favorite is kept', () => {
+test('library duplicates group same dish ignoring case, spaces, accents, surcharges and trailing dots; favorite is kept', () => {
   const lib = [
     { id: 1, spanish: 'Macarrones a la boloñesa', catalan: 'Macarrons', category: 'primer', created_at: '2026-01-01' },
     { id: 2, spanish: 'macarrones  a la bolonesa.', catalan: 'Macarrons', category: 'primer', created_at: '2025-01-01' },
-    { id: 3, spanish: 'Macarrones a la boloñesa', catalan: 'Macarrons', category: 'segundo' },
-    { id: 4, spanish: 'Flan', catalan: 'Flam', category: 'postre' }
+    { id: 4, spanish: 'Flan', catalan: 'Flam', category: 'postre' },
+    { id: 5, spanish: 'Gambas al ajillo (+3.50€)', catalan: 'Gambes', category: 'primer' },
+    { id: 6, spanish: 'Gambas al ajillo(+3.50€)', catalan: 'Gambes', category: 'primer' },
+    { id: 7, spanish: 'Costillas de cabrito (+4.00€)', catalan: 'Costelles', category: 'segundo' },
+    { id: 8, spanish: 'Costillas de cabrito (+ 3,50 €)', catalan: 'Costelles', category: 'segundo' },
+    { id: 9, spanish: 'Pan (integral)', catalan: 'Pa', category: 'primer' }
   ];
   let groups = W.libraryDuplicates(lib, []);
-  assert.equal(groups.length, 1);
-  assert.deepEqual(groups[0].dishes.map(d => d.id), [1, 2]);
+  assert.deepEqual(groups.map(g => g.dishes.map(d => d.id)), [[1, 2], [5, 6], [7, 8]]);
   assert.equal(groups[0].keepId, 2); // oldest
+  assert.equal(groups.some(g => g.crossCategory), false);
   groups = W.libraryDuplicates(lib, ['1']);
   assert.equal(groups[0].keepId, 1); // favorite wins
   const merged = W.mergeLibraryDuplicates(lib, ['2'], [{ dishes: groups[0].dishes, keepId: 1 }]);
-  assert.deepEqual(merged.library.map(d => d.id), [1, 3, 4]);
+  assert.deepEqual(merged.library.map(d => d.id), [1, 4, 5, 6, 7, 8, 9]);
   assert.deepEqual(merged.removedIds, [2]);
   assert.deepEqual(merged.favorites, ['1']);
+});
+
+test('same dish in different categories is reported, and "not duplicates" hides a group until it changes', () => {
+  const lib = [
+    { id: 1, spanish: 'Dorada a la espalda', catalan: 'Orada', category: 'primer' },
+    { id: 2, spanish: 'Dorada a la espalda', catalan: 'Orada', category: 'segundo' }
+  ];
+  const [group] = W.libraryDuplicates(lib);
+  assert.equal(group.crossCategory, true);
+  assert.deepEqual(group.categories, ['primer', 'segundo']);
+  assert.equal(W.libraryDuplicates(lib, [], [group.ignoreKey]).length, 0);
+  const grown = [...lib, { id: 3, spanish: 'dorada a la espalda', catalan: 'Orada', category: 'segundo' }];
+  assert.equal(W.libraryDuplicates(grown, [], [group.ignoreKey]).length, 1);
 });
 
 test('cloud library merge keeps unsynced local edits and drops a dish another device already saved', () => {
