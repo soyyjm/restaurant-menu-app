@@ -607,7 +607,8 @@ body {
   background: white;
 }
 .pt-page.ps-page { display: block; padding: 76px; background: #fff; color: #000; font-weight: 600; }
-.ps-content { --pt-fit: 1; transform-origin: top center; }
+.ps-content { --pt-fit: 1; transform-origin: top center; text-align: center; }
+.ps-postre .ps-es, .ps-postre .ps-ca, .pt-section--postre .pt-dish-es, .pt-section--postre .pt-dish-ca { white-space: nowrap; }
 .ps-header { text-align: center; border-bottom: 1.5px solid #000; padding-bottom: calc(14px * var(--pt-fit)); margin-bottom: calc(20px * var(--pt-fit)); }
 .ps-title { font-style: italic; }
 .ps-restaurant { font-size: calc(14px * var(--pt-fit)); color: #333; font-style: italic; margin-bottom: calc(12px * var(--pt-fit)); }
@@ -4564,7 +4565,7 @@ function fillSimplePage(root) {
     const items = cat === 'postre'
       ? [{ spanish: dishes.map(d => d.spanish).join(', '), catalan: dishes.map(d => d.catalan).filter(Boolean).join(', ') }]
       : dishes;
-    body += `<div class="ps-section" style="margin-bottom:${px(s.sectionMargin)}">
+    body += `<div class="ps-section${cat === 'postre' ? ' ps-postre' : ''}" style="margin-bottom:${px(s.sectionMargin)}">
       <div class="ps-section-title" style="font-size:${px(s.sectionSize)}">${CATEGORY_LABELS[cat]}</div>
       ${items.map(d => `<div class="ps-item" style="margin-bottom:${px(s.itemMargin)}">
         <div class="ps-es" style="font-size:${px(esSize, s.dishScale)}">${esc(d.spanish)}</div>
@@ -4582,7 +4583,17 @@ function fillSimplePage(root) {
     <div class="ps-hours">HORARIO DE MENÚ ${esc(s.hours)}</div>
   </div></div>`;
   // Keep the original look, but let short menus use more of the sheet (up to 1.5×) and long ones shrink.
-  if (root.querySelector('.ps-content').offsetHeight) fitText(root.querySelector('.ps-content'), 1123 - 2 * 76, { min: 0.6, max: 1.5, target: 0.85 });
+  if (!root.querySelector('.ps-content').offsetHeight) return;
+  fitText(root.querySelector('.ps-content'), 1123 - 2 * 76, { min: 0.6, max: 1.5, target: 0.85 });
+  keepOnOneLine(root.querySelectorAll('.ps-postre .ps-es, .ps-postre .ps-ca'));
+}
+
+// Desserts stay on a single line: shrink that line's text just enough to fit the page width.
+function keepOnOneLine(elements) {
+  for (const el of elements) {
+    if (el.scrollWidth <= el.clientWidth) continue;
+    el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * el.clientWidth / el.scrollWidth * 0.99}px`;
+  }
 }
 
 function fillDailyPage(root, mode) {
@@ -4655,6 +4666,7 @@ function fitDailyPage(root) {
   const available = bodyEl.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
   if (available <= 100 || !inner.children.length) return;
   fitText(inner, available);
+  keepOnOneLine(inner.querySelectorAll('.pt-section--postre .pt-dish-es, .pt-section--postre .pt-dish-ca'));
   const spare = available - inner.offsetHeight;
   if (spare <= 0) return;
   const sections = Array.from(inner.querySelectorAll('.pt-section'));
