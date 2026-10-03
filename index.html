@@ -6029,9 +6029,16 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   // Header
   $('mcp-restaurant').textContent = layout.header || 'RESTAURANTE SOL';
   $('mcp-title').textContent = m.name || '';
-  // Dorado prints a large display title: step it down for longer names so it stays on one or two lines.
-  const titleLen = (m.name || '').length;
-  $('mcp-title').style.fontSize = isDorado ? `${Math.round((titleLen <= 16 ? 58 : titleLen <= 24 ? 48 : titleLen <= 34 ? 40 : 34) * (dense ? 0.8 : 1))}px` : '';
+  // Dorado prints a large display title: shrink it until it fits on one line (two for very long names).
+  const titleEl = $('mcp-title');
+  titleEl.style.fontSize = '';
+  if (isDorado) {
+    const max = dense ? 48 : 58, min = dense ? 30 : 34;
+    for (let size = max; size >= min; size -= 2) {
+      titleEl.style.fontSize = `${size}px`;
+      if (titleEl.offsetHeight <= size * 1.04 * 1.4) break;
+    }
+  }
   const typeLabelsMap = {
     es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
     ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
@@ -6042,7 +6049,10 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     ? (m.occasion || 'Entrante + Principal + Postre')
     : isCarta ? (m.occasion || '')
     : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
-  typeEl.style.display = (isMarineroTemplate || (isCarta ? !!m.occasion : (m.type && m.type !== 'otro'))) ? 'block' : 'none';
+  // Dorado: skip "Para grupos" when the title already says "Grupos".
+  const typeWord = typeEl.textContent.split(' ').pop().toLowerCase();
+  const typeInTitle = isDorado && typeWord && (m.name || '').toLowerCase().includes(typeWord);
+  typeEl.style.display = !typeInTitle && (isMarineroTemplate || (isCarta ? !!m.occasion : (m.type && m.type !== 'otro'))) ? 'block' : 'none';
 
   const priceRow = $('mcp-price-row');
   if (m.price && isDorado) {
@@ -6067,8 +6077,11 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   notesEl.textContent = m.notes || '';
   // The carta prints its conditions as the footer instead.
   notesEl.style.display = m.notes && !isCarta && !isDorado ? 'block' : 'none';
-  // Dorado closes the page with the notes as a statement line ("Incluye un postre y una bebida").
-  $('mcp-closing').textContent = isDorado ? (m.notes || '') : '';
+  // Dorado closes the page with what the price includes ("Incluye un postre y una bebida"), taken from
+  // Bebidas or Condiciones, whichever says it; the remaining conditions go in the small footer line.
+  const includes = text => /^(incluye|incluyen|incluido|incluidos|inclou|inclouen|inclòs|includes?|included)\b/i.test((text || '').trim()) && !(text || '').trim().includes('\n');
+  const closingFrom = isDorado ? (includes(m.drinks) ? 'drinks' : includes(m.notes) ? 'notes' : '') : '';
+  $('mcp-closing').textContent = closingFrom ? m[closingFrom].trim() : '';
 
   // Body sections
   let bodyHtml = isCarta ? mcCartaBodyHtml(m, langs) : '';
@@ -6081,7 +6094,8 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     const defaultSub = modeText && !(sec.title || '').toLowerCase().includes(modeWord) ? modeText : '';
     const sub = sec.subtitle || defaultSub;
     // Dorado writes the default mode next to the title: "PLATO PRINCIPAL · A ELEGIR UNO".
-    const inlineMode = isDorado && !sec.subtitle && defaultSub ? `<span class="mcp-title-mode"> · ${esc(defaultSub.replace(/[()]/g, ''))}</span>` : '';
+    const inlineText = isDorado ? (sec.subtitle ? (sec.subtitle.length <= 28 ? sec.subtitle : '') : defaultSub).replace(/[()]/g, '').trim() : '';
+    const inlineMode = inlineText ? `<span class="mcp-title-mode"> · ${esc(inlineText)}</span>` : '';
     bodyHtml += `<div class="mcp-section">
       <div class="mcp-section-header">
         <div class="mcp-section-title" data-mc="section:${si}:title">${esc(sec.title || '')}${inlineMode}</div>
@@ -6111,7 +6125,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
       bodyHtml += `<div class="mcp-marinero-connector">${esc(sec.subtitle)}</div>`;
     }
   }
-  if (m.drinks) {
+  if (m.drinks && closingFrom !== 'drinks') {
     const drinksLabelMap = { es:'Bebidas incluidas', ca:'Begudes incloses', en:'Drinks included' };
     bodyHtml += `<div class="mcp-drinks-box">
       <div class="mcp-drinks-label">${isMarineroTemplate ? esc(m.drinks.split('\n')[0] || '') : (drinksLabelMap[primaryLang] || 'Bebidas incluidas')}</div>
@@ -6131,8 +6145,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   // Footer note
   const doradoFooter = { es: 'Menú sujeto a disponibilidad y confirmación previa', ca: 'Menú subjecte a disponibilitat i confirmació prèvia', en: 'Menu subject to availability and prior confirmation' };
   const minPeople = { es: n => `Mínimo ${n} personas`, ca: n => `Mínim ${n} persones`, en: n => `Minimum ${n} people` };
+  const doradoNote = closingFrom !== 'notes' && m.notes ? m.notes.trim() : (doradoFooter[primaryLang] || doradoFooter.es);
   $('mcp-footer-text').textContent = layout.footer || (isDorado
-    ? [m.min_people ? (minPeople[primaryLang] || minPeople.es)(m.min_people) : '', doradoFooter[primaryLang] || doradoFooter.es].filter(Boolean).join(' · ')
+    ? [m.min_people ? (minPeople[primaryLang] || minPeople.es)(m.min_people) : '', doradoNote].filter(Boolean).join(' · ')
     : isMarineroTemplate
     ? 'HORARIO DE MENÚ · 13:00 - 16:00'
     : isCarta ? (m.notes || 'IVA incluido / IVA inclòs / VAT included')
@@ -6228,7 +6243,6 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto', template = '') {
         bodyEl.style.transform = `scale(${scaled})`;
         bodyEl.style.transformOrigin = 'top center';
       } else if (left > 4) bodyEl.style.justifyContent = 'center';
-      scaled = Math.min(scaled, fit);
     } else if (surplus < 0) {
       scaled = Math.max(bodyH / (bodyH - surplus), 0.65);
       bodyEl.style.transform      = `scale(${scaled})`;
