@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menú del Día — Restaurante Sol</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&family=Montserrat:wght@500&family=Abril+Fatface&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -1968,6 +1968,96 @@ kbd {
 .mcp-root.mcp-color.mcp-accent .mcp-header-box,
 .mcp-root.mcp-color.mcp-accent .mcp-drinks-box { border-color: var(--mcp-accent); }
 .mcp-root.mcp-color.mcp-accent .mcp-price-badge { background: var(--mcp-accent); }
+/* ── Dorado elegante: cream and gold, double frame, display title (B&N: black lines, open dots) ── */
+.mcp-closing, .mcp-price-note { display: none; }
+.mcp-template-dorado { --dor-gold: #b98c48; --dor-ink: #1f1a15; --dor-soft: #6f6558; --dor-faint: rgba(185,140,72,0.32); }
+.mcp-template-dorado.mcp-bw { --dor-gold: #111; --dor-ink: #000; --dor-soft: #333; --dor-faint: rgba(0,0,0,0.22); }
+.mcp-root.mcp-template-dorado.mcp-color.mcp-accent { --dor-gold: var(--mcp-accent); }
+.mcp-template-dorado .mcp-page { padding: 116px 108px 96px; font-family: 'Lato', 'DM Sans', sans-serif; }
+.mcp-root.mcp-template-dorado.mcp-color .mcp-page { background: #f6efe3; }
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-page { background: #fff; }
+.mcp-template-dorado .mcp-page::before,
+.mcp-template-dorado .mcp-page::after { content: ""; position: absolute; pointer-events: none; }
+.mcp-template-dorado .mcp-page::before { inset: 62px; border: 1.5px solid var(--dor-gold); }
+.mcp-template-dorado .mcp-page::after { inset: 74px; border: 1px solid var(--dor-faint); }
+.mcp-template-dorado .mcp-corner { width: 34px; height: 34px; border-color: var(--dor-gold) !important; opacity: 0.85; }
+.mcp-template-dorado .mcp-corner-tl { top: 84px; left: 84px; border-width: 0 1px 1px 0; }
+.mcp-template-dorado .mcp-corner-tr { top: 84px; right: 84px; border-width: 0 0 1px 1px; }
+.mcp-template-dorado .mcp-corner-bl { bottom: 84px; left: 84px; border-width: 1px 1px 0 0; }
+.mcp-template-dorado .mcp-corner-br { bottom: 84px; right: 84px; border-width: 1px 0 0 1px; }
+.mcp-template-dorado .mcp-header-box { border: 0; padding: 0; margin-bottom: 30px; }
+.mcp-template-dorado .mcp-restaurant {
+  font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--dor-soft) !important; margin-bottom: 20px;
+}
+.mcp-template-dorado .mcp-ornament-row { gap: 34px; margin-bottom: 14px; }
+.mcp-template-dorado .mcp-ornament-line { max-width: 132px; background: var(--dor-gold) !important; opacity: 0.85; }
+.mcp-template-dorado .mcp-ornament-dot {
+  font-size: 0; width: 15px; height: 15px; border-radius: 50%; background: var(--dor-gold); color: transparent !important;
+}
+.mcp-template-dorado .mcp-title {
+  font-family: 'Abril Fatface', 'Playfair Display', Georgia, serif; font-weight: 400; letter-spacing: 0.01em;
+  line-height: 1.04; color: var(--dor-ink) !important; margin-bottom: 12px;
+}
+.mcp-template-dorado .mcp-type-label {
+  font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 400; letter-spacing: 0.03em;
+  color: var(--dor-soft) !important; margin-bottom: 22px;
+}
+.mcp-template-dorado .mcp-price-badge {
+  background: var(--dor-ink) !important; border-radius: 30px; padding: 12px 52px; gap: 7px; align-items: baseline;
+}
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-price-badge { background: transparent !important; border: 1.5px solid #000; }
+.mcp-template-dorado .mcp-price,
+.mcp-template-dorado .mcp-price-label { font-family: 'Lato', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: 0.01em; color: #fff !important; }
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-price,
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-price-label { color: #000 !important; }
+.mcp-template-dorado .mcp-price-note:not(:empty) {
+  display: block; font-size: 11.5px; font-style: italic; color: var(--dor-soft); margin-top: 8px;
+}
+.mcp-template-dorado .mcp-body { --dor-fit: 1; }
+.mcp-template-dorado .mcp-section { margin-bottom: calc(30px * var(--dor-fit)); }
+.mcp-template-dorado .mcp-section:last-of-type { margin-bottom: 0; }
+.mcp-template-dorado .mcp-section-header { margin-bottom: calc(12px * var(--dor-fit)); }
+.mcp-template-dorado .mcp-section-title {
+  font-family: 'Lato', sans-serif; font-size: calc(14.5px * var(--dor-fit)); font-weight: 700; letter-spacing: 0.03em;
+  color: var(--dor-gold) !important; margin-bottom: calc(10px * var(--dor-fit));
+}
+.mcp-template-dorado .mcp-section-rule { width: 250px; background: var(--dor-faint) !important; opacity: 1; }
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-section-rule { width: 100%; background: #000 !important; }
+.mcp-template-dorado .mcp-section-mode { font-family: 'Lato', sans-serif; font-size: 12px; color: var(--dor-soft) !important; margin-top: 8px; }
+.mcp-template-dorado .mcp-dish-row { padding: 0 40px; gap: 10px; margin-bottom: calc(9px * var(--dor-fit)); }
+/* Name and surcharge stay together in the middle; the dots sit at the edges. */
+.mcp-template-dorado .mcp-dish-cell { flex: 0 1 auto; }
+.mcp-template-dorado .mcp-dish-row > .mcp-bullet-dot:first-child { margin-right: auto; }
+.mcp-template-dorado .mcp-dish-row > .mcp-bullet-dot:last-child { margin-left: auto; }
+.mcp-template-dorado .mcp-bullet-dot {
+  font-size: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--dor-gold); color: transparent !important;
+}
+.mcp-root.mcp-template-dorado.mcp-bw .mcp-bullet-dot { background: transparent; border: 1px solid #000; width: 8px; height: 8px; box-sizing: border-box; }
+.mcp-template-dorado .mcp-dish { font-family: 'Lato', sans-serif; font-size: calc(18.5px * var(--dor-fit)); font-weight: 400; line-height: 1.3; color: var(--dor-ink) !important; }
+.mcp-template-dorado .mcp-dish-ca,
+.mcp-template-dorado .mcp-dish-en { font-family: 'Lato', sans-serif; font-size: calc(13.5px * var(--dor-fit)); font-style: italic; line-height: 1.3; color: var(--dor-soft) !important; margin-top: 1px; }
+.mcp-template-dorado .mcp-supp { font-family: 'Lato', sans-serif; font-size: calc(13px * var(--dor-fit)); font-weight: 700; color: var(--dor-gold) !important; }
+.mcp-template-dorado .mcp-drinks-box { border: 0; background: transparent !important; margin-top: calc(26px * var(--dor-fit)); padding: 0 40px; }
+.mcp-template-dorado .mcp-drinks-label { font-family: 'Lato', sans-serif; font-size: 12.5px; letter-spacing: 0.06em; color: var(--dor-gold) !important; margin-bottom: 6px; }
+.mcp-template-dorado .mcp-drinks-text { font-family: 'Lato', sans-serif; font-size: calc(15px * var(--dor-fit)); font-style: italic; color: var(--dor-soft) !important; }
+.mcp-template-dorado .mcp-footer { padding-top: 18px; }
+.mcp-template-dorado.mcp-dense .mcp-page { padding-top: 100px; padding-bottom: 92px; }
+.mcp-template-dorado.mcp-dense .mcp-header-box { margin-bottom: 18px; }
+.mcp-template-dorado.mcp-dense .mcp-restaurant { margin-bottom: 12px; }
+.mcp-template-dorado.mcp-dense .mcp-ornament-row { margin-bottom: 8px; }
+.mcp-template-dorado.mcp-dense .mcp-type-label { margin-bottom: 14px; }
+.mcp-template-dorado.mcp-dense .mcp-price-badge { padding: 9px 44px; }
+.mcp-template-dorado.mcp-dense .mcp-closing:not(:empty) { font-size: 21px; padding-top: 12px; margin-bottom: 18px; }
+.mcp-template-dorado .mcp-closing:not(:empty) {
+  display: block; font-family: 'Abril Fatface', 'Playfair Display', Georgia, serif; font-size: 25px; line-height: 1.25;
+  color: var(--dor-ink); padding-top: 18px; margin: 0 auto 26px; max-width: 520px; border-top: 1px solid var(--dor-gold);
+}
+.mcp-template-dorado .mcp-footer-rule { display: none; }
+.mcp-template-dorado .mcp-footer-text {
+  font-family: 'Lato', sans-serif; font-size: 12px; font-style: italic; text-transform: none; letter-spacing: 0.01em;
+  color: var(--dor-soft) !important;
+}
 /* Canva export: capture decoration only; text is added as editable boxes. */
 .mcp-root.mcp-text-hidden .mcp-page * { color: transparent !important; text-shadow: none !important; }
 @media (max-width: 1180px) {
@@ -2363,10 +2453,12 @@ kbd {
           <span class="mcp-price-label" id="mcp-price-label"></span>
         </div>
       </div>
+      <div class="mcp-price-note" id="mcp-price-note"></div>
       <div class="mcp-notes" id="mcp-notes"></div>
     </div>
     <div class="mcp-body" id="mcp-body"></div>
     <div class="mcp-footer">
+      <div class="mcp-closing" id="mcp-closing"></div>
       <div class="mcp-footer-rule"></div>
       <div class="mcp-footer-text" id="mcp-footer-text">Restaurante Sol · Barcelona</div>
     </div>
@@ -4962,7 +5054,8 @@ const MC_MODE_PRINT = {
   en: { shared:'(to share)', choose_one:'(choose one)', choose_many:'(choose several)', fixed:'' }
 };
 const MC_TEMPLATES = {
-  clasico: 'Clásico moderno (recomendado)',
+  dorado: 'Dorado elegante (recomendado)',
+  clasico: 'Clásico moderno',
   editorial: 'Editorial clásico',
   grupo: 'Grupo claro',
   fiesta: 'Fiesta elegante',
@@ -4971,6 +5064,8 @@ const MC_TEMPLATES = {
   marinero: 'Marinero premium',
   carta: 'Carta · precio por plato'
 };
+// Near-duplicate designs kept for menus that already use them; listed apart in the selector.
+const MC_LEGACY_TEMPLATES = new Set(['editorial', 'grupo', 'fiesta', 'tapas', 'minimal']);
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
 const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:', 'layout:'];
@@ -5503,7 +5598,10 @@ function mcRenderEditor() {
         <div class="mc-print-grid">
           <label class="mc-meta-field">Plantilla
             <select class="mc-meta-select" id="mc-template-select">
-              ${Object.entries(MC_TEMPLATES).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
+              ${Object.entries(MC_TEMPLATES).filter(([k]) => !MC_LEGACY_TEMPLATES.has(k)).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
+              <optgroup label="Plantillas anteriores">
+                ${Object.entries(MC_TEMPLATES).filter(([k]) => MC_LEGACY_TEMPLATES.has(k)).map(([k,v]) => `<option value="${k}"${selectedTemplate===k?' selected':''}>${v}</option>`).join('')}
+              </optgroup>
             </select></label>
           <div class="mc-meta-field">Traducción bajo cada plato
             <div class="mc-language-toggles">
@@ -5913,6 +6011,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   const primaryLang = langs[0] || (m.language || 'es');
   const isMarineroTemplate = template === 'marinero';
   const isCarta = template === 'carta';
+  const isDorado = template === 'dorado';
   const tpl = $('mc-pdf-template');
   const layout = mcGetLayout(m);
   const accent = !isMarineroTemplate && MC_LAYOUT_ACCENTS[layout.accent][1];
@@ -5922,10 +6021,17 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     accent ? 'mcp-accent' : '', layout.showType ? '' : 'mcp-hide-type', layout.showPrice ? '' : 'mcp-hide-price'
   ].filter(Boolean).join(' ');
   tpl.style.setProperty('--mcp-accent', accent || 'initial');
+  // Busy Dorado pages give the header less room so the dishes keep a readable size.
+  const dishCount = (m.sections || []).reduce((n, sec) => n + (sec.dishes || []).filter(d => d.name).length, 0) * langs.length;
+  const dense = isDorado && dishCount + (m.drinks ? 2 : 0) + (m.sections || []).length * 2 >= 18;
+  tpl.classList.toggle('mcp-dense', dense);
 
   // Header
   $('mcp-restaurant').textContent = layout.header || 'RESTAURANTE SOL';
   $('mcp-title').textContent = m.name || '';
+  // Dorado prints a large display title: step it down for longer names so it stays on one or two lines.
+  const titleLen = (m.name || '').length;
+  $('mcp-title').style.fontSize = isDorado ? `${Math.round((titleLen <= 16 ? 58 : titleLen <= 24 ? 48 : titleLen <= 34 ? 40 : 34) * (dense ? 0.8 : 1))}px` : '';
   const typeLabelsMap = {
     es: { grupos:'Para Grupos', festivo:'Menú Festivo', infantil:'Menú Infantil', tapas:'Tapas', degustacion:'Degustación', otro:'' },
     ca: { grupos:'Per a Grups', festivo:'Menú Festiu', infantil:'Menú Infantil', tapas:'Tapes', degustacion:'Degustació', otro:'' },
@@ -5939,30 +6045,48 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   typeEl.style.display = (isMarineroTemplate || (isCarta ? !!m.occasion : (m.type && m.type !== 'otro'))) ? 'block' : 'none';
 
   const priceRow = $('mcp-price-row');
-  if (m.price) {
+  if (m.price && isDorado) {
+    // "29 € / persona"; a note in brackets such as "(IVA incluido)" goes on its own line under the pill.
+    const value = parseFloat(m.price);
+    const [, main, note] = (m.price_label || 'por persona (IVA incluido)').match(/^(.*?)\s*(?:\((.*)\))?\s*$/);
+    $('mcp-price').textContent = `${Number.isInteger(value) ? value : value.toFixed(2).replace('.', ',')} €`;
+    $('mcp-price-label').textContent = main.replace(/^(por|per)\s+/i, '/ ');
+    $('mcp-price-note').textContent = note || '';
+    priceRow.style.display = 'flex';
+  } else if (m.price) {
     const priceText = parseFloat(m.price).toFixed(2);
     $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
     $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
+    $('mcp-price-note').textContent = '';
     priceRow.style.display = 'flex';
   } else {
     priceRow.style.display = 'none';
+    $('mcp-price-note').textContent = '';
   }
   const notesEl = $('mcp-notes');
   notesEl.textContent = m.notes || '';
   // The carta prints its conditions as the footer instead.
-  notesEl.style.display = m.notes && !isCarta ? 'block' : 'none';
+  notesEl.style.display = m.notes && !isCarta && !isDorado ? 'block' : 'none';
+  // Dorado closes the page with the notes as a statement line ("Incluye un postre y una bebida").
+  $('mcp-closing').textContent = isDorado ? (m.notes || '') : '';
 
   // Body sections
   let bodyHtml = isCarta ? mcCartaBodyHtml(m, langs) : '';
   for (let si = 0; !isCarta && si < (m.sections || []).length; si++) {
     const sec = m.sections[si];
     if (!sec.title && !(sec.dishes || []).some(d => d.name)) continue;
-    const sub = sec.subtitle || (MC_MODE_PRINT[primaryLang] || MC_MODE_PRINT.es)[sec.mode] || '';
+    // The default "(para compartir)" / "(a elegir uno)" is skipped when the title already says it.
+    const modeText = (MC_MODE_PRINT[primaryLang] || MC_MODE_PRINT.es)[sec.mode] || '';
+    const modeWord = modeText.replace(/[()]/g, '').split(' ').sort((a, b) => b.length - a.length)[0]?.toLowerCase() || '';
+    const defaultSub = modeText && !(sec.title || '').toLowerCase().includes(modeWord) ? modeText : '';
+    const sub = sec.subtitle || defaultSub;
+    // Dorado writes the default mode next to the title: "PLATO PRINCIPAL · A ELEGIR UNO".
+    const inlineMode = isDorado && !sec.subtitle && defaultSub ? `<span class="mcp-title-mode"> · ${esc(defaultSub.replace(/[()]/g, ''))}</span>` : '';
     bodyHtml += `<div class="mcp-section">
       <div class="mcp-section-header">
-        <div class="mcp-section-title" data-mc="section:${si}:title">${esc(sec.title || '')}</div>
+        <div class="mcp-section-title" data-mc="section:${si}:title">${esc(sec.title || '')}${inlineMode}</div>
         <div class="mcp-section-rule"></div>
-        ${sub ? `<div class="mcp-section-mode" data-mc="section:${si}:subtitle">${esc(sub)}</div>` : ''}
+        ${sub && !inlineMode ? `<div class="mcp-section-mode" data-mc="section:${si}:subtitle">${esc(sub)}</div>` : ''}
       </div>`;
     for (const [di, d] of (sec.dishes || []).entries()) {
       if (!d.name) continue;
@@ -5972,7 +6096,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
         const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
         return `<span class="${cls}" data-mc="dish:${si}:${di}:${displayLang}">${esc(text)}</span>`;
       }).join('');
-      const suppHtml = d.supplement ? `<span class="mcp-supp" data-mc="dish:${si}:${di}:supplement">+${parseFloat(d.supplement).toFixed(2)}€</span>` : '';
+      const supp = parseFloat(d.supplement);
+      const suppText = isDorado ? `+${Number.isInteger(supp) ? supp : supp.toFixed(2).replace('.', ',')} €` : `+${supp.toFixed(2)}€`;
+      const suppHtml = d.supplement ? `<span class="mcp-supp" data-mc="dish:${si}:${di}:supplement">${suppText}</span>` : '';
       bodyHtml += `<div class="mcp-dish-row">
         <span class="mcp-bullet-dot">●</span>
         <div class="mcp-dish-cell">${lineHtml}</div>
@@ -5995,6 +6121,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   $('mcp-body').innerHTML = bodyHtml;
   $('mcp-body').style.transform = '';
   $('mcp-body').style.justifyContent = '';
+  $('mcp-body').style.removeProperty('--dor-fit');
   // Text size: scale leaf text nodes so nested spans are not scaled twice.
   const factor = MC_LAYOUT_SIZES[layout.size][1];
   if (factor !== 1) $('mcp-body').querySelectorAll('*').forEach(el => {
@@ -6002,7 +6129,11 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   });
 
   // Footer note
-  $('mcp-footer-text').textContent = layout.footer || (isMarineroTemplate
+  const doradoFooter = { es: 'Menú sujeto a disponibilidad y confirmación previa', ca: 'Menú subjecte a disponibilitat i confirmació prèvia', en: 'Menu subject to availability and prior confirmation' };
+  const minPeople = { es: n => `Mínimo ${n} personas`, ca: n => `Mínim ${n} persones`, en: n => `Minimum ${n} people` };
+  $('mcp-footer-text').textContent = layout.footer || (isDorado
+    ? [m.min_people ? (minPeople[primaryLang] || minPeople.es)(m.min_people) : '', doradoFooter[primaryLang] || doradoFooter.es].filter(Boolean).join(' · ')
+    : isMarineroTemplate
     ? 'HORARIO DE MENÚ · 13:00 - 16:00'
     : isCarta ? (m.notes || 'IVA incluido / IVA inclòs / VAT included')
     : m.min_people
@@ -6041,7 +6172,7 @@ function mcCartaBodyHtml(m, langs) {
 }
 
 // Smart fill: spread spare height between dishes, or shrink the body when it overflows.
-function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
+function mcFitPdfBody(isMarineroTemplate, spacing = 'auto', template = '') {
   const bodyEl = $('mcp-body');
   const bodyH  = bodyEl.offsetHeight;
   const allSecEls  = Array.from(bodyEl.querySelectorAll('.mcp-section'));
@@ -6061,8 +6192,25 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
       const last = bodyEl.lastElementChild;
       return last ? last.offsetTop + last.offsetHeight - bodyEl.offsetTop : 0;
     };
-    const surplus = bodyH - contentH();
-    if (surplus > 4 && spacing === 'center') {
+    let surplus = bodyH - contentH();
+    if (surplus > 4 && spacing === 'auto' && template === 'dorado') {
+      // Short menus: let the text grow a little (up to 1.25×) while it uses less than ~70% of the room.
+      let fit = 1;
+      while (fit < 1.25 && contentH() < bodyH * 0.7) { fit = Math.round((fit + 0.05) * 100) / 100; bodyEl.style.setProperty('--dor-fit', fit); }
+      if (contentH() > bodyH) bodyEl.style.setProperty('--dor-fit', fit - 0.05);
+      surplus = bodyH - contentH();
+      // Keep the design's rhythm: modest extra gaps (capped), then centre the block on the page.
+      const gaps = allSecEls.length - 1;
+      const dishGaps = allSecEls.reduce((n, sec) => n + Math.max(0, sec.querySelectorAll('.mcp-dish-row').length - 1), 0);
+      const perSection = gaps ? Math.min(34, surplus * 0.45 / gaps) : 0;
+      const perDish = dishGaps ? Math.min(10, (surplus - perSection * gaps) * 0.6 / dishGaps) : 0;
+      allSecEls.forEach((sec, i) => {
+        if (i < gaps) sec.style.marginBottom = `${(parseFloat(getComputedStyle(sec).marginBottom) || 0) + perSection}px`;
+        const rows = sec.querySelectorAll('.mcp-dish-row');
+        rows.forEach((row, j) => { if (j < rows.length - 1) row.style.marginBottom = `${(parseFloat(getComputedStyle(row).marginBottom) || 0) + perDish}px`; });
+      });
+      bodyEl.style.justifyContent = 'center';
+    } else if (surplus > 4 && spacing === 'center') {
       bodyEl.style.justifyContent = 'center';
     } else if (surplus > 4 && spacing === 'auto') {
       const extra = surplus / allDishEls.length;
@@ -6070,6 +6218,17 @@ function mcFitPdfBody(isMarineroTemplate, spacing = 'auto') {
         const base = parseFloat(getComputedStyle(el).marginBottom) || 0;
         el.style.marginBottom = `${base + extra}px`;
       });
+    } else if (surplus < 0 && template === 'dorado') {
+      // Shrink text and gaps first so the page keeps its look; scale the block only as a last resort.
+      let fit = 1;
+      while (contentH() > bodyH && fit > 0.72) { fit = Math.round((fit - 0.04) * 100) / 100; bodyEl.style.setProperty('--dor-fit', fit); }
+      const left = bodyH - contentH();
+      if (left < 0) {
+        scaled = Math.max(bodyH / (bodyH - left), 0.65);
+        bodyEl.style.transform = `scale(${scaled})`;
+        bodyEl.style.transformOrigin = 'top center';
+      } else if (left > 4) bodyEl.style.justifyContent = 'center';
+      scaled = Math.min(scaled, fit);
     } else if (surplus < 0) {
       scaled = Math.max(bodyH / (bodyH - surplus), 0.65);
       bodyEl.style.transform      = `scale(${scaled})`;
@@ -6090,7 +6249,7 @@ function mcRenderLivePreview() {
   }
   const template = mcGetTemplate(mcCurrentMenu);
   mcFillPdfTemplate(mcCurrentMenu, mcGetDisplayLangs(mcCurrentMenu), template, 'color');
-  const scaled = mcFitPdfBody(template === 'marinero', mcGetLayout(mcCurrentMenu).spacing);
+  const scaled = mcFitPdfBody(template === 'marinero', mcGetLayout(mcCurrentMenu).spacing, template);
   const tpl = $('mc-pdf-template');
   const page = tpl.querySelector('.mcp-page').cloneNode(true);
   // The clone must not steal the template's element ids.
@@ -6208,7 +6367,7 @@ async function mcExportCanva() {
     mcFillPdfTemplate(m, langs, template, 'color');
     await document.fonts.ready;
     await new Promise(r => setTimeout(r, 90));
-    const bodyScale = mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing);
+    const bodyScale = mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing, template);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     const boxes = mcCollectTextBoxes(pageEl, bodyScale);
     tpl.classList.add('mcp-text-hidden');
@@ -6275,7 +6434,7 @@ async function mcGeneratePDF(colorMode) {
     mcFillPdfTemplate(m, langs, template, colorMode);
     await document.fonts.ready;
     await new Promise(r => setTimeout(r, 90));
-    mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing);
+    mcFitPdfBody(template === 'marinero', mcGetLayout(m).spacing, template);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const scale = colorMode === 'bw' ? 3 : 2.5;
@@ -6699,7 +6858,7 @@ function mcInitTabs() {
   });
   $('mc-new-btn').addEventListener('click', () => {
     if (!mcPersistCurrent()) return;
-    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: ['template:clasico'], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
+    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: ['template:dorado'], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
     mcCurrentId = mcCurrentMenu.id;
     mcRenderLibrary(); mcRenderEditor();
     $('mc-name-input')?.focus();
