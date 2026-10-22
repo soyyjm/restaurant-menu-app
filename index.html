@@ -9,6 +9,8 @@
 // (used by the agora-data «Panel del día», which finds the window by its title).
 if (new URLSearchParams(location.search).get('vista') === 'previa') {
   document.documentElement.classList.add('preview-only');
+  // Landscape windows: first and second courses side by side (screen only, never the PDF).
+  document.documentElement.classList.toggle('preview-cols', innerWidth >= 560 && innerWidth >= innerHeight);
   document.title = 'Menú del Día — vista previa';
 }
 </script>
@@ -2234,18 +2236,27 @@ kbd {
 .preview-only #panelDia .app-layout { display: block; height: 100vh; min-height: 0; }
 .preview-only #panelDia .preview-sidebar { height: 100vh; max-height: none; border: 0; overflow: hidden; }
 .preview-only .preview-header { padding: 8px 16px; }
-.preview-only .preview-header h2 { font-size: 18px; }
-.preview-only .preview-updated { font-size: 12px; color: var(--ink-faint); margin-left: auto; white-space: nowrap; }
-.preview-only .preview-body { flex: 1; min-height: 0; display: flex; gap: 16px; align-items: flex-start; justify-content: center; padding: 12px 16px; overflow: hidden; }
-.preview-only #previewIssues { flex: 0 1 320px; margin: 0; font-size: 15px; }
-.preview-only #previewIssues.ok { font-size: 16px; font-weight: 600; }
-.preview-only .menu-preview-frame { flex: none; height: 100%; width: auto; max-width: none; margin: 0; }
-@media (max-width: 640px), (max-aspect-ratio: 3/4) {
-  .preview-only #panelDia .preview-sidebar { overflow-y: auto; }
-  .preview-only .preview-body { flex-direction: column; align-items: stretch; overflow: visible; }
-  .preview-only #previewIssues { flex: none; }
-  .preview-only .menu-preview-frame { height: auto; width: 100%; max-width: 560px; margin: 0 auto; }
-}
+.preview-only .preview-header { gap: 10px; }
+.preview-only .preview-header h2 { font-size: 17px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-only .preview-updated { font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+.preview-only .preview-ready { font-size: 13px; font-weight: 600; color: var(--olive, #5a6b3a); background: var(--olive-light); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+/* Issues only when there are any: one compact strip above the page. */
+.preview-only .preview-body { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px 12px; overflow: hidden; }
+.preview-only #previewIssues { align-self: stretch; flex: none; margin: 0; padding: 6px 10px; font-size: 14px; }
+.preview-only #previewIssues.ok { display: none; }
+.preview-only #previewIssues ul { display: inline; margin: 0; }
+.preview-only #previewIssues li { display: inline; }
+.preview-only #previewIssues li + li::before { content: ' · '; }
+.preview-only #previewIssues strong::after { content: ': '; }
+/* Page cropped to its content and scaled to fill the window (fitPreviewOnly). */
+.preview-only .menu-preview-frame { flex: none; aspect-ratio: auto; max-width: none; margin: 0; }
+.preview-only .menu-preview-frame > .pt-root { transform: translate(var(--crop-x, 0px), var(--crop-y, 0px)) scale(var(--preview-scale, 0.4)); }
+.preview-only.preview-scroll #panelDia .preview-sidebar { overflow-y: auto; }
+.preview-cols .menu-preview-frame .ps-content,
+.preview-cols .menu-preview-frame .pt-body-inner { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; align-content: start; }
+.preview-cols .menu-preview-frame .ps-header, .preview-cols .menu-preview-frame .ps-postre,
+.preview-cols .menu-preview-frame .ps-hours, .preview-cols .menu-preview-frame .pt-section--postre { grid-column: 1 / -1; }
+.preview-only.preview-scroll .preview-body { overflow: visible; }
 </style>
 </head>
 <body>
@@ -2394,6 +2405,7 @@ kbd {
         <button data-mode="color" aria-pressed="false">Color</button>
         <button data-mode="bw" aria-pressed="false">B&amp;N</button>
       </div>
+      <span class="preview-ready" id="previewReady" hidden>✓ Listo para imprimir</span>
       <span class="preview-updated" id="previewUpdated" hidden></span>
       <button class="btn-icon" id="btnSettings" title="Ajustes">⚙️</button>
     </div>
@@ -2896,7 +2908,50 @@ let previewOkAt = 0;     // last load the cloud fully answered
 let previewRefreshing = false;
 const previewLoadFailed = () => /No se ha podido cargar|Fallo sync/.test($('syncText').textContent);
 
+// Crop the A4 page to what is printed on it (text and rules, plus a small margin) and scale
+// that to the space left in the window. Landscape windows fit width and height;
+// narrow/portrait ones fit width and scroll.
+function fitPreviewOnly() {
+  const body = document.querySelector('.preview-body');
+  const frame = $('menuPreview');
+  const root = frame.querySelector('.pt-root');
+  if (!root || !body.clientWidth) return;
+  const rootRect = root.getBoundingClientRect();
+  const current = rootRect.width / 794;
+  if (!current) return;
+  const box = { left: 794, top: 1123, right: 0, bottom: 0 };
+  for (const el of root.querySelectorAll('*')) {
+    const st = getComputedStyle(el);
+    const ruled = parseFloat(st.borderTopWidth) || parseFloat(st.borderBottomWidth);
+    if (!ruled && (el.children.length || !el.textContent.trim())) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+    box.left = Math.min(box.left, (r.left - rootRect.left) / current);
+    box.top = Math.min(box.top, (r.top - rootRect.top) / current);
+    box.right = Math.max(box.right, (r.right - rootRect.left) / current);
+    box.bottom = Math.max(box.bottom, (r.bottom - rootRect.top) / current);
+  }
+  const margin = 28;
+  const x0 = Math.max(0, box.left - margin), y0 = Math.max(0, box.top - margin);
+  const cropW = Math.max(300, Math.min(794, box.right + margin) - x0);
+  const cropH = Math.max(200, Math.min(1123, box.bottom + margin) - y0);
+  const cs = getComputedStyle(body);
+  const issues = $('previewIssues');
+  const availW = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+  const availH = body.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2 - (issues.offsetHeight ? issues.offsetHeight + parseFloat(cs.rowGap || 0) : 0);
+  const scroll = availW < 560 || availW / Math.max(availH, 1) < 0.75;
+  document.documentElement.classList.toggle('preview-scroll', scroll);
+  const scale = Math.max(0.2, Math.min(1.6, availW / cropW, scroll ? Infinity : availH / cropH));
+  frame.style.width = `${Math.floor(cropW * scale)}px`;
+  frame.style.height = `${Math.floor(cropH * scale)}px`;
+  frame.style.setProperty('--preview-scale', scale);
+  frame.style.setProperty('--crop-x', `${-x0 * scale}px`);
+  frame.style.setProperty('--crop-y', `${-y0 * scale}px`);
+}
+
 function renderPreviewOnlyHeader() {
+  $('previewReady').hidden = !$('previewIssues').classList.contains('ok');
+  requestAnimationFrame(fitPreviewOnly);
   const date = $('menuDate').value;
   document.querySelector('.preview-header h2').textContent = `Menú del Día · ${menuDateLabel(date, { weekday: 'long', day: 'numeric', month: 'long' })}`;
   const el = $('previewUpdated');
@@ -2929,6 +2984,18 @@ function startPreviewOnly() {
     if ($('menuDate').value !== localDate() || Date.now() - previewLoadedAt >= PREVIEW_REFRESH_MS) refreshPreviewOnly();
   }, 30000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshPreviewOnly(); });
+  let fitTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(fitTimer);
+    fitTimer = setTimeout(() => {
+      const html = document.documentElement;
+      const cols = innerWidth >= 560 && innerWidth >= innerHeight;
+      if (cols === html.classList.contains('preview-cols')) return fitPreviewOnly();
+      html.classList.toggle('preview-cols', cols);
+      renderPreview(); // the page re-fits its text for the new layout
+    }, 100);
+  });
+  document.fonts?.ready.then(fitPreviewOnly);
 }
 
 // Backup review is bound to the current account. Import rechecks live state at confirmation.
@@ -4865,6 +4932,7 @@ function fitDailyPage(root) {
 }
 
 function updatePreviewScale() {
+  if (PREVIEW_ONLY) return; // fitPreviewOnly sizes the cropped page
   const frame = $('menuPreview');
   if (frame?.clientWidth) frame.style.setProperty('--preview-scale', frame.clientWidth / 794);
 }
