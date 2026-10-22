@@ -13,11 +13,11 @@ TABLES="dishes selected_menu menu_history settings menus_cerrados"
 
 probe() { # $1 label, $2 bearer, $3 table
   local out code body
-  out=$(curl -s -w '\n%{http_code}' "$URL/rest/v1/$3?select=id" \
+  out=$(curl -s -w '\n%{http_code}' "$URL/rest/v1/$3?select=owner_id" \
     -H "apikey: $ANON" -H "Authorization: Bearer $2" -H 'Range: 0-999')
   code=$(tail -n1 <<<"$out"); body=$(sed '$d' <<<"$out")
   if [ "$code" = 200 ]; then
-    echo "$1 $3: HTTP 200, rows=$(grep -o '"id"' <<<"$body" | wc -l | tr -d ' ')"
+    echo "$1 $3: HTTP 200, rows=$(grep -o '"owner_id"' <<<"$body" | wc -l | tr -d ' ')"
   else
     echo "$1 $3: HTTP $code"
   fi
@@ -29,7 +29,7 @@ for t in $TABLES; do probe anon "$ANON" "$t"; done
 echo "== anon write permission (expected: HTTP 401/403; before 004 it is 204)"
 # Filter matches no row, so this never changes data even while anon still has write access.
 curl -s -o /dev/null -w 'anon delete dishes (no-match filter): HTTP %{http_code}\n' -X DELETE \
-  "$URL/rest/v1/dishes?id=eq.__probe_no_such_row__" -H "apikey: $ANON" -H "Authorization: Bearer $ANON"
+  "$URL/rest/v1/dishes?id=eq.-1" -H "apikey: $ANON" -H "Authorization: Bearer $ANON"
 
 echo "== settings.gemini_api_key column (expected: HTTP 400/401, column gone or no access)"
 curl -s -o /dev/null -w 'anon settings.gemini_api_key: HTTP %{http_code}\n' \
