@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menú del Día — Restaurante Sol</title>
+<script>
+// ?vista=previa: read-only window that shows only today's Menú del Día preview
+// (used by the agora-data «Panel del día», which finds the window by its title).
+if (new URLSearchParams(location.search).get('vista') === 'previa') {
+  document.documentElement.classList.add('preview-only');
+  document.title = 'Menú del Día — vista previa';
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600&family=Montserrat:wght@500&family=Abril+Fatface&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -2218,6 +2226,26 @@ kbd {
   .dia-mobile-bar button { font-size: 13px; white-space: nowrap; }
 }
 @media (max-width: 360px) { .dia-mobile-bar .bar-icon { display: none; } }
+
+/* ?vista=previa — only today's preview, sized to the window */
+.preview-only .app-tabs, .preview-only .workspace, .preview-only .dia-mobile-bar,
+.preview-only .preview-actions, .preview-only #previewMode, .preview-only #panelCerrado { display: none !important; }
+.preview-only #panelDia { padding-bottom: 0; }
+.preview-only #panelDia .app-layout { display: block; height: 100vh; min-height: 0; }
+.preview-only #panelDia .preview-sidebar { height: 100vh; max-height: none; border: 0; overflow: hidden; }
+.preview-only .preview-header { padding: 8px 16px; }
+.preview-only .preview-header h2 { font-size: 18px; }
+.preview-only .preview-updated { font-size: 12px; color: var(--ink-faint); margin-left: auto; white-space: nowrap; }
+.preview-only .preview-body { flex: 1; min-height: 0; display: flex; gap: 16px; align-items: flex-start; justify-content: center; padding: 12px 16px; overflow: hidden; }
+.preview-only #previewIssues { flex: 0 1 320px; margin: 0; font-size: 15px; }
+.preview-only #previewIssues.ok { font-size: 16px; font-weight: 600; }
+.preview-only .menu-preview-frame { flex: none; height: 100%; width: auto; max-width: none; margin: 0; }
+@media (max-width: 640px), (max-aspect-ratio: 3/4) {
+  .preview-only #panelDia .preview-sidebar { overflow-y: auto; }
+  .preview-only .preview-body { flex-direction: column; align-items: stretch; overflow: visible; }
+  .preview-only #previewIssues { flex: none; }
+  .preview-only .menu-preview-frame { height: auto; width: 100%; max-width: 560px; margin: 0 auto; }
+}
 </style>
 </head>
 <body>
@@ -2366,6 +2394,7 @@ kbd {
         <button data-mode="color" aria-pressed="false">Color</button>
         <button data-mode="bw" aria-pressed="false">B&amp;N</button>
       </div>
+      <span class="preview-updated" id="previewUpdated" hidden></span>
       <button class="btn-icon" id="btnSettings" title="Ajustes">⚙️</button>
     </div>
     <div class="preview-body">
@@ -2610,6 +2639,8 @@ const DEFAULT_HOLIDAYS = ['2025-01-01','2025-01-06','2025-04-18','2025-04-21','2
                   '2026-01-01','2026-01-06','2026-04-03','2026-04-06','2026-05-01','2026-05-25','2026-06-24','2026-08-15','2026-09-11','2026-09-24','2026-10-12','2026-11-01','2026-12-06','2026-12-08','2026-12-25','2026-12-26',
                   '2027-01-01','2027-01-06','2027-03-26','2027-03-29','2027-05-01','2027-05-17','2027-06-24','2027-08-15','2027-09-11','2027-09-24','2027-10-12','2027-11-01','2027-12-06','2027-12-08','2027-12-25','2027-12-26'];
 
+const PREVIEW_ONLY = Boolean(document.documentElement?.classList.contains('preview-only'));
+const PREVIEW_REFRESH_MS = 2 * 60 * 1000;
 const CATEGORY_LABELS = { primer: 'PRIMER PLATO', segundo: 'SEGUNDO PLATO', postre: 'POSTRES' };
 // Gemini runs through /api/gemini (Netlify Function); the key lives only on the server.
 const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash-lite';
@@ -2856,6 +2887,48 @@ async function init() {
   refreshAuthUI();
   renderAll();
   renderBatch();
+  if (PREVIEW_ONLY) startPreviewOnly();
+}
+
+// ==================== ?vista=previa ====================
+let previewLoadedAt = 0; // last attempt (drives the refresh interval)
+let previewOkAt = 0;     // last load the cloud fully answered
+let previewRefreshing = false;
+const previewLoadFailed = () => /No se ha podido cargar|Fallo sync/.test($('syncText').textContent);
+
+function renderPreviewOnlyHeader() {
+  const date = $('menuDate').value;
+  document.querySelector('.preview-header h2').textContent = `Menú del Día · ${menuDateLabel(date, { weekday: 'long', day: 'numeric', month: 'long' })}`;
+  const el = $('previewUpdated');
+  el.hidden = false;
+  const time = previewOkAt ? new Date(previewOkAt).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }) : '—';
+  el.textContent = !currentUser ? 'Sin sesión · datos de este dispositivo'
+    : previewLoadFailed() ? `⚠️ No se pudo actualizar · última carga ${time}` : `Actualizado ${time}`;
+}
+
+// No realtime here: reload every few minutes, when the window comes back, and at midnight.
+async function refreshPreviewOnly() {
+  if (previewRefreshing) return;
+  previewRefreshing = true;
+  try {
+    await loadAll();
+    openPlanningToday();
+    previewLoadedAt = Date.now();
+    if (!previewLoadFailed()) previewOkAt = previewLoadedAt;
+    renderPreview();
+  } finally {
+    previewRefreshing = false;
+  }
+}
+
+function startPreviewOnly() {
+  previewLoadedAt = Date.now();
+  if (!previewLoadFailed()) previewOkAt = previewLoadedAt;
+  renderPreview();
+  setInterval(() => {
+    if ($('menuDate').value !== localDate() || Date.now() - previewLoadedAt >= PREVIEW_REFRESH_MS) refreshPreviewOnly();
+  }, 30000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshPreviewOnly(); });
 }
 
 // Backup review is bound to the current account. Import rechecks live state at confirmation.
@@ -3107,6 +3180,7 @@ async function loadAll() {
 }
 
 function saveLocal() {
+  if (PREVIEW_ONLY) return true; // read-only: the editor tab owns the shared cache
   try {
     const recent=new Set(Object.keys(menuHistory).sort().reverse().slice(0,90));
     const cachedHistory=Object.fromEntries(Object.entries(menuHistory).filter(([date])=>recent.has(date) || date===$('menuDate').value || pendingSaves.menus[date] || !historyConfirmed.has(date)));
@@ -3187,6 +3261,7 @@ async function deleteFromCloud(id) {
 }
 
 async function syncPending() {
+  if (PREVIEW_ONLY) return false;
   updateSaveStatus();
   if (!isCloud || !currentUser || !hasPending()) return false;
   if (syncPromise) return syncPromise;
@@ -3798,6 +3873,7 @@ function renderPreview() {
   for (const btn of $('previewMode').querySelectorAll('[data-mode]')) btn.setAttribute('aria-pressed', String(btn.dataset.mode === printSettings.pdfStyle));
   renderPreviewIssues();
   renderWeekStrip();
+  if (PREVIEW_ONLY) renderPreviewOnlyHeader();
   renderDailyShortcuts();
 }
 
@@ -4990,6 +5066,7 @@ let mcEditTimer = null;
 let mcTranslating = false;
 
 function mcWriteDrafts() {
+  if (PREVIEW_ONLY) return true;
   try {
     localStorage.setItem(cacheKey('closedDrafts'), JSON.stringify({ drafts: mcDrafts, menus: mcMenus, selectedId: mcCurrentId }));
     mcDraftError = false;
