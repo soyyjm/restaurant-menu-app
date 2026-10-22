@@ -4,19 +4,17 @@
 --   * Adds owner_id to menus_cerrados (it had none).
 --   * Revokes all anon privileges on public tables (the anon key is public in index.html).
 --   * Nulls and drops settings.gemini_api_key (Gemini now goes through netlify/functions/gemini.mjs).
--- Replaces 002 + 003 (it includes both). Idempotent: safe to re-run.
+-- Replaces 002 + 003 (it includes both). Idempotent: safe to re-run, also after a partial run.
 -- Run in Supabase SQL Editor AFTER the owner account has signed in at least once.
 -- Rollback: 004_owner_rls_revoke_anon_rollback.sql. Checks: 004_TEST_NOTES.md.
 
 begin;
 
 -- 0. The account that owns all existing rows. Change only if you sign in with another email.
-create temporary table _owner on commit drop as
-  select id from auth.users where lower(email) = lower('soyyjm@gmail.com') limit 1;
-
+-- (No temp table: the Supabase SQL Editor may not keep one alive between statements.)
 do $$
 begin
-  if not exists (select 1 from _owner) then
+  if not exists (select 1 from auth.users where lower(email) = lower('soyyjm@gmail.com')) then
     raise exception 'Owner account not found in auth.users; sign in once in the app first.';
   end if;
 end $$;
@@ -34,7 +32,7 @@ revoke all on function public.set_owner_id() from public, anon;
 do $$
 declare
   t text;
-  v_owner uuid := (select id from _owner);
+  v_owner uuid := (select id from auth.users where lower(email) = lower('soyyjm@gmail.com') limit 1);
 begin
   foreach t in array array['dishes','selected_menu','menu_history','settings','menus_cerrados'] loop
     execute format('alter table public.%I add column if not exists owner_id uuid', t);
