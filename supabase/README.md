@@ -10,7 +10,11 @@
   - Backfill existing rows to your signed-in user before enabling strict RLS.
   - Also creates `owner_id` columns automatically if they do not exist yet.
 
-## Recommended order
+- `004_owner_rls_revoke_anon.sql` (+ `_rollback.sql`, `004_probe.sh`, `004_TEST_NOTES.md`)
+  - Supersedes 002 + 003: owner-only RLS on all five tables incl. `menus_cerrados`, revokes anon, drops `settings.gemini_api_key`.
+  - Use this instead of the order below. Steps and checks in `004_TEST_NOTES.md`.
+
+## Recommended order (historical; superseded by 004)
 1. Run `001_hardening_nonbreaking.sql` in Supabase SQL Editor.
 2. Verify app still works (load/save dishes, menu, history, settings).
 3. Integrate Auth in frontend and sign in once with your real account.

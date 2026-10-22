@@ -4931,7 +4931,7 @@ async function shareMenu() {
 //   created_at TIMESTAMPTZ DEFAULT NOW(),
 //   updated_at TIMESTAMPTZ DEFAULT NOW()
 // );
-// Row-level security: see supabase/002_rls_strict_requires_auth.sql.
+// Row-level security: see supabase/004_owner_rls_revoke_anon.sql (owner_id = auth.uid()).
 // Dish translations live inline: dish.translations[lang].name = { text, source }.
 // Older menus may still have separate CA/EN rows in the same family; MenuWorkflows.translatedField reads both.
 
