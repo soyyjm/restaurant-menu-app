@@ -16,9 +16,3 @@
   from = "/p/*"
   to = "/pedido.html"
   status = 200
-
-# Group link for big tables: /g/<share_token> → pedido.html (companion mode)
-[[redirects]]
-  from = "/g/*"
-  to = "/pedido.html"
-  status = 200

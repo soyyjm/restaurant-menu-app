@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f5f3ef;--card:#fff;--ink:#22201d;--muted:#77706a;--line:#e4dfd7;--accent:#9e2a2b;--ok:#2f6b3f;--okbg:#e5f1e8;--warn:#a2561a;--warnbg:#fbeee0;--info:#2c5a8a;--infobg:#e4edf7;--wa:#1f9d55}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#161513;--card:#201e1b;--ink:#eeeae4;--muted:#a59d94;--line:#36322d;--okbg:#1f3326;--warnbg:#3a2a1a;--infobg:#1c2a3a;--ok:#7cc08f;--warn:#e19a5c;--info:#8ab6e6}}
@@ -174,6 +174,7 @@ dialog.wide{width:min(760px,96vw)}
 <script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/fiestas/menus.js"></script>
 <script src="/fiestas/api.js"></script>
+<script src="/fiestas/menu-image.js"></script>
 <script>
 (function () {
 'use strict';
@@ -215,7 +216,7 @@ const TX = {
     tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
     adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n, p) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人 · Pica-pica ${p} 套`,
     allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
-    noBookings: '这一天还没有订台。', byPerson: '按人（来自客人分享的点餐链接，仅供上菜参考）', kidShort: '童' },
+    noBookings: '这一天还没有订台。' },
   es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
     tables: 'Reservas', people: (a, k) => `Personas: ${a} adultos · ${k} niños`, sentN: 'Menús enviados', doneN: n => `Con pedido (${n} pers.)`, notYet: 'Sin pedido',
     persons: n => `${n} personas`, half: n => `+ ${n} media${n === 1 ? '' : 's'} ración${n === 1 ? '' : 'es'}`, offMenu: 'fuera de carta', none: 'Sin este plato (no preparar)', other: 'Otra opción, pendiente de confirmar',
@@ -226,7 +227,7 @@ const TX = {
     tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
     adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n, p) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas · Pica-pica: ${p}`,
     allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
-    noBookings: 'No hay reservas para este día.', byPerson: 'Por persona (según el enlace de grupo, orientativo)', kidShort: 'niños' }
+    noBookings: 'No hay reservas para este día.' }
 };
 const status = (b, lang = 'zh') => {
   const T = TX[lang];
@@ -316,7 +317,7 @@ function viewList(day, bs) {
       <td><b>${esc(b.name)}</b>${b.notes ? `<div class="muted" style="font-size:12.5px">${esc(b.notes)}</div>` : ''}${b.order && b.order.allergies ? `<div class="al" style="font-size:12.5px">⚠ ${esc(b.order.allergies)}</div>` : ''}</td>
       <td class="hide-m">${esc(b.phone || '')}</td>
       <td class="num">${b.adults}${b.kids ? ` + ${b.kids}<span class="muted">童</span>` : ''}</td>
-      <td><span class="badge b-${cls}">${label}</span>${!b.order && (b.shares || []).length ? `<div class="muted" style="font-size:11.5px">分享链接 ${b.shares.reduce((a, x) => a + x.adults + x.kids, 0)} / ${b.adults + b.kids} 人已选</div>` : ''}${b.locked ? ' <span title="已锁定，客人不能再改">🔒</span>' : ''}${b.order ? `<div class="muted" style="font-size:11.5px">${(b.shares || []).length ? `分享链接 ${b.shares.reduce((a, x) => a + x.adults + x.kids, 0)} 人已选 · ` : ''}${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
+      <td><span class="badge b-${cls}">${label}</span>${b.locked ? ' <span title="已锁定，客人不能再改">🔒</span>' : ''}${b.order ? `<div class="muted" style="font-size:11.5px">${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
       <td><div class="acts">
         ${ph ? `<a class="btn sm${b.order ? '' : ' wa'}" data-act="wa" href="https://wa.me/${ph}?text=${encodeURIComponent(waText(b))}" target="_blank" rel="noopener">${b.sent_at ? '再发' : '发送'} WhatsApp</a>` : `<span class="muted" style="font-size:12px">无有效电话</span>`}
         <button class="btn sm" data-act="copy" title="复制客人链接">复制链接</button>
@@ -333,6 +334,8 @@ function viewList(day, bs) {
       <button class="btn" id="bulkBtn">批量粘贴</button>
       <input class="search" id="q" placeholder="搜索姓名 / 电话 / 桌号" value="${esc(state.q)}">
       <span class="spacer"></span>
+      <button class="btn" id="menuImg" title="带照片的当天菜单，可以发给客人">菜单图片</button>
+      <button class="btn" id="menuPdf">菜单 PDF</button>
       <button class="btn" id="exportCsv">导出 Excel</button>
       ${bs.length ? `<button class="btn" id="lock">${locked ? '重新开放点餐' : '截止点餐（锁定当天）'}</button>` : ''}
     </div>
@@ -401,7 +404,6 @@ function viewTables(day, bs, lang = 'zh') {
       ${valid(b) ? `
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.adults}</div>` : ''}${orderList(b.order.items.adult, lang)}
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.kidsMenuShort}</div>${orderList(b.order.items.kid, lang)}` : ''}
-        ${peopleBlock(b, lang)}
         ${b.order.allergies ? `<p class="al" style="margin:10px 0 0">${T.allergy}${esc(b.order.allergies)}</p>` : ''}
         ${b.order.comments ? `<p style="margin:6px 0 0;font-size:13px">💬 ${esc(b.order.comments)}</p>` : ''}
         ${sup ? `<p style="margin:6px 0 0;font-size:13px;color:var(--warn)">${T.sup(sup)}</p>` : ''}`
@@ -410,16 +412,6 @@ function viewTables(day, bs, lang = 'zh') {
       ${lang === 'zh' ? `<p class="noprint" style="margin:10px 0 0"><button class="btn sm" data-act="order">${b.order ? '改点餐' : '代客点餐'}</button></p>` : ''}
     </div>`;
   }).join('')}</div>`;
-}
-// Per-person picks from the group link (filled in by the group feature; empty otherwise).
-function peopleBlock(b, lang) {
-  const sh = b.shares || [];
-  if (!sh.length) return '';
-  const T = TX[lang];
-  const picks = items => ['adult', 'kid'].map(g => F.courses.map(c => Object.entries(((items[g] || {})[c.id]) || {})
-    .map(([k, n]) => `${n}× ${esc(dishName(k, lang))}`).join(', ')).filter(Boolean).join(' / ')).filter(Boolean).join(' · ');
-  return `<div class="sub" style="color:var(--ink);margin-top:12px">${T.byPerson}</div>
-    <ul class="kv">${sh.map(x => `<li style="display:block;padding:3px 0"><b>${esc(x.name)}</b> <span class="muted">(${x.adults}${x.kids ? ` + ${x.kids} ${T.kidShort}` : ''})</span>: ${picks(x.items)}${x.notes ? ` <span class="al">· ${esc(x.notes)}</span>` : ''}</li>`).join('')}</ul>`;
 }
 
 // ---------- CSV ----------
@@ -567,13 +559,20 @@ oform.addEventListener('submit', async e => {
 
 // ---------- events ----------
 root.addEventListener('click', async e => {
-  const el = e.target.closest('[data-day],[data-tab],[data-act],#add,#bulkBtn,#exportCsv,#lock,#logout,#resetDemo');
+  const el = e.target.closest('[data-day],[data-tab],[data-act],#add,#bulkBtn,#exportCsv,#lock,#logout,#resetDemo,#menuImg,#menuPdf');
   if (!el) return;
   if (el.dataset.day) { state.day = el.dataset.day; remember(); return render(); }
   if (el.dataset.tab) { state.tab = el.dataset.tab; remember(); return render(); }
   if (el.id === 'add') return openBooking();
   if (el.id === 'bulkBtn') return bulk.showModal();
   if (el.id === 'exportCsv') return exportCsv();
+  if (el.id === 'menuImg' || el.id === 'menuPdf') {
+    const label = el.textContent; el.disabled = true; el.textContent = '生成中…';
+    try { const o = { lang: 'es', kids: true, host: null };
+      el.id === 'menuImg' ? await FiestasMenuImage.downloadImage(state.day, o) : await FiestasMenuImage.downloadPdf(state.day, o); }
+    catch (x) { alert('生成失败：' + x.message); }
+    el.disabled = false; el.textContent = label; return;
+  }
   if (el.id === 'logout') { await API.signOut(); return renderLogin(); }
   if (el.id === 'resetDemo') { if (confirm('清空演示数据并重新生成示例？')) { API.resetDemo(); await load(); } return; }
   if (el.id === 'lock') {
