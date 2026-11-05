@@ -248,7 +248,7 @@ function renderForm() {
     ${shareCard()}
     ${error ? `<p class="note" style="color:var(--warn)">${esc(error)}</p>` : ''}
     <section><div class="sec-head"><h2>${t().pica}</h2></div>
-      <div class="pica"><img src="/fiestas/img/${esc(p.key)}.jpg" alt="" data-zoom="${esc(p.key)}" style="cursor:zoom-in" onerror="this.remove()"><div><p>${t().picaNote}</p><ul>${p.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></div></div>
+      <div class="pica"><img src="/fiestas/img/${esc(p.key)}.jpg" alt="" data-zoom="${esc(p.key)}" style="cursor:zoom-in" onerror="this.remove()"><div><p>${t().picaNote}</p><ul>${p.items.map(i => `<li>${esc(F.picaItem(i).es)}</li>`).join('')}</ul></div></div>
     </section>`;
   for (const [g, n, menu] of groups()) {
     h += `<div class="group-title">${g === 'adult' ? `${t().adultsMenu} · ${t().adults(n)}` : `${t().kidsMenu} · ${t().kids(n)}`}</div>`;

@@ -78,7 +78,7 @@
     ctx.fillStyle = C.ink; ctx.font = `600 44px ${SERIF}`; ctx.fillText(L.pica, PAD + 260, y + 66);
     ctx.fillStyle = C.muted; ctx.font = `400 24px ${SANS}`; ctx.fillText(L.picaNote, PAD + 260, y + 102);
     ctx.fillStyle = C.ink; ctx.font = `400 27px ${SANS}`;
-    day.pica.items.forEach((it, i) => ctx.fillText('·  ' + it, PAD + 260, y + 146 + i * 30));
+    day.pica.items.forEach((it, i) => ctx.fillText('·  ' + F.picaItem(it).es, PAD + 260, y + 146 + i * 30));
     y += 250 + 10;
 
     // Courses

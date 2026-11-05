@@ -42,7 +42,7 @@ window.FIESTAS = {
     {
       date: '2026-12-26', name: 'Sant Esteve', ca: 'Sant Esteve', zh: '圣斯德望节', price: 55, kidsPrice: 25,
       deadline: '2026-12-20', theme: 'esteve',
-      pica: { key: 'pica26', items: ['Pa de pagès con tomate', 'Embutidos de Osona', 'Alcachofas fritas con romesco', 'Buñuelos de bacalao con allioli de miel'] },
+      pica: { key: 'pica26', items: ['Pa de pagès con tomate', { es: 'Embutidos de Osona', plate: true }, 'Alcachofas fritas con romesco', 'Buñuelos de bacalao con allioli de miel'] },
       menu: {
         primero: [
           { key: 'cane26', es: 'Gran canelón de rustido, bechamel de setas y teja de parmesano', tags: ['firma'] },
@@ -90,7 +90,7 @@ window.FIESTAS = {
     {
       date: '2027-01-06', name: 'Reyes', ca: 'Reis', zh: '三王节', price: 40, kidsPrice: 20,
       deadline: '2027-01-02', theme: 'reyes',
-      pica: { key: 'pica6', items: ['Pan de coca con tomate', 'Croquetas de pollo rustido', 'Calamares a la andaluza', 'Bravas “corona”'] },
+      pica: { key: 'pica6', items: ['Pan de coca con tomate', 'Croquetas de pollo rustido', { es: 'Calamares a la andaluza', plate: true }, { es: 'Bravas “corona”', plate: true }] },
       menu: {
         primero: [
           { key: 'huev6', es: 'Huevo a baja temperatura, parmentier, setas y jamón', tags: ['firma'] },
@@ -157,8 +157,12 @@ window.FIESTAS.line = key => {
 // Pica-pica (shared starter): one plate per ~4 people, never ordered by guests.
 //   plates = round(people / 4) (0.5 rounds up, at least 1); people are spread as evenly as
 //   possible, bigger plates first: 5 → [5], 6 → [3,3], 7 → [4,3], 9 → [5,4], 10 → [4,3,3].
-//   Each item on a plate is `perPerson` pieces per person, so pieces of each item = people × perPerson.
+//   Items are counted two ways (keep it simple):
+//     'Croquetas de …'                       → by pieces: perPerson pieces per person (pieces = people × perPerson)
+//     { es: 'Calamares …', plate: true }     → by plate: one serving per pica-pica plate, sized like the plate
+//                                             (a 4-person plate gets a 4-person serving), no piece count
 window.FIESTAS.picaRules = { countKids: true, perPerson: 1 };
+window.FIESTAS.picaItem = it => typeof it === 'string' ? { es: it, plate: false } : { es: it.es, plate: !!it.plate };
 window.FIESTAS.picaPeople = b => b.adults + (window.FIESTAS.picaRules.countKids ? b.kids : 0);
 window.FIESTAS.picaSplit = n => {
   if (n <= 0) return [];
