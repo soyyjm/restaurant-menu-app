@@ -149,9 +149,28 @@
       if (DEMO) { const s = store(); s.bookings.find(x => x.id === id).sent_at = at; save(s); return; }
       await q(client().from('fiesta_bookings').update({ sent_at: at }).eq('id', id));
     },
-    async setLocked(day, locked) {
-      if (DEMO) { const s = store(); s.bookings.filter(x => x.day === day).forEach(x => { x.locked = locked; }); save(s); return; }
-      await q(client().from('fiesta_bookings').update({ locked }).eq('day', day));
+    // Lock/unlock a list of bookings (a whole day, or one table).
+    async setLocked(ids, locked) {
+      if (!ids.length) return;
+      if (DEMO) { const s = store(); s.bookings.filter(x => ids.includes(x.id)).forEach(x => { x.locked = locked; }); save(s); return; }
+      await q(client().from('fiesta_bookings').update({ locked }).in('id', ids));
+    },
+
+    // Staff writes the order directly (half portions, skipped course, off-menu dish...).
+    // items.staff_at marks it as adjusted by the restaurant; the booking is locked unless keepOpen.
+    async saveOrderAsStaff(b, items, allergies, comments, keepOpen) {
+      const row = { booking_id: b.id, items: { ...items, staff_at: new Date().toISOString() },
+        allergies: (allergies || '').trim() || null, comments: (comments || '').trim() || null,
+        adults: b.adults, kids: b.kids, submitted_at: new Date().toISOString() };
+      if (DEMO) {
+        const s = store(), prev = s.orders[b.id];
+        s.orders[b.id] = { ...row, submit_count: prev ? prev.submit_count : 0 };
+        s.bookings.find(x => x.id === b.id).locked = !keepOpen;
+        save(s); return;
+      }
+      const { data } = await client().auth.getSession();
+      await q(client().from('fiesta_orders').upsert({ ...row, owner_id: data.session.user.id, submit_count: b.order ? b.order.submit_count : 0 }, { onConflict: 'booking_id' }));
+      await q(client().from('fiesta_bookings').update({ locked: !keepOpen }).eq('id', b.id));
     },
     resetDemo() { try { localStorage.removeItem(KEY); } catch {} }
   };

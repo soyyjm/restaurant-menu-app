@@ -40,6 +40,11 @@ h2{font:600 26px/1.1 "Cormorant Garamond",serif;margin:0}
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
 .count{font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
 .count.done{background:var(--ok);color:#fff}
+.count.over{background:var(--warn);color:#fff}
+.dish.other .ph.txt{font:600 30px Jost;color:var(--accent)}
+.dish.other .name{font-weight:400;font-size:14.5px}
+.dish.other .hint{font-size:12.5px;color:var(--muted);margin-top:3px}
+textarea.need{border-color:var(--warn);outline:2px solid var(--warn)}
 .group-title{margin-top:34px;padding-top:18px;border-top:1px solid var(--line);font:600 13px Jost;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
 .pica{display:flex;gap:12px;background:var(--card);border-radius:14px;padding:12px;box-shadow:var(--shadow)}
 .pica img{width:96px;height:96px;border-radius:10px;object-fit:cover;flex:none}
@@ -101,12 +106,15 @@ const T = {
     intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.`,
     pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida: una tabla para cada 4 personas, con pan.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
-    allergies: 'Alergias o intolerancias', allergiesPh: 'Ej.: una persona celíaca, un niño sin lactosa…',
+    allergies: 'Alergias, intolerancias o peticiones especiales', allergiesPh: 'Ej.: una persona celíaca; la abuela no toma primer plato; media ración para un niño…',
+    other: 'Otra opción / petición especial', otherHint: 'No tomar este plato, media ración, alergias… Describidlo abajo y lo confirmaremos con vosotros.',
+    needNote: 'Habéis elegido «otra opción»: contadnos qué necesitáis en el recuadro de peticiones especiales.',
+    over: n => `Sobran ${n} ${n === 1 ? 'plato' : 'platos'}: revisad las cantidades`,
     comments: 'Comentarios (opcional)', commentsPh: 'Ej.: celebramos un cumpleaños',
     missing: n => `Faltan ${n} ${n === 1 ? 'plato' : 'platos'} por elegir`, ready: '¡Todo listo!',
     send: 'Enviar elección', resend: 'Guardar cambios', sending: 'Enviando…',
     thanks: '¡Gracias! Hemos recibido vuestra elección', thanksSub: 'Si cambiáis de idea, podéis modificarla desde este mismo enlace hasta la fecha indicada.',
-    edit: 'Modificar elección', closed: 'La elección para este día ya está cerrada', closedSub: 'Si necesitáis cambiar algo, llamadnos o escribidnos por WhatsApp.',
+    edit: 'Modificar elección', closed: 'La elección para este día ya está cerrada', confirmed: 'El restaurante ha confirmado vuestro pedido', confirmedSub: 'Hemos ajustado el pedido según lo que nos pedisteis. Si necesitáis cambiar algo más, llamadnos o escribidnos por WhatsApp.', closedSub: 'Si necesitáis cambiar algo, llamadnos o escribidnos por WhatsApp.',
     noOrderClosed: 'Todavía no habíamos recibido vuestra elección. Por favor, contactad con el restaurante.',
     invalidLink: 'Este enlace no es válido', invalidSub: 'Revisad el mensaje que os enviamos o contactad con el restaurante.',
     netErr: 'No hemos podido conectar. Revisad la conexión e intentadlo de nuevo.', invalidErr: 'Falta algún plato por elegir. Revisad la selección.',
@@ -119,12 +127,15 @@ const T = {
     intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.`,
     pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda: una taula per cada 4 persones, amb pa.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
-    allergies: 'Al·lèrgies o intoleràncies', allergiesPh: 'Ex.: una persona celíaca, un nen sense lactosa…',
+    allergies: 'Al·lèrgies, intoleràncies o peticions especials', allergiesPh: 'Ex.: una persona celíaca; l’àvia no pren primer plat; mitja ració per a un nen…',
+    other: 'Una altra opció / petició especial', otherHint: 'No prendre aquest plat, mitja ració, al·lèrgies… Expliqueu-ho a sota i ho confirmarem amb vosaltres.',
+    needNote: 'Heu triat «una altra opció»: expliqueu-nos què necessiteu al requadre de peticions especials.',
+    over: n => `Sobren ${n} ${n === 1 ? 'plat' : 'plats'}: reviseu les quantitats`,
     comments: 'Comentaris (opcional)', commentsPh: 'Ex.: celebrem un aniversari',
     missing: n => `Falten ${n} ${n === 1 ? 'plat' : 'plats'} per triar`, ready: 'Tot a punt!',
     send: 'Enviar la tria', resend: 'Desar els canvis', sending: 'Enviant…',
     thanks: 'Gràcies! Hem rebut la vostra tria', thanksSub: 'Si canvieu d’idea, la podeu modificar des d’aquest mateix enllaç fins a la data indicada.',
-    edit: 'Modificar la tria', closed: 'La tria per a aquest dia ja està tancada', closedSub: 'Si necessiteu canviar alguna cosa, truqueu-nos o escriviu-nos per WhatsApp.',
+    edit: 'Modificar la tria', closed: 'La tria per a aquest dia ja està tancada', confirmed: 'El restaurant ha confirmat la vostra comanda', confirmedSub: 'Hem ajustat la comanda segons el que ens vau demanar. Si necessiteu canviar alguna cosa més, truqueu-nos o escriviu-nos per WhatsApp.', closedSub: 'Si necessiteu canviar alguna cosa, truqueu-nos o escriviu-nos per WhatsApp.',
     noOrderClosed: 'Encara no havíem rebut la vostra tria. Si us plau, contacteu amb el restaurant.',
     invalidLink: 'Aquest enllaç no és vàlid', invalidSub: 'Reviseu el missatge que us vam enviar o contacteu amb el restaurant.',
     netErr: 'No hem pogut connectar. Reviseu la connexió i torneu-ho a provar.', invalidErr: 'Falta algun plat per triar. Reviseu la selecció.',
@@ -145,7 +156,13 @@ let B = null, day = null, sel = null, notes = { allergies: '', comments: '' }, m
 
 const groups = () => [['adult', B.adults, day.menu], ['kid', B.kids, F.kids]].filter(g => g[1] > 0);
 const sumC = (g, c) => Object.values(sel[g][c] || {}).reduce((a, b) => a + b, 0);
-const missing = () => groups().reduce((m, [g, n]) => m + F.courses.reduce((x, c) => x + n - sumC(g, c.id), 0), 0);
+const missing = () => groups().reduce((m, [g, n]) => m + F.courses.reduce((x, c) => x + Math.max(0, n - sumC(g, c.id)), 0), 0);
+const overBy = () => groups().reduce((m, [g, n]) => m + F.courses.reduce((x, c) => x + Math.max(0, sumC(g, c.id) - n), 0), 0);
+const usesOther = () => groups().some(([g]) => F.courses.some(c => sel[g][c.id][F.OTHER]));
+const needNote = () => usesOther() && !notes.allergies.trim();
+const otherDish = () => ({ key: F.OTHER, es: t().other, other: true });
+const courseList = (menu, c) => menu[c].concat([otherDish()]);
+const countCls = (a, n) => a === n ? ' done' : a > n ? ' over' : '';
 const emptySel = () => ({ adult: Object.fromEntries(F.courses.map(c => [c.id, {}])), kid: Object.fromEntries(F.courses.map(c => [c.id, {}])) });
 
 async function init() {
@@ -164,7 +181,13 @@ async function init() {
     for (const g of ['adult', 'kid']) for (const c of F.courses) sel[g][c.id] = { ...((o.items[g] || {})[c.id] || {}) };
     notes = { allergies: o.allergies || '', comments: o.comments || '' };
     mode = 'done';
-  } else if (o) { notes = { allergies: o.allergies || '', comments: o.comments || '' }; error = t().changed; }
+  } else if (o) {
+    // Headcount changed: keep the previous picks so the family only adjusts the difference.
+    const known = k => k === F.OTHER || F.dishIndex[k];
+    for (const g of ['adult', 'kid']) for (const c of F.courses)
+      sel[g][c.id] = Object.fromEntries(Object.entries((o.items[g] || {})[c.id] || {}).filter(([k]) => known(k)));
+    notes = { allergies: o.allergies || '', comments: o.comments || '' }; error = t().changed;
+  }
   if (!B.open) mode = 'closed';
   render();
 }
@@ -185,15 +208,16 @@ function header() {
 }
 
 function photo(d) {
+  if (d.other) return '<div class="ph txt">✎</div>';
   return `<img class="ph" src="/fiestas/img/${esc(d.key)}.jpg" alt="${esc(d.es)}" loading="lazy" width="84" height="84" data-zoom="${esc(d.key)}" onerror="this.outerHTML='<div class=&quot;ph txt&quot;>${esc(d.es.charAt(0))}</div>'">`;
 }
 
 function dishRow(g, n, c, d) {
   const v = sel[g][c][d.key] || 0, full = sumC(g, c) >= n;
   const tags = (d.tags || []).map(x => x === 'sup' ? `<span class="tag sup">${t().sup(d.sup)}</span>` : `<span class="tag ${x}">${esc(F.tags[x][lang])}</span>`).join('');
-  return `<div class="dish${v ? ' on' : ''}" data-g="${g}" data-c="${c}" data-k="${esc(d.key)}">
+  return `<div class="dish${v ? ' on' : ''}${d.other ? ' other' : ''}" data-g="${g}" data-c="${c}" data-k="${esc(d.key)}">
     ${photo(d)}
-    <div class="info"><div class="name">${esc(d.es)}</div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>
+    <div class="info"><div class="name">${esc(d.es)}</div>${d.other ? `<div class="hint">${esc(t().otherHint)}</div>` : ''}${tags ? `<div class="tags">${tags}</div>` : ''}</div>
     <div class="step">
       <button type="button" class="minus" data-act="-" aria-label="−" ${v ? '' : 'disabled'}>−</button>
       <output aria-live="polite">${v}</output>
@@ -214,12 +238,12 @@ function renderForm() {
     h += `<div class="group-title">${g === 'adult' ? `${t().adultsMenu} · ${t().adults(n)}` : `${t().kidsMenu} · ${t().kids(n)}`}</div>`;
     for (const c of F.courses) {
       const a = sumC(g, c.id);
-      h += `<section><div class="sec-head"><h2>${esc(c[lang])}</h2><span class="count${a === n ? ' done' : ''}">${t().choose(a, n)}</span></div>
-        ${menu[c.id].map(d => dishRow(g, n, c.id, d)).join('')}</section>`;
+      h += `<section><div class="sec-head"><h2>${esc(c[lang])}</h2><span class="count${countCls(a, n)}">${t().choose(a, n)}</span></div>
+        ${courseList(menu, c.id).map(d => dishRow(g, n, c.id, d)).join('')}</section>`;
     }
   }
   h += `<section><label class="f" for="al">${t().allergies}</label>
-      <textarea id="al" maxlength="1000" placeholder="${esc(t().allergiesPh)}">${esc(notes.allergies)}</textarea></section>
+      <textarea id="al" maxlength="1000" class="${needNote() ? 'need' : ''}" placeholder="${esc(t().allergiesPh)}">${esc(notes.allergies)}</textarea></section>
     <section><label class="f" for="co">${t().comments}</label>
       <textarea id="co" maxlength="1000" placeholder="${esc(t().commentsPh)}">${esc(notes.comments)}</textarea></section>
     </main>
@@ -229,11 +253,13 @@ function renderForm() {
 }
 
 function updateBar() {
-  const m = missing(), msg = document.getElementById('msg'), btn = document.getElementById('send');
+  const m = missing(), o = overBy(), nn = needNote(), msg = document.getElementById('msg'), btn = document.getElementById('send');
   if (!msg) return;
-  msg.innerHTML = busy ? '' : m ? esc(t().missing(m)) : `<span style="color:var(--ok);font-weight:600">${t().ready}</span>`;
+  msg.innerHTML = busy ? '' : o ? `<span style="color:var(--warn)">${esc(t().over(o))}</span>` : m ? esc(t().missing(m))
+    : nn ? `<span style="color:var(--warn)">${esc(t().needNote)}</span>` : `<span style="color:var(--ok);font-weight:600">${t().ready}</span>`;
   btn.textContent = busy ? t().sending : B.order ? t().resend : t().send;
-  btn.disabled = busy || m > 0;
+  btn.disabled = busy || m > 0 || o > 0 || nn;
+  const al = document.getElementById('al'); if (al) al.classList.toggle('need', nn);
 }
 
 function summary() {
@@ -241,7 +267,9 @@ function summary() {
   for (const [g, n, menu] of groups()) {
     if (B.kids) h += `<h3 style="color:var(--ink)">${g === 'adult' ? t().adultsMenu : t().kidsMenu} · ${g === 'adult' ? t().adults(n) : t().kids(n)}</h3>`;
     for (const c of F.courses) {
-      h += `<h3>${esc(c[lang])}</h3><ul>${menu[c.id].filter(d => sel[g][c.id][d.key]).map(d => `<li><b>${sel[g][c.id][d.key]}×</b><span>${esc(d.es)}${d.sup ? ` <span class="tag sup">${t().sup(d.sup)}</span>` : ''}</span></li>`).join('')}</ul>`;
+      const order = menu[c.id].map(d => d.key);
+      const keys = Object.keys(sel[g][c.id]).sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
+      h += `<h3>${esc(c[lang])}</h3><ul>${keys.map(k => { const L = F.line(k); return `<li><b>${sel[g][c.id][k]}×</b><span>${esc(L[lang])}${L.sup ? ` <span class="tag sup">${t().sup(L.sup)}</span>` : ''}</span></li>`; }).join('')}</ul>`;
     }
   }
   if (notes.allergies) h += `<h3>${t().allergiesL}</h3><p style="margin:0">${esc(notes.allergies)}</p>`;
@@ -263,7 +291,8 @@ function renderDone() {
 function renderClosed() {
   const has = B.order && B.order.adults === B.adults && B.order.kids === B.kids;
   app.innerHTML = header() + `<main class="wrap"><div class="done-card">
-    <h2 style="color:var(--ink)">${t().closed}</h2><p style="color:var(--muted);margin:6px 0 0">${has ? t().closedSub : t().noOrderClosed}</p>
+    ${has && B.order.items.staff_at ? `<h2>${t().confirmed}</h2><p style="color:var(--muted);margin:6px 0 0">${t().confirmedSub}</p>`
+      : `<h2 style="color:var(--ink)">${t().closed}</h2><p style="color:var(--muted);margin:6px 0 0">${has ? t().closedSub : t().noOrderClosed}</p>`}
     ${has ? summary() : ''}</div></main>`;
   document.body.style.paddingBottom = '40px';
 }
@@ -287,9 +316,9 @@ function refreshCourse(g, c) {
   const sec = first.closest('section');
   const a = sumC(g, c);
   sec.querySelector('.count').textContent = t().choose(a, n);
-  sec.querySelector('.count').classList.toggle('done', a === n);
+  sec.querySelector('.count').className = 'count' + countCls(a, n);
   sec.querySelectorAll('.dish').forEach(el => {
-    const d = menu[c].find(x => x.key === el.dataset.k), v = sel[g][c][d.key] || 0;
+    const d = courseList(menu, c).find(x => x.key === el.dataset.k), v = sel[g][c][d.key] || 0;
     el.classList.toggle('on', v > 0);
     el.querySelector('output').textContent = v;
     el.querySelector('.minus').disabled = !v;
@@ -323,16 +352,21 @@ app.addEventListener('click', async e => {
     if (sumC(g, c) < n || n === 1) change(g, c, k, 1);
     return;
   }
-  if (e.target.id === 'edit') { mode = 'form'; error = ''; render(); window.scrollTo(0, 0); return; }
+  if (e.target.id === 'edit') {
+    // Lines only the restaurant can set (half portions, off-menu dishes...) cannot be edited here.
+    for (const g of ['adult', 'kid']) for (const c of F.courses)
+      for (const k of Object.keys(sel[g][c.id])) if (k !== F.OTHER && !F.dishIndex[k]) delete sel[g][c.id][k];
+    mode = 'form'; error = ''; render(); window.scrollTo(0, 0); return;
+  }
   if (e.target.id === 'send') return send();
 });
 app.addEventListener('input', e => {
-  if (e.target.id === 'al') notes.allergies = e.target.value;
+  if (e.target.id === 'al') { notes.allergies = e.target.value; updateBar(); }
   if (e.target.id === 'co') notes.comments = e.target.value;
 });
 
 async function send() {
-  if (busy || missing()) return;
+  if (busy || missing() || overBy() || needNote()) return;
   busy = true; updateBar();
   const items = { adult: sel.adult };
   if (B.kids) items.kid = sel.kid;

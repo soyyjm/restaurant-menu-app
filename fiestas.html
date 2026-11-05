@@ -108,6 +108,28 @@ dialog h2{margin:0 0 12px;font-size:17px}
   .print-title{display:block!important;font-size:18px;font-weight:600;margin-bottom:8px}
 }
 .print-title{display:none}
+dialog.wide{width:min(760px,96vw)}
+.oc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.oc.bad{border-color:var(--warn)}
+.oh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.orow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line)}
+.orow:last-of-type{border-bottom:0}
+.orow .nm{font-size:13.5px;line-height:1.3}
+.orow.spec .nm{color:var(--muted)}
+.orow.pend .nm{color:var(--warn);font-weight:500}
+.ost{display:flex;align-items:center;gap:3px}
+.ost small{font-size:11px;color:var(--muted);width:26px;text-align:right}
+.ost button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:16px;line-height:1}
+.ost output{width:20px;text-align:center;font-weight:600}
+.ost.off{visibility:hidden}
+.addx{display:flex;gap:6px;margin-top:6px}
+.addx input{flex:1}
+.cnt{font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--bg)}
+.cnt.ok{background:var(--okbg);color:var(--ok)}
+.cnt.bad{background:var(--warnbg);color:var(--warn)}
+.chk{display:flex;gap:8px;align-items:center;font-size:13.5px;margin-top:10px}
+.chk input{width:auto}
+.pend-line{color:var(--warn);font-weight:500}
 </style>
 </head>
 <body>
@@ -126,6 +148,17 @@ dialog h2{margin:0 0 12px;font-size:17px}
     <label class="full">内部备注（客人看不到）<textarea name="notes" rows="2" maxlength="1000" placeholder="例如：已付定金 100€"></textarea></label>
   </div>
   <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">保存</button></div>
+</form></dialog>
+
+<dialog id="oed" class="wide"><form method="dialog" id="oform">
+  <h2 id="oTitle">修改点餐</h2>
+  <p class="muted" style="margin:-6px 0 10px;font-size:13px">客人电话或留言提出的变化在这里改：半份、不要某道菜、菜单外的菜。每道菜的份数要正好等于人数才能保存。</p>
+  <div id="oBody"></div>
+  <label style="font-size:13px;color:var(--muted)">过敏 / 特殊需求（客人写的，可以修改）<textarea name="allergies" rows="2" maxlength="1000"></textarea></label>
+  <label style="font-size:13px;color:var(--muted);display:block;margin-top:8px">留言<textarea name="comments" rows="2" maxlength="1000"></textarea></label>
+  <label class="chk"><input type="checkbox" name="lock" checked> 保存后锁定这一桌：客人打开链接只能查看，不能再改（建议勾选，避免覆盖员工的修改）</label>
+  <p id="oMsg" class="al" style="font-size:13px;margin:8px 0 0"></p>
+  <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">保存点餐</button></div>
 </form></dialog>
 
 <dialog id="bulk"><form method="dialog" id="bulkForm">
@@ -166,8 +199,12 @@ function waText(b) {
     `Aquí tenéis el menú. Podéis elegir el primero, el segundo y el postre de cada comensal (${pax}):\n${linkFor(b)}\n\n` +
     `Os agradeceríamos la elección antes del ${fmtEs(day.deadline, { day: 'numeric', month: 'long' })}. ¡Hasta pronto!`;
 }
+const pendingOther = b => !!b.order && ['adult', 'kid'].some(g => F.courses.some(c => (((b.order.items[g] || {})[c.id]) || {})[F.OTHER]));
+const staffEdited = b => !!(b.order && b.order.items.staff_at);
 const status = b => {
   if (b.order && (b.order.adults !== b.adults || b.order.kids !== b.kids)) return ['warn', '人数已变，需重填'];
+  if (pendingOther(b)) return ['warn', '有特殊需求待处理'];
+  if (staffEdited(b)) return ['ok', '员工已确认'];
   if (b.order) return ['ok', '已点餐'];
   if (b.sent_at) return ['sent', '已发送，未回复'];
   return ['new', '未发送'];
@@ -175,7 +212,7 @@ const status = b => {
 const valid = b => b.order && b.order.adults === b.adults && b.order.kids === b.kids;
 const dayBookings = () => state.all.filter(b => b.day === state.day)
   .sort((a, b) => (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
-const dishName = k => (F.dishIndex[k] || { es: k + ' (?)' }).es;
+const dishName = k => { const L = F.line(k); return L.kind === 'none' || L.kind === 'otro' ? L.zh : L.es; };
 const picaSets = b => Math.ceil((b.adults + b.kids) / 4);
 function supTotal(b) {
   if (!valid(b)) return 0;
@@ -249,12 +286,14 @@ function viewList(day, bs) {
       <td><b>${esc(b.name)}</b>${b.notes ? `<div class="muted" style="font-size:12.5px">${esc(b.notes)}</div>` : ''}${b.order && b.order.allergies ? `<div class="al" style="font-size:12.5px">⚠ ${esc(b.order.allergies)}</div>` : ''}</td>
       <td class="hide-m">${esc(b.phone || '')}</td>
       <td class="num">${b.adults}${b.kids ? ` + ${b.kids}<span class="muted">童</span>` : ''}</td>
-      <td><span class="badge b-${cls}">${label}</span>${b.order ? `<div class="muted" style="font-size:11.5px">${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
+      <td><span class="badge b-${cls}">${label}</span>${b.locked ? ' <span title="已锁定，客人不能再改">🔒</span>' : ''}${b.order ? `<div class="muted" style="font-size:11.5px">${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
       <td><div class="acts">
         ${ph ? `<a class="btn sm${b.order ? '' : ' wa'}" data-act="wa" href="https://wa.me/${ph}?text=${encodeURIComponent(waText(b))}" target="_blank" rel="noopener">${b.sent_at ? '再发' : '发送'} WhatsApp</a>` : `<span class="muted" style="font-size:12px">无有效电话</span>`}
         <button class="btn sm" data-act="copy" title="复制客人链接">复制链接</button>
         <a class="btn sm" href="${esc(linkFor(b))}" target="_blank" rel="noopener" title="以客人身份打开">预览</a>
-        <button class="btn sm" data-act="edit">编辑</button>
+        <button class="btn sm" data-act="order">${b.order ? '改点餐' : '代客点餐'}</button>
+        ${b.locked ? '<button class="btn sm" data-act="unlock" title="允许客人再次修改">解锁</button>' : ''}
+        <button class="btn sm" data-act="edit">编辑订台</button>
         <button class="btn sm danger" data-act="del">删除</button>
       </div></td></tr>`;
   }).join('');
@@ -280,21 +319,26 @@ function tally(bs, group) {
   return t;
 }
 function courseBlock(title, list, counts, total) {
-  const max = Math.max(1, ...list.map(d => counts[d.key] || 0));
-  const extra = Object.keys(counts).filter(k => !list.some(d => d.key === k));
-  return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">共 ${total} 份</span></h3>
-    ${list.concat(extra.map(k => ({ key: k, es: dishName(k) }))).map(d => {
-      const n = counts[d.key] || 0;
-      return `<div class="row"><span class="n">${n}</span><span class="name">${esc(d.es)}${d.sup ? ` <span class="badge b-warn">+${d.sup}€</span>` : ''}<div class="bar" style="width:${n / max * 100}%"></div></span></div>`;
-    }).join('')}</div>`;
+  const amount = d => (counts[d.key] || 0) + (counts[d.key + '~h'] || 0) / 2;
+  const max = Math.max(1, ...list.map(amount));
+  const custom = Object.keys(counts).filter(k => k.startsWith('x~') || (!F.dishIndex[k.replace(/~h$/, '')] && k !== 'none' && k !== F.OTHER));
+  let h = list.map(d => {
+    const n = counts[d.key] || 0, half = counts[d.key + '~h'] || 0;
+    return `<div class="row"><span class="n">${n}</span><span class="name">${esc(d.es)}${d.sup ? ` <span class="badge b-warn">+${d.sup}€</span>` : ''}${half ? ` <span class="badge b-sent">+ ${half} 个半份</span>` : ''}<div class="bar" style="width:${amount(d) / max * 100}%"></div></span></div>`;
+  }).join('');
+  h += custom.map(k => `<div class="row"><span class="n">${counts[k]}</span><span class="name">${esc(F.line(k).es)} <span class="badge b-sent">菜单外</span></span></div>`).join('');
+  if (counts.none) h += `<div class="row"><span class="n muted">${counts.none}</span><span class="name muted">不要这道（不用做）</span></div>`;
+  if (counts[F.OTHER]) h += `<div class="row"><span class="n pend-line">${counts[F.OTHER]}</span><span class="name pend-line">其他需求，待员工确认</span></div>`;
+  return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">共 ${total} 人</span></h3>${h}</div>`;
 }
 function viewKitchen(day, bs) {
   const done = bs.filter(valid), pending = bs.filter(b => !valid(b));
   const ta = tally(bs, 'adult'), tk = tally(bs, 'kid');
   const ad = done.reduce((s, b) => s + b.adults, 0), kd = done.reduce((s, b) => s + b.kids, 0);
-  const allergies = done.filter(b => b.order.allergies);
+  const allergies = done.filter(b => b.order.allergies), pend = done.filter(pendingOther);
   let h = statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印后厨单</button><button class="btn" id="exportCsv">导出 Excel</button></div>`;
   if (pending.length) h += `<div class="locked">⚠ 下面的数量只包括已点餐的 ${done.length} 桌。还有 ${pending.length} 桌（${pending.reduce((s, b) => s + b.adults + b.kids, 0)} 人）没点餐：${pending.map(b => esc(b.name) + (b.table_no ? `（${esc(b.table_no)} 号桌）` : '')).join('、')}</div>`;
+  if (pend.length) h += `<div class="locked">⚠ 有 ${pend.length} 桌选了“其他需求”，还需要员工确认后改成具体的菜（在订台名单点“改点餐”）：${pend.map(b => esc(b.name) + (b.table_no ? `（${esc(b.table_no)} 号桌）` : '')).join('、')}</div>`;
   h += `<div class="grid">
     <div class="card"><h3>Pica-pica 分享拼盘</h3><div class="row"><span class="n">${bs.reduce((s, b) => s + picaSets(b), 0)}</span><span class="name">套（每桌按每 4 人 1 套计算，含全部订台）</span></div>
       <ul class="kv" style="margin-top:6px">${day.pica.items.map(i => `<li>· ${esc(i)}</li>`).join('')}</ul></div>
@@ -309,7 +353,8 @@ function viewKitchen(day, bs) {
 function orderList(items, menuList) {
   return F.courses.map(c => {
     const m = (items || {})[c.id] || {};
-    const lines = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<li><b>${n}×</b><span>${esc(dishName(k))}${(F.dishIndex[k] || {}).sup ? ` <span class="badge b-warn">+${F.dishIndex[k].sup}€</span>` : ''}</span></li>`).join('');
+    const lines = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, n]) => { const L = F.line(k);
+      return `<li class="${L.kind === 'otro' ? 'pend-line' : ''}"><b>${n}×</b><span>${esc(dishName(k))}${L.sup ? ` <span class="badge b-warn">+${L.sup}€</span>` : ''}${L.kind === 'custom' ? ' <span class="badge b-sent">菜单外</span>' : ''}</span></li>`; }).join('');
     return `<div class="sub">${c.zh} · ${c.es}</div><ul class="kv">${lines}</ul>`;
   }).join('');
 }
@@ -318,7 +363,7 @@ function viewTables(day, bs) {
   return statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印按桌明细</button><button class="btn" id="exportCsv">导出 Excel</button></div>
   <div class="grid">${bs.map(b => {
     const [cls, label] = status(b), sup = supTotal(b);
-    return `<div class="card"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
+    return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
       <div class="muted" style="font-size:13px">大人 ${b.adults}${b.kids ? ` · 小孩 ${b.kids}` : ''} · 共 ${b.adults + b.kids} 人 · Pica-pica ${picaSets(b)} 套${b.phone ? ` · ${esc(b.phone)}` : ''}</div>
       ${valid(b) ? `
         ${b.kids ? '<div class="sub" style="color:var(--ink);margin-top:10px">大人</div>' : ''}${orderList(b.order.items.adult)}
@@ -328,25 +373,33 @@ function viewTables(day, bs) {
         ${sup ? `<p style="margin:6px 0 0;font-size:13px;color:var(--warn)">补差价：${sup} €</p>` : ''}`
       : `<p class="muted" style="margin:10px 0 0">${b.order ? '订台人数改过，客人之前点的已作废，需要重新提交。' : '还没收到点餐。'}</p>`}
       ${b.notes ? `<p class="muted" style="margin:8px 0 0;font-size:12.5px">备注：${esc(b.notes)}</p>` : ''}
+      <p class="noprint" style="margin:10px 0 0"><button class="btn sm" data-act="order">${b.order ? '改点餐' : '代客点餐'}</button></p>
     </div>`;
   }).join('')}</div>`;
 }
 
 // ---------- CSV ----------
+function specials(b) {
+  const out = [];
+  for (const g of ['adult', 'kid']) for (const c of F.courses)
+    for (const [k, n] of Object.entries(((b.order.items[g] || {})[c.id]) || {}))
+      if (F.line(k).kind !== 'dish') out.push(`${g === 'kid' ? 'Infantil ' : ''}${c.es}: ${n}× ${F.line(k).es}`);
+  return out.join(' | ');
+}
 function exportCsv() {
   const day = F.dayOf(state.day), bs = dayBookings();
   const cols = [];
   for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
   for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
-  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Alergias', 'Comentarios', 'Notas internas'];
+  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios', 'Notas internas'];
   const rows = bs.map(b => {
     const v = valid(b);
     return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b)[1], picaSets(b),
-      ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '',
+      ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '', v ? specials(b) : '',
       v ? b.order.allergies || '' : '', v ? b.order.comments || '' : '', b.notes || ''];
   });
   const totals = ['', 'TOTAL', '', bs.reduce((s, b) => s + b.adults, 0), bs.reduce((s, b) => s + b.kids, 0), '', bs.reduce((s, b) => s + picaSets(b), 0),
-    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', ''];
+    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', '', ''];
   const csv = [head, ...rows, totals].map(r => r.map(x => { const s = String(x); return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
@@ -373,8 +426,12 @@ bform.addEventListener('submit', async e => {
     adults: Math.max(1, parseInt(f.adults) || 1), kids: Math.max(0, parseInt(f.kids) || 0) };
   if (!b.name) return;
   if (editing && editing.order && (editing.adults !== b.adults || editing.kids !== b.kids) &&
-      !confirm('这桌已经点过餐。改了人数后，客人需要重新打开链接点餐。确定修改吗？')) return;
-  try { await API.saveBooking(b); dlg.close(); toast('已保存'); state.day = b.day; remember(); await load(); } catch (x) { alert('保存失败：' + x.message); }
+      !confirm('这桌已经点过餐，改人数后需要调整点餐（员工直接改，或客人用原链接重新选）。确定修改人数吗？')) return;
+  const headsChanged = editing && editing.order && (editing.adults !== b.adults || editing.kids !== b.kids);
+  try { await API.saveBooking(b); dlg.close(); toast('已保存'); state.day = b.day; remember(); await load(); } catch (x) { return alert('保存失败：' + x.message); }
+  if (headsChanged && confirm('人数改了。要现在直接帮客人调整点餐吗？\n（选“取消”则由客人用原来的链接重新选择）')) {
+    const nb = state.all.find(x => x.id === b.id); if (nb) openOrder(nb);
+  }
 });
 
 // ---------- bulk paste ----------
@@ -399,6 +456,71 @@ bulkForm.addEventListener('submit', async e => {
   toast(`已导入 ${ok} 个家庭`); await load();
 });
 
+// ---------- staff order editor ----------
+const oed = document.getElementById('oed'), oform = document.getElementById('oform'), oBody = document.getElementById('oBody');
+let oB = null, oItems = null;
+const oGroups = () => [['adult', oB.adults, F.dayOf(oB.day).menu, '大人'], ['kid', oB.kids, F.kids, '儿童套餐']].filter(g => g[1] > 0);
+const oSum = (g, c) => Object.values(oItems[g][c]).reduce((a, b) => a + b, 0);
+function openOrder(b) {
+  oB = b; oItems = { adult: {}, kid: {} };
+  const heads = b.order && b.order.adults === b.adults && b.order.kids === b.kids;
+  for (const g of ['adult', 'kid']) for (const c of F.courses) oItems[g][c.id] = { ...(b.order ? (((b.order.items[g] || {})[c.id]) || {}) : {}) };
+  document.getElementById('oTitle').textContent = `${b.order ? '修改点餐' : '代客点餐'} · ${b.table_no ? b.table_no + ' 号桌 · ' : ''}${b.name}（大人 ${b.adults}${b.kids ? ' · 小孩 ' + b.kids : ''}）`;
+  oform.allergies.value = b.order ? b.order.allergies || '' : '';
+  oform.comments.value = b.order ? b.order.comments || '' : '';
+  oform.lock.checked = true;
+  document.getElementById('oMsg').textContent = b.order && !heads ? '订台人数改过：下面是客人按旧人数点的，请调整到和现在的人数一致。' : '';
+  renderOrderBody(); oed.showModal();
+}
+function stepper(g, c, k, n, label) {
+  return `<span class="ost"><small>${label || ''}</small><button type="button" data-ok="${esc(k)}" data-og="${g}" data-oc="${c}" data-d="-1">−</button><output>${n}</output><button type="button" data-ok="${esc(k)}" data-og="${g}" data-oc="${c}" data-d="1">+</button></span>`;
+}
+function renderOrderBody() {
+  const top = oed.scrollTop;
+  oBody.innerHTML = oGroups().map(([g, n, menu, gl]) => F.courses.map(c => {
+    const m = oItems[g][c.id], a = oSum(g, c.id);
+    const rows = menu[c.id].map(d => `<div class="orow"><span class="nm">${esc(d.es)}</span>${stepper(g, c.id, d.key, m[d.key] || 0, '整份')}${stepper(g, c.id, d.key + '~h', m[d.key + '~h'] || 0, '半份')}</div>`).join('')
+      + Object.keys(m).filter(k => k.startsWith('x~') || (!F.dishIndex[k.replace(/~h$/, '')] && k !== 'none' && k !== F.OTHER)).map(k => `<div class="orow"><span class="nm">${esc(F.line(k).es)} <span class="badge b-sent">菜单外</span></span>${stepper(g, c.id, k, m[k])}<span class="ost off"></span></div>`).join('')
+      + `<div class="orow spec"><span class="nm">不要这道</span>${stepper(g, c.id, 'none', m.none || 0)}<span class="ost off"></span></div>`
+      + (m[F.OTHER] ? `<div class="orow pend"><span class="nm">其他需求（客人选的，请改成上面的具体选项后减到 0）</span>${stepper(g, c.id, F.OTHER, m[F.OTHER])}<span class="ost off"></span></div>` : '');
+    return `<div class="oc${a !== n ? ' bad' : ''}"><div class="oh"><b>${oB.kids ? gl + ' · ' : ''}${c.zh} ${c.es}</b><span class="cnt ${a === n ? 'ok' : 'bad'}">${a} / ${n}</span></div>${rows}
+      <div class="addx"><input placeholder="菜单外的菜，例如 Verduras a la brasa" maxlength="60" data-xg="${g}" data-xc="${c.id}"><button type="button" class="btn sm" data-addx="${g}|${c.id}">加 1 份</button></div></div>`;
+  }).join('')).join('');
+  oed.scrollTop = top;
+}
+oBody.addEventListener('click', e => {
+  const st = e.target.closest('[data-ok]');
+  if (st) {
+    const m = oItems[st.dataset.og][st.dataset.oc], k = st.dataset.ok;
+    m[k] = Math.max(0, (m[k] || 0) + Number(st.dataset.d));
+    if (!m[k] && k !== F.OTHER) delete m[k];
+    if (!m[k]) delete m[k];
+    return renderOrderBody();
+  }
+  const ax = e.target.closest('[data-addx]');
+  if (ax) {
+    const [g, c] = ax.dataset.addx.split('|'), inp = ax.previousElementSibling, name = inp.value.trim().replace(/\s+/g, ' ');
+    if (!name) { inp.focus(); return; }
+    const k = 'x~' + name; oItems[g][c][k] = (oItems[g][c][k] || 0) + 1; renderOrderBody();
+  }
+});
+oBody.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-xg]')) { e.preventDefault(); e.target.nextElementSibling.click(); } });
+oform.addEventListener('submit', async e => {
+  if (!e.submitter || e.submitter.value !== 'ok') return;
+  e.preventDefault();
+  const bad = [];
+  for (const [g, n, , gl] of oGroups()) for (const c of F.courses) { const a = oSum(g, c.id); if (a !== n) bad.push(`${oB.kids ? gl + ' ' : ''}${c.zh}：${a} / ${n}`); }
+  if (bad.length) { document.getElementById('oMsg').textContent = '份数和人数对不上：' + bad.join('；'); return; }
+  const pend = oGroups().some(([g]) => F.courses.some(c => oItems[g][c.id][F.OTHER]));
+  if (pend && !confirm('还有“其他需求”没有改成具体的菜，后厨单上会显示为待确认。仍然保存吗？')) return;
+  const items = { adult: oItems.adult };
+  if (oB.kids) items.kid = oItems.kid;
+  try {
+    await API.saveOrderAsStaff(oB, items, oform.allergies.value, oform.comments.value, !oform.lock.checked);
+    oed.close(); toast('点餐已保存'); await load();
+  } catch (x) { document.getElementById('oMsg').textContent = '保存失败：' + x.message; }
+});
+
 // ---------- events ----------
 root.addEventListener('click', async e => {
   const el = e.target.closest('[data-day],[data-tab],[data-act],#add,#bulkBtn,#exportCsv,#lock,#logout,#resetDemo');
@@ -413,13 +535,19 @@ root.addEventListener('click', async e => {
   if (el.id === 'lock') {
     const locked = dayBookings().every(b => b.locked);
     if (!locked && !confirm('锁定后，这一天的客人不能再提交或修改点餐。确定截止吗？')) return;
-    await API.setLocked(state.day, !locked); toast(locked ? '已重新开放' : '已截止点餐'); return load();
+    const ids = dayBookings().filter(b => locked ? !staffEdited(b) : true).map(b => b.id);
+    await API.setLocked(ids, !locked); toast(locked ? '已重新开放（员工已确认的桌保持锁定）' : '已截止点餐'); return load();
   }
-  const id = el.closest('tr') && el.closest('tr').dataset.id, b = state.all.find(x => x.id === id);
+  const holder = el.closest('[data-id]'), id = holder && holder.dataset.id, b = state.all.find(x => x.id === id);
   if (!b) return;
   if (el.dataset.act === 'wa') { API.markSent(b.id).then(load).catch(() => {}); return; } // the link itself opens WhatsApp
   if (el.dataset.act === 'copy') { try { await navigator.clipboard.writeText(waText(b)); toast('已复制消息和链接，可以粘贴到 WhatsApp'); } catch { prompt('复制这个链接：', linkFor(b)); } return; }
   if (el.dataset.act === 'edit') return openBooking(b);
+  if (el.dataset.act === 'order') return openOrder(b);
+  if (el.dataset.act === 'unlock') {
+    if (!confirm(`解锁后，${b.name} 可以通过链接重新提交点餐，会覆盖员工的修改。确定解锁吗？`)) return;
+    await API.setLocked([b.id], false); toast('已解锁'); return load();
+  }
   if (el.dataset.act === 'del') {
     if (!confirm(`删除 ${b.name} 的订台${b.order ? '和已提交的点餐' : ''}？删除后不能恢复。`)) return;
     try { await API.deleteBooking(b.id); toast('已删除'); await load(); } catch (x) { alert('删除失败：' + x.message); }
@@ -432,7 +560,7 @@ root.addEventListener('input', e => {
   const q = document.getElementById('q'); q.focus(); q.setSelectionRange(pos, pos);
 });
 // Refresh when the tab regains focus (guests may have ordered meanwhile).
-document.addEventListener('visibilitychange', () => { if (!document.hidden && state.all.length && !dlg.open && !bulk.open) load(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state.all.length && !dlg.open && !bulk.open && !oed.open) load(); });
 
 (async () => { (await API.session()) ? load() : renderLogin(); })();
 })();

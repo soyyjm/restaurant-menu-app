@@ -106,6 +106,18 @@ await expect('rejects 1001-char allergies', () => submit(token, good, 'x'.repeat
 await expect('owner reads the order', () => as('authenticated', OWNER, 'select * from public.fiesta_orders'), okRows(1));
 await expect('intruder reads no orders', () => as('authenticated', INTRUDER, 'select * from public.fiesta_orders'), okRows(0));
 await expect('anon cannot call the check helper', () => as('anon', null, `select public.fiesta_check_group('{}', 0)`), denied);
+await expect('guest can pick the "otro" line', () => submit(token, { ...good, adult: { ...good.adult, primero: { sopa25: 2, otro: 1 } } }, 'La abuela no toma primero'),
+  (r, e) => !e && r.rows[0].j.order.items.adult.primero.otro === 1);
+await expect('owner upserts a staff-adjusted order (half, none, off-menu)', () => as('authenticated', OWNER,
+  `insert into public.fiesta_orders (booking_id, owner_id, items, adults, kids) values ($1, $2, $3, 3, 2)
+   on conflict (booking_id) do update set items = excluded.items returning items`,
+  [id, OWNER, JSON.stringify({ ...good, staff_at: '2026-12-01T10:00:00Z', adult: { ...good.adult, primero: { sopa25: 2, none: 1 }, segundo: { 'pula25~h': 1, pula25: 1, 'x~Verduras a la brasa': 1 } } })]),
+  (r, e) => !e && r.rows[0].items.adult.primero.none === 1);
+await expect('intruder cannot upsert into owner order', () => as('authenticated', INTRUDER,
+  `insert into public.fiesta_orders (booking_id, owner_id, items, adults, kids) values ($1, $2, '{}', 3, 2)
+   on conflict (booking_id) do update set items = excluded.items`, [id, INTRUDER]), (r, e) => !!e);
+await expect('guest sees staff lines (summary) via token', () => as('anon', null, 'select public.fiesta_booking($1) j', [token]),
+  (r, e) => !e && r.rows[0].j.order.items.staff_at && r.rows[0].j.order.items.adult.segundo['x~Verduras a la brasa'] === 1);
 await expect('owner can lock; guest sees open=false', async () => {
   await as('authenticated', OWNER, `update public.fiesta_bookings set locked=true where id='${id}'`);
   return as('anon', null, 'select public.fiesta_booking($1) j', [token]); },

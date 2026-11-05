@@ -105,7 +105,7 @@ window.FIESTAS = {
         postre: [
           { key: 'tort6', es: 'Mini tortell de Reyes', tags: ['firma'] },
           { key: 'brow6', es: 'Brownie con helado de vainilla' },
-          { key: 'sorm', es: 'Sorbete de mandarina' }
+          { key: 'sorm6', es: 'Sorbete de mandarina' }
         ]
       }
     }
@@ -136,3 +136,20 @@ window.FIESTAS.dishIndex = (() => {
   for (const c of window.FIESTAS.courses) for (const x of window.FIESTAS.kids[c.id]) idx[x.key] = x;
   return idx;
 })();
+
+// Special order lines (stored as keys next to normal dish keys, counted like dishes):
+//   otro        guest: "other request", described in the notes; staff resolves it
+//   none        staff: this diner skips the course
+//   <key>~h     staff: half portion of <key>
+//   x~<name>    staff: off-menu dish, free text
+window.FIESTAS.OTHER = 'otro';
+window.FIESTAS.line = key => {
+  const F = window.FIESTAS;
+  if (key === 'otro') return { kind: 'otro', es: 'Otra opción (a confirmar con el restaurante)', ca: 'Una altra opció (a confirmar amb el restaurant)', zh: '其他需求（待员工确认）' };
+  if (key === 'none') return { kind: 'none', es: 'Sin este plato', ca: 'Sense aquest plat', zh: '不要这道' };
+  if (key.startsWith('x~')) { const n = key.slice(2); return { kind: 'custom', es: n, ca: n, zh: n }; }
+  const half = key.endsWith('~h'), base = half ? key.slice(0, -2) : key, d = F.dishIndex[base];
+  const name = d ? d.es : base + ' (?)';
+  return half ? { kind: 'half', base, es: `½ ${name}`, ca: `½ ${name}`, zh: `½ ${name}（半份）` }
+              : { kind: 'dish', base, es: name, ca: name, zh: name, sup: d && d.sup };
+};
