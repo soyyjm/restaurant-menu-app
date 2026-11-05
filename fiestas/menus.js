@@ -153,3 +153,15 @@ window.FIESTAS.line = key => {
   return half ? { kind: 'half', base, es: `½ ${name}`, ca: `½ ${name}`, zh: `½ ${name}（半份）` }
               : { kind: 'dish', base, es: name, ca: name, zh: name, sup: d && d.sup };
 };
+
+// Pica-pica (shared starter): one plate per ~4 people, never ordered by guests.
+//   plates = round(people / 4) (0.5 rounds up, at least 1); people are spread as evenly as
+//   possible, bigger plates first: 5 → [5], 6 → [3,3], 7 → [4,3], 9 → [5,4], 10 → [4,3,3].
+//   Each item on a plate is `perPerson` pieces per person, so pieces of each item = people × perPerson.
+window.FIESTAS.picaRules = { countKids: true, perPerson: 1 };
+window.FIESTAS.picaPeople = b => b.adults + (window.FIESTAS.picaRules.countKids ? b.kids : 0);
+window.FIESTAS.picaSplit = n => {
+  if (n <= 0) return [];
+  const plates = Math.max(1, Math.floor(n / 4 + 0.5)), base = Math.floor(n / plates), extra = n % plates;
+  return Array.from({ length: plates }, (_, i) => base + (i < extra ? 1 : 0));
+};

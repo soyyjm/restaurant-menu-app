@@ -211,10 +211,11 @@ const TX = {
     persons: n => `共 ${n} 人`, half: n => `+ ${n} 个半份`, offMenu: '菜单外', none: '不要这道（不用做）', other: '其他需求，待员工确认',
     onlyDone: (d, p, n, list) => `⚠ 下面的数量只包括已点餐的 ${d} 桌。还有 ${p} 桌（${n} 人）没点餐：${list}`,
     pendTables: (n, list) => `⚠ 有 ${n} 桌选了“其他需求”，还需要员工确认后改成具体的菜（在订台名单点“改点餐”）：${list}`,
-    tableOf: t => `（${t} 号桌）`, sep: '、', pica: 'Pica-pica 分享拼盘', picaSets: '套（每桌按每 4 人 1 套计算，含全部订台）',
+    tableOf: t => `（${t} 号桌）`, sep: '、', pica: 'Pica-pica 分享拼盘', plates: '盘', plateOf: n => `${n} 人盘`, pieces: (n, pp) => `每种单品各 ${n} 个（每人 ${pp} 个，含全部订台）`, perTable: '每桌拆分',
+    picaRule: '规则：每桌盘数 = 人数 ÷ 4 四舍五入（至少 1 盘），人数平均分到各盘；每种单品每人 1 个。', picaTable: (n, sp) => `${n} 人 → ${sp}`, picaShort: sp => `Pica-pica ${sp.length} 盘（${sp.join('+')}）`,
     adultsMenu: n => `大人套餐 · ${n} 人`, kidsMenu: n => `儿童套餐 · ${n} 人`, allergiesT: n => `过敏 / 忌口 · ${n} 桌`, nothing: '暂无',
     tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
-    adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n, p) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人 · Pica-pica ${p} 套`,
+    adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n, p) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人 · ${p}`,
     allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
     noBookings: '这一天还没有订台。' },
   es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
@@ -222,10 +223,11 @@ const TX = {
     persons: n => `${n} personas`, half: n => `+ ${n} media${n === 1 ? '' : 's'} ración${n === 1 ? '' : 'es'}`, offMenu: 'fuera de carta', none: 'Sin este plato (no preparar)', other: 'Otra opción, pendiente de confirmar',
     onlyDone: (d, p, n, list) => `⚠ Las cantidades incluyen solo las ${d} mesas con pedido. Faltan ${p} mesas (${n} personas): ${list}`,
     pendTables: (n, list) => `⚠ ${n} mesa(s) con petición especial pendiente: ${list}`,
-    tableOf: t => ` (mesa ${t})`, sep: ', ', pica: 'Pica-pica para compartir', picaSets: 'tablas (1 por cada 4 personas, todas las reservas)',
+    tableOf: t => ` (mesa ${t})`, sep: ', ', pica: 'Pica-pica para compartir', plates: 'bandejas', plateOf: n => `de ${n} pers.`, pieces: (n, pp) => `De cada pieza: ${n} unidades (${pp} por persona, todas las reservas)`, perTable: 'Bandejas por mesa',
+    picaRule: 'Regla: bandejas por mesa = personas ÷ 4 redondeado (mínimo 1), repartiendo las personas por igual; 1 pieza de cada por persona.', picaTable: (n, sp) => `${n} pers. → ${sp}`, picaShort: sp => `Pica-pica: ${sp.length} bandeja${sp.length === 1 ? '' : 's'} (${sp.join('+')})`,
     adultsMenu: n => `Menú adultos · ${n} personas`, kidsMenu: n => `Menú infantil · ${n} niños`, allergiesT: n => `Alergias / intolerancias · ${n} mesa(s)`, nothing: 'Ninguna',
     tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
-    adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n, p) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas · Pica-pica: ${p}`,
+    adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n, p) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas · ${p}`,
     allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
     noBookings: 'No hay reservas para este día.' }
 };
@@ -242,7 +244,8 @@ const valid = b => b.order && b.order.adults === b.adults && b.order.kids === b.
 const dayBookings = () => state.all.filter(b => b.day === state.day)
   .sort((a, b) => (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
 const dishName = (k, lang = 'zh') => { const L = F.line(k); return lang === 'zh' && (L.kind === 'none' || L.kind === 'otro') ? L.zh : L.es; };
-const picaSets = b => Math.ceil((b.adults + b.kids) / 4);
+const picaSplitOf = b => F.picaSplit(F.picaPeople(b));
+const picaSets = b => picaSplitOf(b).length;
 function supTotal(b) {
   if (!valid(b)) return 0;
   let s = 0; for (const c of F.courses) for (const [k, n] of Object.entries((b.order.items.adult || {})[c.id] || {})) s += ((F.dishIndex[k] || {}).sup || 0) * n;
@@ -364,6 +367,20 @@ function courseBlock(title, list, counts, total, lang) {
   if (counts[F.OTHER]) h += `<div class="row"><span class="n pend-line">${counts[F.OTHER]}</span><span class="name pend-line">${T.other}</span></div>`;
   return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">${T.persons(total)}</span></h3>${h}</div>`;
 }
+// Pica-pica: plates by size, pieces of each item, and the split of every table.
+function picaCard(day, bs, T) {
+  const sizes = {}, people = bs.reduce((s, b) => s + F.picaPeople(b), 0), pp = F.picaRules.perPerson;
+  for (const b of bs) for (const n of picaSplitOf(b)) sizes[n] = (sizes[n] || 0) + 1;
+  const plates = Object.values(sizes).reduce((a, b) => a + b, 0);
+  const bySize = Object.keys(sizes).map(Number).sort((a, b) => b - a).map(n => `<span class="badge b-sent" style="font-size:13px">${T.plateOf(n)} × ${sizes[n]}</span>`).join(' ');
+  return `<div class="card"><h3>${T.pica}</h3>
+    <div class="row"><span class="n">${plates}</span><span class="name">${T.plates} &nbsp;${bySize}</span></div>
+    <div class="sub">${esc(T.pieces(people * pp, pp))}</div>
+    <ul class="kv">${day.pica.items.map(i => `<li><b>${people * pp}</b><span>× ${esc(i)}</span></li>`).join('')}</ul>
+    <div class="sub">${T.perTable}</div>
+    <ul class="kv">${bs.map(b => `<li><span>${b.table_no ? T.tablePrefix(esc(b.table_no)) : ''}${esc(b.name)} · ${T.picaTable(F.picaPeople(b), picaSplitOf(b).join(' + '))}</span></li>`).join('')}</ul>
+    <p class="muted" style="font-size:12px;margin:8px 0 0">${T.picaRule}</p></div>`;
+}
 const tableList = (bs, T) => bs.map(b => esc(b.name) + (b.table_no ? T.tableOf(esc(b.table_no)) : '')).join(T.sep);
 function viewKitchen(day, bs, lang = 'zh') {
   const T = TX[lang], done = bs.filter(valid), pending = bs.filter(b => !valid(b));
@@ -374,8 +391,7 @@ function viewKitchen(day, bs, lang = 'zh') {
   if (pending.length) h += `<div class="locked">${T.onlyDone(done.length, pending.length, pending.reduce((s, b) => s + b.adults + b.kids, 0), tableList(pending, T))}</div>`;
   if (pend.length) h += `<div class="locked">${T.pendTables(pend.length, tableList(pend, T))}</div>`;
   h += `<div class="grid">
-    <div class="card"><h3>${T.pica}</h3><div class="row"><span class="n">${bs.reduce((s, b) => s + picaSets(b), 0)}</span><span class="name">${T.picaSets}</span></div>
-      <ul class="kv" style="margin-top:6px">${day.pica.items.map(i => `<li>· ${esc(i)}</li>`).join('')}</ul></div>
+    ${picaCard(day, bs, T)}
     <div class="card"><h3>${T.adultsMenu(ad)}</h3>${F.courses.map(c => courseBlock(T.course(c), day.menu[c.id], ta[c.id], ad, lang)).join('')}</div>
     ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>${T.kidsMenu(kd)}</h3>${F.courses.map(c => courseBlock(T.course(c), F.kids[c.id], tk[c.id], kd, lang)).join('')}</div>` : ''}
     <div class="card"><h3>${T.allergiesT(allergies.length)}</h3>${allergies.length ? allergies.map(b => `<p style="margin:0 0 8px"><b>${b.table_no ? T.tablePrefix(esc(b.table_no)) : ''}${esc(b.name)}</b><br><span class="al">${esc(b.order.allergies)}</span></p>`).join('') : `<p class="muted">${T.nothing}</p>`}</div>
@@ -400,7 +416,7 @@ function viewTables(day, bs, lang = 'zh') {
   <div class="grid">${bs.map(b => {
     const [cls, label] = status(b, lang), sup = supTotal(b);
     return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
-      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids, picaSets(b))}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
+      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids, T.picaShort(picaSplitOf(b)))}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
       ${valid(b) ? `
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.adults}</div>` : ''}${orderList(b.order.items.adult, lang)}
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.kidsMenuShort}</div>${orderList(b.order.items.kid, lang)}` : ''}
@@ -427,10 +443,10 @@ function exportCsv() {
   const cols = [];
   for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
   for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
-  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
+  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica (bandejas)', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
   const rows = bs.map(b => {
     const v = valid(b);
-    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b, 'es')[1], picaSets(b),
+    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b, 'es')[1], `${picaSets(b)} (${picaSplitOf(b).join('+')})`,
       ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '', v ? specials(b) : '',
       v ? b.order.allergies || '' : '', v ? b.order.comments || '' : ''];
   });
