@@ -71,7 +71,7 @@ textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.08)}
 .bar .wrap{display:flex;gap:12px;align-items:center;padding:0}
 .bar .msg{flex:1;font-size:14px;color:var(--muted)}
-.btn{border:0;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:600 16px Jost;padding:13px 22px;cursor:pointer}
+.btn{text-decoration:none;display:inline-block;border:0;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:600 16px Jost;padding:13px 22px;cursor:pointer}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .center{text-align:center;padding:60px 16px;color:var(--muted)}
@@ -86,6 +86,22 @@ dialog{border:0;padding:0;border-radius:16px;max-width:min(92vw,560px);backgroun
 dialog::backdrop{background:rgba(0,0,0,.7)}
 dialog img{width:100%;display:block;border-radius:16px}
 dialog p{color:#fff;text-align:center;font:italic 500 20px "Cormorant Garamond",serif;margin:10px 0 0}
+.share-card{margin-top:18px;background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);border-left:4px solid var(--gold)}
+.share-card h3{margin:0 0 4px;font:600 20px "Cormorant Garamond",serif}
+.share-card p{margin:0 0 10px;font-size:14px;color:var(--muted)}
+.share-acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn.sm{font-size:14px;padding:9px 16px}
+.btn.wa{background:#1f9d55}
+.gl{margin:12px 0 0;padding:0;list-style:none}
+.gl li{padding:8px 0;border-top:1px dashed var(--line);font-size:14px}
+.gl b{font-weight:600}
+.gl .pk{color:var(--muted);font-size:13px;margin-top:2px}
+.who{background:var(--card);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);margin-top:18px}
+.who input{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.who input:focus{outline:2px solid var(--accent)}
+.who .pp{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.who small{display:block;color:var(--muted);font-size:12.5px;margin-top:8px}
+.linkbtn{all:unset;cursor:pointer;color:var(--accent);text-decoration:underline;font-size:14px}
 .demo{background:#ffd54a;color:#3a2c00;text-align:center;font-size:13px;padding:4px}
 </style>
 </head>
@@ -103,11 +119,11 @@ const T = {
   es: {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adulto' : 'adultos'}`, kids: n => `${n} ${n === 1 ? 'niño' : 'niños'}`,
     hello: n => `Hola, ${n}`,
-    intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.`,
+    intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.<br><span style="font-size:13px">Es un menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.</span>`,
     pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida: una tabla para cada 4 personas, con pan.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Alergias, intolerancias o peticiones especiales', allergiesPh: 'Ej.: una persona celíaca; la abuela no toma primer plato; media ración para un niño…',
-    other: 'Otra opción / petición especial', otherHint: 'No tomar este plato, media ración, alergias… Describidlo abajo y lo confirmaremos con vosotros.',
+    other: 'Otra opción / petición especial', otherHint: 'No tomar este plato, media ración, alergias… Describidlo abajo y lo confirmaremos con vosotros. El precio del menú no cambia.',
     needNote: 'Habéis elegido «otra opción»: contadnos qué necesitáis en el recuadro de peticiones especiales.',
     over: n => `Sobran ${n} ${n === 1 ? 'plato' : 'platos'}: revisad las cantidades`,
     comments: 'Comentarios (opcional)', commentsPh: 'Ej.: celebramos un cumpleaños',
@@ -119,16 +135,32 @@ const T = {
     invalidLink: 'Este enlace no es válido', invalidSub: 'Revisad el mensaje que os enviamos o contactad con el restaurante.',
     netErr: 'No hemos podido conectar. Revisad la conexión e intentadlo de nuevo.', invalidErr: 'Falta algún plato por elegir. Revisad la selección.',
     changed: 'El número de comensales de la reserva ha cambiado. Por favor, revisad y volved a enviar la elección.',
-    supNote: s => `Suplemento +${s} € por plato`, sup: s => `+${s} €`, sent: 'Enviado el', allergiesL: 'Alergias', commentsL: 'Comentarios'
+    supNote: s => `Suplemento +${s} € por plato`, sup: s => `+${s} €`, sent: 'Enviado el', allergiesL: 'Alergias', commentsL: 'Comentarios',
+    // host: share with the group
+    shareT: '¿Mesa grande? Que cada uno elija desde su móvil',
+    shareP: 'Enviad este enlace a las demás familias o amigos de la mesa. Cada uno elige sus platos y aquí veréis todas las elecciones; después solo tenéis que revisar y enviar el pedido.',
+    shareWa: 'Compartir por WhatsApp', copyLink: 'Copiar enlace', copied: 'Enlace copiado',
+    shareMsg: (d, f, l) => `¡Hola! Para la comida de ${d} en ${F.restaurant} (${f}), elige aquí tus platos y los de tu familia: ${l}`,
+    groupPicks: (a, n) => `Elecciones del grupo · ${a} de ${n} personas`, useGroup: 'Pasar estas elecciones al pedido', useGroupDone: 'Actualizar el pedido con el grupo',
+    groupNew: 'Hay elecciones nuevas del grupo desde vuestro último envío.', filled: 'Hemos rellenado el pedido con las elecciones del grupo. Revisadlo, completad lo que falte y enviadlo.',
+    // companion
+    groupOf: h => `Mesa de ${h}`, tablePax: n => `Mesa de ${n} personas`,
+    gIntro: h => `<b>${esc(h)}</b> os invita a elegir vuestros platos. Elegid para vosotros (por ejemplo, tu familia) y ${esc(h)} enviará el pedido de toda la mesa al restaurante.`,
+    yourName: 'Tu nombre', yourNamePh: 'Ej.: Marta (familia Soler)', forHowMany: '¿Para cuántas personas eliges?',
+    taken: (a, n, k, m) => `En el grupo ya han elegido ${a} de ${n} adultos${m ? ` y ${k} de ${m} niños` : ''}.`,
+    needName: 'Escribe tu nombre para enviar', gSend: 'Enviar mi elección',
+    gThanks: h => `¡Hecho! ${h} ya puede ver tu elección`, gThanksSub: 'Puedes cambiarla desde este mismo enlace, en este móvil, hasta que se cierre el pedido.',
+    gDelete: 'Borrar mi elección', gDeleteQ: '¿Borrar tu elección? (por ejemplo, si al final no venís)', gDeleted: 'Tu elección se ha borrado.',
+    gClosed: 'El pedido de esta mesa ya está cerrado', gClosedSub: h => `Para cualquier cambio, habla con ${h}.`, notesG: 'Alergias o peticiones especiales'
   },
   ca: {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adult' : 'adults'}`, kids: n => `${n} ${n === 1 ? 'nen' : 'nens'}`,
     hello: n => `Hola, ${n}`,
-    intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.`,
+    intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.<br><span style="font-size:13px">És un menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.</span>`,
     pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda: una taula per cada 4 persones, amb pa.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Al·lèrgies, intoleràncies o peticions especials', allergiesPh: 'Ex.: una persona celíaca; l’àvia no pren primer plat; mitja ració per a un nen…',
-    other: 'Una altra opció / petició especial', otherHint: 'No prendre aquest plat, mitja ració, al·lèrgies… Expliqueu-ho a sota i ho confirmarem amb vosaltres.',
+    other: 'Una altra opció / petició especial', otherHint: 'No prendre aquest plat, mitja ració, al·lèrgies… Expliqueu-ho a sota i ho confirmarem amb vosaltres. El preu del menú no canvia.',
     needNote: 'Heu triat «una altra opció»: expliqueu-nos què necessiteu al requadre de peticions especials.',
     over: n => `Sobren ${n} ${n === 1 ? 'plat' : 'plats'}: reviseu les quantitats`,
     comments: 'Comentaris (opcional)', commentsPh: 'Ex.: celebrem un aniversari',
@@ -140,7 +172,21 @@ const T = {
     invalidLink: 'Aquest enllaç no és vàlid', invalidSub: 'Reviseu el missatge que us vam enviar o contacteu amb el restaurant.',
     netErr: 'No hem pogut connectar. Reviseu la connexió i torneu-ho a provar.', invalidErr: 'Falta algun plat per triar. Reviseu la selecció.',
     changed: 'El nombre de comensals de la reserva ha canviat. Si us plau, reviseu i torneu a enviar la tria.',
-    supNote: s => `Suplement +${s} € per plat`, sup: s => `+${s} €`, sent: 'Enviat el', allergiesL: 'Al·lèrgies', commentsL: 'Comentaris'
+    supNote: s => `Suplement +${s} € per plat`, sup: s => `+${s} €`, sent: 'Enviat el', allergiesL: 'Al·lèrgies', commentsL: 'Comentaris',
+    shareT: 'Taula gran? Que cadascú triï des del seu mòbil',
+    shareP: 'Envieu aquest enllaç a les altres famílies o amics de la taula. Cadascú tria els seus plats i aquí veureu totes les tries; després només heu de revisar i enviar la comanda.',
+    shareWa: 'Compartir per WhatsApp', copyLink: 'Copiar l’enllaç', copied: 'Enllaç copiat',
+    shareMsg: (d, f, l) => `Hola! Per al dinar de ${d} a ${F.restaurant} (${f}), tria aquí els teus plats i els de la teva família: ${l}`,
+    groupPicks: (a, n) => `Tries del grup · ${a} de ${n} persones`, useGroup: 'Passar aquestes tries a la comanda', useGroupDone: 'Actualitzar la comanda amb el grup',
+    groupNew: 'Hi ha tries noves del grup des del vostre últim enviament.', filled: 'Hem omplert la comanda amb les tries del grup. Reviseu-la, completeu el que falti i envieu-la.',
+    groupOf: h => `Taula de ${h}`, tablePax: n => `Taula de ${n} persones`,
+    gIntro: h => `<b>${esc(h)}</b> us convida a triar els vostres plats. Trieu per a vosaltres (per exemple, la teva família) i ${esc(h)} enviarà la comanda de tota la taula al restaurant.`,
+    yourName: 'El teu nom', yourNamePh: 'Ex.: Marta (família Soler)', forHowMany: 'Per a quantes persones tries?',
+    taken: (a, n, k, m) => `Al grup ja han triat ${a} de ${n} adults${m ? ` i ${k} de ${m} nens` : ''}.`,
+    needName: 'Escriu el teu nom per enviar', gSend: 'Enviar la meva tria',
+    gThanks: h => `Fet! ${h} ja pot veure la teva tria`, gThanksSub: 'La pots canviar des d’aquest mateix enllaç, en aquest mòbil, fins que es tanqui la comanda.',
+    gDelete: 'Esborrar la meva tria', gDeleteQ: 'Esborrar la teva tria? (per exemple, si al final no veniu)', gDeleted: 'La teva tria s’ha esborrat.',
+    gClosed: 'La comanda d’aquesta taula ja està tancada', gClosedSub: h => `Per a qualsevol canvi, parla amb ${h}.`, notesG: 'Al·lèrgies o peticions especials'
   }
 };
 let lang = (() => { let s = null; try { s = localStorage.getItem('fiestas-lang'); } catch {} return s || ((navigator.language || '').startsWith('ca') ? 'ca' : 'es'); })();
@@ -150,9 +196,15 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const fmtDate = (iso, opts) => new Intl.DateTimeFormat(lang === 'ca' ? 'ca-ES' : 'es-ES', { timeZone: 'UTC', ...opts }).format(new Date(iso + 'T12:00:00Z'));
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const token = (location.pathname.match(/\/p\/([0-9a-f]{32})/) || [])[1] || new URLSearchParams(location.search).get('t') || '';
+const share = (location.pathname.match(/\/g\/([0-9a-f]{32})/) || [])[1] || new URLSearchParams(location.search).get('g') || '';
+const GM = !token && !!share;   // companion ("group") mode
+const mineKey = 'fiestas-g-' + share;
+const loadMine = () => { try { return JSON.parse(localStorage.getItem(mineKey)) || null; } catch { return null; } };
+const saveMine = v => { try { v ? localStorage.setItem(mineKey, JSON.stringify(v)) : localStorage.removeItem(mineKey); } catch {} };
 const app = document.getElementById('app');
 
-let B = null, day = null, sel = null, notes = { allergies: '', comments: '' }, mode = 'form', busy = false, error = '';
+let B = null, day = null, sel = null, notes = { allergies: '', comments: '' }, mode = 'form', busy = false, error = '', info = '';
+let G = null, me = null;   // group mode: group info and this companion's name / head count
 
 const groups = () => [['adult', B.adults, day.menu], ['kid', B.kids, F.kids]].filter(g => g[1] > 0);
 const sumC = (g, c) => Object.values(sel[g][c] || {}).reduce((a, b) => a + b, 0);
@@ -165,7 +217,26 @@ const courseList = (menu, c) => menu[c].concat([otherDish()]);
 const countCls = (a, n) => a === n ? ' done' : a > n ? ' over' : '';
 const emptySel = () => ({ adult: Object.fromEntries(F.courses.map(c => [c.id, {}])), kid: Object.fromEntries(F.courses.map(c => [c.id, {}])) });
 
+async function initGroup() {
+  const ref = loadMine();
+  try { G = await API.getGroup(share, ref && ref.id, ref && ref.key); }
+  catch (e) { return renderMsg(e.code === 'network' ? t().netErr : t().invalidLink, e.code === 'network' ? '' : t().invalidSub); }
+  day = F.dayOf(G.day);
+  if (!day) return renderMsg(t().invalidLink, t().invalidSub);
+  document.documentElement.dataset.themeDay = day.theme;
+  const m = G.mine;
+  if (!m && ref) saveMine(null);
+  me = { name: m ? m.name : '', adults: m ? m.adults : Math.min(1, G.adults), kids: m ? m.kids : 0 };
+  B = { day: G.day, name: G.host, adults: me.adults, kids: me.kids, open: G.open,
+        order: m ? { items: m.items, adults: m.adults, kids: m.kids, submitted_at: m.updated_at } : null };
+  sel = emptySel();
+  if (m) { for (const g of ['adult', 'kid']) for (const c of F.courses) sel[g][c.id] = { ...((m.items[g] || {})[c.id] || {}) }; notes.allergies = m.notes || ''; }
+  mode = !G.open ? 'closed' : m ? 'done' : 'form';
+  render();
+}
+
 async function init() {
+  if (GM) return initGroup();
   try {
     B = await API.getBooking(token);
   } catch (e) {
@@ -201,8 +272,8 @@ function header() {
       <div class="brand">${esc(F.restaurant)}</div>
       <h1>${t().menu} ${esc(name)}</h1>
       <div class="date">${cap(fmtDate(day.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}</div>
-      <div class="hello">${esc(t().hello(B.name))}</div>
-      <div class="pax"><span>${t().adults(B.adults)}</span>${B.kids ? `<span>${t().kids(B.kids)}</span>` : ''}</div>
+      <div class="hello">${esc(GM ? t().groupOf(G.host) : t().hello(B.name))}</div>
+      <div class="pax">${GM ? `<span>${t().tablePax(G.adults + G.kids)}</span>` : `<span>${t().adults(B.adults)}</span>${B.kids ? `<span>${t().kids(B.kids)}</span>` : ''}`}</div>
     </div>
   </header>`;
 }
@@ -229,8 +300,11 @@ function dishRow(g, n, c, d) {
 function renderForm() {
   const p = day.pica;
   let h = header() + `<main class="wrap">
-    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), day.price, B.kids ? day.kidsPrice : 0)}</p>
+    ${GM ? `<p class="note">${t().gIntro(G.host)}</p>` : ''}
+    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), day.price, (GM ? G.kids : B.kids) ? day.kidsPrice : 0)}</p>
     ${error ? `<p class="note" style="color:var(--warn)">${esc(error)}</p>` : ''}
+    ${info ? `<p class="note" style="color:var(--ok)">${esc(info)}</p>` : ''}
+    ${GM ? whoBlock() : shareCard(false)}
     <section><div class="sec-head"><h2>${t().pica}</h2></div>
       <div class="pica"><img src="/fiestas/img/${esc(p.key)}.jpg" alt="" data-zoom="${esc(p.key)}" style="cursor:zoom-in" onerror="this.remove()"><div><p>${t().picaNote}</p><ul>${p.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></div></div>
     </section>`;
@@ -242,23 +316,67 @@ function renderForm() {
         ${courseList(menu, c.id).map(d => dishRow(g, n, c.id, d)).join('')}</section>`;
     }
   }
-  h += `<section><label class="f" for="al">${t().allergies}</label>
-      <textarea id="al" maxlength="1000" class="${needNote() ? 'need' : ''}" placeholder="${esc(t().allergiesPh)}">${esc(notes.allergies)}</textarea></section>
-    <section><label class="f" for="co">${t().comments}</label>
-      <textarea id="co" maxlength="1000" placeholder="${esc(t().commentsPh)}">${esc(notes.comments)}</textarea></section>
+  h += `<section><label class="f" for="al">${GM ? t().notesG : t().allergies}</label>
+      <textarea id="al" maxlength="${GM ? 500 : 1000}" class="${needNote() ? 'need' : ''}" placeholder="${esc(t().allergiesPh)}">${esc(notes.allergies)}</textarea></section>
+    ${GM ? '' : `<section><label class="f" for="co">${t().comments}</label>
+      <textarea id="co" maxlength="1000" placeholder="${esc(t().commentsPh)}">${esc(notes.comments)}</textarea></section>`}
     </main>
     <div class="bar"><div class="wrap"><div class="msg" id="msg"></div><button class="btn" id="send"></button></div></div>`;
   app.innerHTML = h;
   updateBar();
 }
 
+function whoBlock() {
+  const step = (id, v, min, max) => `<div class="step"><button type="button" data-who="${id}" data-d="-1" ${v <= min ? 'disabled' : ''}>−</button><output>${v}</output><button type="button" class="plus" data-who="${id}" data-d="1" ${v >= max ? 'disabled' : ''}>+</button></div>`;
+  return `<div class="who">
+    <label class="f" for="nm">${t().yourName}</label><input id="nm" maxlength="60" autocomplete="name" placeholder="${esc(t().yourNamePh)}" value="${esc(me.name)}">
+    <label class="f" style="margin-top:14px">${t().forHowMany}</label>
+    <div class="pp"><span>${lang === 'ca' ? 'Adults' : 'Adultos'}</span>${step('adults', me.adults, me.kids ? 0 : 1, G.adults)}</div>
+    ${G.kids ? `<div class="pp"><span>${t().kidsMenu}</span>${step('kids', me.kids, me.adults ? 0 : 1, G.kids)}</div>` : ''}
+    <small>${esc(t().taken(G.taken_adults, G.adults, G.taken_kids, G.kids))}</small>
+  </div>`;
+}
+
+const shareLink = () => API.demo ? `${location.origin}/pedido.html?demo&g=${B.share_token}` : `${location.origin}/g/${B.share_token}`;
+function picksText(items) {
+  return ['adult', 'kid'].map(g => F.courses.map(c => Object.entries(((items[g] || {})[c.id]) || {})
+    .map(([k, n]) => `${n}× ${F.line(k)[lang]}`).join(', ')).filter(Boolean).join(' · ')).filter(Boolean).join(' · ');
+}
+function shareCard(inDone) {
+  if (GM || !B.share_token || !B.open) return '';
+  const sh = B.shares || [], pax = B.adults + B.kids;
+  if (pax < 6 && !sh.length) return '';
+  const got = sh.reduce((a, x) => a + x.adults + x.kids, 0);
+  const fresh = B.order && sh.some(x => x.updated_at > B.order.submitted_at);
+  const msg = t().shareMsg(lang === 'ca' ? day.ca : day.name, fmtDate(day.date, { weekday: 'long', day: 'numeric', month: 'long' }), shareLink());
+  return `<div class="share-card">
+    <h3>${t().shareT}</h3><p>${t().shareP}</p>
+    <div class="share-acts"><a class="btn sm wa" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${t().shareWa}</a>
+      <button type="button" class="btn sm ghost" id="copyG">${t().copyLink}</button></div>
+    ${sh.length ? `<h3 style="font-size:18px;margin-top:16px">${t().groupPicks(got, pax)}</h3>
+      ${fresh ? `<p style="color:var(--warn);margin:4px 0 0">${t().groupNew}</p>` : ''}
+      <ul class="gl">${sh.map(x => `<li><b>${esc(x.name)}</b> · ${t().adults(x.adults)}${x.kids ? `, ${t().kids(x.kids)}` : ''}
+        <div class="pk">${esc(picksText(x.items))}</div>${x.notes ? `<div class="pk" style="color:var(--warn)">${esc(x.notes)}</div>` : ''}</li>`).join('')}</ul>
+      <p style="margin:12px 0 0"><button type="button" class="btn sm" id="useGroup">${inDone ? t().useGroupDone : t().useGroup}</button></p>` : ''}
+  </div>`;
+}
+function fillFromGroup() {
+  sel = emptySel();
+  for (const x of B.shares || []) for (const g of ['adult', 'kid']) for (const c of F.courses)
+    for (const [k, n] of Object.entries(((x.items[g] || {})[c.id]) || {})) sel[g][c.id][k] = (sel[g][c.id][k] || 0) + n;
+  const lines = (B.shares || []).filter(x => x.notes).map(x => `${x.name}: ${x.notes}`).filter(l => !notes.allergies.includes(l));
+  if (lines.length) notes.allergies = [notes.allergies.trim(), ...lines].filter(Boolean).join('\n');
+  mode = 'form'; error = ''; info = t().filled; render(); window.scrollTo(0, 0);
+}
+
 function updateBar() {
-  const m = missing(), o = overBy(), nn = needNote(), msg = document.getElementById('msg'), btn = document.getElementById('send');
+  const m = missing(), o = overBy(), nn = needNote(), noName = GM && !me.name.trim(), msg = document.getElementById('msg'), btn = document.getElementById('send');
   if (!msg) return;
   msg.innerHTML = busy ? '' : o ? `<span style="color:var(--warn)">${esc(t().over(o))}</span>` : m ? esc(t().missing(m))
-    : nn ? `<span style="color:var(--warn)">${esc(t().needNote)}</span>` : `<span style="color:var(--ok);font-weight:600">${t().ready}</span>`;
-  btn.textContent = busy ? t().sending : B.order ? t().resend : t().send;
-  btn.disabled = busy || m > 0 || o > 0 || nn;
+    : nn ? `<span style="color:var(--warn)">${esc(t().needNote)}</span>` : noName ? `<span style="color:var(--warn)">${esc(t().needName)}</span>`
+    : `<span style="color:var(--ok);font-weight:600">${t().ready}</span>`;
+  btn.textContent = busy ? t().sending : B.order ? t().resend : GM ? t().gSend : t().send;
+  btn.disabled = busy || m > 0 || o > 0 || nn || noName;
   const al = document.getElementById('al'); if (al) al.classList.toggle('need', nn);
 }
 
@@ -280,16 +398,23 @@ function summary() {
 function renderDone() {
   const at = B.order && B.order.submitted_at ? new Date(B.order.submitted_at).toLocaleString(lang === 'ca' ? 'ca-ES' : 'es-ES', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '';
   app.innerHTML = header() + `<main class="wrap"><div class="done-card">
-    <h2>${t().thanks}</h2><p style="color:var(--muted);margin:6px 0 0">${t().thanksSub}</p>
+    <h2>${GM ? esc(t().gThanks(G.host)) : t().thanks}</h2><p style="color:var(--muted);margin:6px 0 0">${GM ? t().gThanksSub : t().thanksSub}</p>
     ${at ? `<p style="font-size:13px;color:var(--muted)">${t().sent} ${esc(at)}</p>` : ''}
+    ${GM ? `<p style="margin:10px 0 0"><b>${esc(me.name)}</b> · ${t().adults(me.adults)}${me.kids ? `, ${t().kids(me.kids)}` : ''}</p>` : ''}
     ${summary()}
     <p style="text-align:center;margin:22px 0 4px"><button class="btn ghost" id="edit">${t().edit}</button></p>
-  </div></main>`;
+    ${GM ? `<p style="text-align:center;margin:8px 0 0"><button class="linkbtn" id="gdel">${t().gDelete}</button></p>` : ''}
+  </div>${shareCard(true)}</main>`;
   document.body.style.paddingBottom = '40px';
 }
 
 function renderClosed() {
   const has = B.order && B.order.adults === B.adults && B.order.kids === B.kids;
+  if (GM) {
+    app.innerHTML = header() + `<main class="wrap"><div class="done-card"><h2 style="color:var(--ink)">${t().gClosed}</h2>
+      <p style="color:var(--muted);margin:6px 0 0">${esc(t().gClosedSub(G.host))}</p>${has ? summary() : ''}</div></main>`;
+    document.body.style.paddingBottom = '40px'; return;
+  }
   app.innerHTML = header() + `<main class="wrap"><div class="done-card">
     ${has && B.order.items.staff_at ? `<h2>${t().confirmed}</h2><p style="color:var(--muted);margin:6px 0 0">${t().confirmedSub}</p>`
       : `<h2 style="color:var(--ink)">${t().closed}</h2><p style="color:var(--muted);margin:6px 0 0">${has ? t().closedSub : t().noOrderClosed}</p>`}
@@ -359,20 +484,49 @@ app.addEventListener('click', async e => {
     mode = 'form'; error = ''; render(); window.scrollTo(0, 0); return;
   }
   if (e.target.id === 'send') return send();
+  const wb = e.target.closest('[data-who]');
+  if (wb) {
+    const f = wb.dataset.who, max = f === 'adults' ? G.adults : G.kids;
+    me[f] = Math.max(0, Math.min(max, me[f] + Number(wb.dataset.d)));
+    if (me.adults + me.kids < 1) me[f] = 1;
+    B.adults = me.adults; B.kids = me.kids;
+    const y = window.scrollY; render(); window.scrollTo(0, y); return;
+  }
+  if (e.target.id === 'copyG') {
+    try { await navigator.clipboard.writeText(shareLink()); e.target.textContent = t().copied; } catch { prompt(t().copyLink, shareLink()); }
+    return;
+  }
+  if (e.target.id === 'useGroup') return fillFromGroup();
+  if (e.target.id === 'gdel') {
+    if (!confirm(t().gDeleteQ)) return;
+    const ref = loadMine();
+    try { if (ref) await API.deleteGroup(share, ref.id, ref.key); } catch (err) { if (err.code === 'closed') { mode = 'closed'; return render(); } return alert(t().netErr); }
+    saveMine(null); return renderMsg(t().gDeleted, '');
+  }
 });
 app.addEventListener('input', e => {
   if (e.target.id === 'al') { notes.allergies = e.target.value; updateBar(); }
   if (e.target.id === 'co') notes.comments = e.target.value;
+  if (e.target.id === 'nm') { me.name = e.target.value; updateBar(); }
 });
 
 async function send() {
   if (busy || missing() || overBy() || needNote()) return;
   busy = true; updateBar();
-  const items = { adult: sel.adult };
+  if (GM && !me.name.trim()) return;
+  const items = {};
+  if (B.adults) items.adult = sel.adult;
   if (B.kids) items.kid = sel.kid;
   try {
+    if (GM) {
+      const ref = loadMine();
+      const r = await API.submitGroup(share, ref && ref.id, ref && ref.key, me.name, me.adults, me.kids, items, notes.allergies);
+      saveMine({ id: r.id, key: r.key });
+      B.order = { items, adults: me.adults, kids: me.kids, submitted_at: new Date().toISOString() };
+      busy = false; error = ''; mode = 'done'; render(); window.scrollTo(0, 0); return;
+    }
     B = await API.submitOrder(token, items, notes.allergies, notes.comments);
-    busy = false; error = ''; mode = 'done'; render(); window.scrollTo(0, 0);
+    busy = false; error = ''; info = ''; mode = 'done'; render(); window.scrollTo(0, 0);
   } catch (err) {
     busy = false;
     if (err.code === 'closed') { B.open = false; mode = 'closed'; return render(); }

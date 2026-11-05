@@ -108,6 +108,8 @@ dialog h2{margin:0 0 12px;font-size:17px}
   .print-title{display:block!important;font-size:18px;font-weight:600;margin-bottom:8px}
 }
 .print-title{display:none}
+.print-only{display:none}
+@media print{.screen-only{display:none!important}.print-only{display:block!important}}
 dialog.wide{width:min(760px,96vw)}
 .oc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .oc.bad{border-color:var(--warn)}
@@ -201,18 +203,44 @@ function waText(b) {
 }
 const pendingOther = b => !!b.order && ['adult', 'kid'].some(g => F.courses.some(c => (((b.order.items[g] || {})[c.id]) || {})[F.OTHER]));
 const staffEdited = b => !!(b.order && b.order.items.staff_at);
-const status = b => {
-  if (b.order && (b.order.adults !== b.adults || b.order.kids !== b.kids)) return ['warn', '人数已变，需重填'];
-  if (pendingOther(b)) return ['warn', '有特殊需求待处理'];
-  if (staffEdited(b)) return ['ok', '员工已确认'];
-  if (b.order) return ['ok', '已点餐'];
-  if (b.sent_at) return ['sent', '已发送，未回复'];
-  return ['new', '未发送'];
+// Screen texts are Chinese; printouts and Excel are Spanish (kitchen and floor staff read Spanish).
+const TX = {
+  zh: { changed: '人数已变，需重填', pend: '有特殊需求待处理', staff: '员工已确认', ordered: '已点餐', sent: '已发送，未回复', fresh: '未发送',
+    tables: '订台（家庭）', people: (a, k) => `总人数：大人 ${a} · 小孩 ${k}`, sentN: '已发送菜单', doneN: n => `已点餐（${n} 人）`, notYet: '还没点餐',
+    persons: n => `共 ${n} 人`, half: n => `+ ${n} 个半份`, offMenu: '菜单外', none: '不要这道（不用做）', other: '其他需求，待员工确认',
+    onlyDone: (d, p, n, list) => `⚠ 下面的数量只包括已点餐的 ${d} 桌。还有 ${p} 桌（${n} 人）没点餐：${list}`,
+    pendTables: (n, list) => `⚠ 有 ${n} 桌选了“其他需求”，还需要员工确认后改成具体的菜（在订台名单点“改点餐”）：${list}`,
+    tableOf: t => `（${t} 号桌）`, sep: '、', pica: 'Pica-pica 分享拼盘', picaSets: '套（每桌按每 4 人 1 套计算，含全部订台）',
+    adultsMenu: n => `大人套餐 · ${n} 人`, kidsMenu: n => `儿童套餐 · ${n} 人`, allergiesT: n => `过敏 / 忌口 · ${n} 桌`, nothing: '暂无',
+    tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
+    adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n, p) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人 · Pica-pica ${p} 套`,
+    allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
+    noBookings: '这一天还没有订台。', byPerson: '按人（来自客人分享的点餐链接，仅供上菜参考）', kidShort: '童' },
+  es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
+    tables: 'Reservas', people: (a, k) => `Personas: ${a} adultos · ${k} niños`, sentN: 'Menús enviados', doneN: n => `Con pedido (${n} pers.)`, notYet: 'Sin pedido',
+    persons: n => `${n} personas`, half: n => `+ ${n} media${n === 1 ? '' : 's'} ración${n === 1 ? '' : 'es'}`, offMenu: 'fuera de carta', none: 'Sin este plato (no preparar)', other: 'Otra opción, pendiente de confirmar',
+    onlyDone: (d, p, n, list) => `⚠ Las cantidades incluyen solo las ${d} mesas con pedido. Faltan ${p} mesas (${n} personas): ${list}`,
+    pendTables: (n, list) => `⚠ ${n} mesa(s) con petición especial pendiente: ${list}`,
+    tableOf: t => ` (mesa ${t})`, sep: ', ', pica: 'Pica-pica para compartir', picaSets: 'tablas (1 por cada 4 personas, todas las reservas)',
+    adultsMenu: n => `Menú adultos · ${n} personas`, kidsMenu: n => `Menú infantil · ${n} niños`, allergiesT: n => `Alergias / intolerancias · ${n} mesa(s)`, nothing: 'Ninguna',
+    tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
+    adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n, p) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas · Pica-pica: ${p}`,
+    allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
+    noBookings: 'No hay reservas para este día.', byPerson: 'Por persona (según el enlace de grupo, orientativo)', kidShort: 'niños' }
+};
+const status = (b, lang = 'zh') => {
+  const T = TX[lang];
+  if (b.order && (b.order.adults !== b.adults || b.order.kids !== b.kids)) return ['warn', T.changed];
+  if (pendingOther(b)) return ['warn', T.pend];
+  if (staffEdited(b)) return ['ok', T.staff];
+  if (b.order) return ['ok', T.ordered];
+  if (b.sent_at) return ['sent', T.sent];
+  return ['new', T.fresh];
 };
 const valid = b => b.order && b.order.adults === b.adults && b.order.kids === b.kids;
 const dayBookings = () => state.all.filter(b => b.day === state.day)
   .sort((a, b) => (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
-const dishName = k => { const L = F.line(k); return L.kind === 'none' || L.kind === 'otro' ? L.zh : L.es; };
+const dishName = (k, lang = 'zh') => { const L = F.line(k); return lang === 'zh' && (L.kind === 'none' || L.kind === 'otro') ? L.zh : L.es; };
 const picaSets = b => Math.ceil((b.adults + b.kids) / 4);
 function supTotal(b) {
   if (!valid(b)) return 0;
@@ -257,22 +285,24 @@ function render() {
         ${API.demo ? '<button class="btn sm" id="resetDemo">重置演示数据</button>' : '<button class="btn sm" id="logout">退出</button>'}</div>
       <div class="days" role="tablist">${daysHtml}</div></div></header>
     <main class="wrap"><div class="tabs" role="tablist">${tabs}</div>
-      <div class="print-title">${esc(F.restaurant)} · ${esc(day.name)} ${fmtDay(day.date, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-      ${bs.length && bs.every(b => b.locked) ? `<div class="locked">这一天已截止点餐：客人打开链接只能查看，不能再修改。</div>` : ''}
+      <div class="print-title">${esc(F.restaurant)} · ${esc(day.name)} · ${fmtEs(day.date, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · ${state.tab === 'kitchen' ? 'Resumen de cocina' : 'Detalle por mesa'}</div>
+      ${bs.length && bs.every(b => b.locked) ? `<div class="locked noprint">这一天已截止点餐：客人打开链接只能查看，不能再修改。</div>` : ''}
       <div id="view"></div></main>`;
   const v = document.getElementById('view');
-  v.innerHTML = state.tab === 'list' ? viewList(day, bs) : state.tab === 'kitchen' ? viewKitchen(day, bs) : viewTables(day, bs);
+  const view = state.tab === 'kitchen' ? viewKitchen : viewTables;
+  v.innerHTML = state.tab === 'list' ? viewList(day, bs)
+    : `<div class="screen-only">${view(day, bs, 'zh')}</div><div class="print-only">${view(day, bs, 'es')}</div>`;
 }
 
-function statsHtml(bs) {
-  const a = bs.reduce((s, b) => s + b.adults, 0), k = bs.reduce((s, b) => s + b.kids, 0);
+function statsHtml(bs, lang = 'zh') {
+  const T = TX[lang], a = bs.reduce((s, b) => s + b.adults, 0), k = bs.reduce((s, b) => s + b.kids, 0);
   const done = bs.filter(valid), sent = bs.filter(b => b.sent_at || b.order);
   return `<div class="stats">
-    <div class="stat"><div class="v">${bs.length}</div><div class="l">订台（家庭）</div></div>
-    <div class="stat"><div class="v">${a + k}</div><div class="l">总人数：大人 ${a} · 小孩 ${k}</div></div>
-    <div class="stat"><div class="v">${sent.length}</div><div class="l">已发送菜单</div></div>
-    <div class="stat"><div class="v" style="color:var(--ok)">${done.length}</div><div class="l">已点餐（${done.reduce((s, b) => s + b.adults + b.kids, 0)} 人）</div></div>
-    <div class="stat"><div class="v" style="color:${bs.length - done.length ? 'var(--warn)' : 'inherit'}">${bs.length - done.length}</div><div class="l">还没点餐</div></div>
+    <div class="stat"><div class="v">${bs.length}</div><div class="l">${T.tables}</div></div>
+    <div class="stat"><div class="v">${a + k}</div><div class="l">${T.people(a, k)}</div></div>
+    ${lang === 'zh' ? `<div class="stat"><div class="v">${sent.length}</div><div class="l">${T.sentN}</div></div>` : ''}
+    <div class="stat"><div class="v" style="color:var(--ok)">${done.length}</div><div class="l">${T.doneN(done.reduce((s, b) => s + b.adults + b.kids, 0))}</div></div>
+    <div class="stat"><div class="v" style="color:${bs.length - done.length ? 'var(--warn)' : 'inherit'}">${bs.length - done.length}</div><div class="l">${T.notYet}</div></div>
   </div>`;
 }
 
@@ -286,7 +316,7 @@ function viewList(day, bs) {
       <td><b>${esc(b.name)}</b>${b.notes ? `<div class="muted" style="font-size:12.5px">${esc(b.notes)}</div>` : ''}${b.order && b.order.allergies ? `<div class="al" style="font-size:12.5px">⚠ ${esc(b.order.allergies)}</div>` : ''}</td>
       <td class="hide-m">${esc(b.phone || '')}</td>
       <td class="num">${b.adults}${b.kids ? ` + ${b.kids}<span class="muted">童</span>` : ''}</td>
-      <td><span class="badge b-${cls}">${label}</span>${b.locked ? ' <span title="已锁定，客人不能再改">🔒</span>' : ''}${b.order ? `<div class="muted" style="font-size:11.5px">${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
+      <td><span class="badge b-${cls}">${label}</span>${!b.order && (b.shares || []).length ? `<div class="muted" style="font-size:11.5px">分享链接 ${b.shares.reduce((a, x) => a + x.adults + x.kids, 0)} / ${b.adults + b.kids} 人已选</div>` : ''}${b.locked ? ' <span title="已锁定，客人不能再改">🔒</span>' : ''}${b.order ? `<div class="muted" style="font-size:11.5px">${(b.shares || []).length ? `分享链接 ${b.shares.reduce((a, x) => a + x.adults + x.kids, 0)} 人已选 · ` : ''}${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
       <td><div class="acts">
         ${ph ? `<a class="btn sm${b.order ? '' : ' wa'}" data-act="wa" href="https://wa.me/${ph}?text=${encodeURIComponent(waText(b))}" target="_blank" rel="noopener">${b.sent_at ? '再发' : '发送'} WhatsApp</a>` : `<span class="muted" style="font-size:12px">无有效电话</span>`}
         <button class="btn sm" data-act="copy" title="复制客人链接">复制链接</button>
@@ -318,64 +348,78 @@ function tally(bs, group) {
     for (const [k, n] of Object.entries(((b.order.items[group] || {})[c.id]) || {})) t[c.id][k] = (t[c.id][k] || 0) + n;
   return t;
 }
-function courseBlock(title, list, counts, total) {
-  const amount = d => (counts[d.key] || 0) + (counts[d.key + '~h'] || 0) / 2;
+function courseBlock(title, list, counts, total, lang) {
+  const T = TX[lang], amount = d => (counts[d.key] || 0) + (counts[d.key + '~h'] || 0) / 2;
   const max = Math.max(1, ...list.map(amount));
   const custom = Object.keys(counts).filter(k => k.startsWith('x~') || (!F.dishIndex[k.replace(/~h$/, '')] && k !== 'none' && k !== F.OTHER));
   let h = list.map(d => {
     const n = counts[d.key] || 0, half = counts[d.key + '~h'] || 0;
-    return `<div class="row"><span class="n">${n}</span><span class="name">${esc(d.es)}${d.sup ? ` <span class="badge b-warn">+${d.sup}€</span>` : ''}${half ? ` <span class="badge b-sent">+ ${half} 个半份</span>` : ''}<div class="bar" style="width:${amount(d) / max * 100}%"></div></span></div>`;
+    return `<div class="row"><span class="n">${n}</span><span class="name">${esc(d.es)}${d.sup ? ` <span class="badge b-warn">+${d.sup}€</span>` : ''}${half ? ` <span class="badge b-sent">${T.half(half)}</span>` : ''}<div class="bar" style="width:${amount(d) / max * 100}%"></div></span></div>`;
   }).join('');
-  h += custom.map(k => `<div class="row"><span class="n">${counts[k]}</span><span class="name">${esc(F.line(k).es)} <span class="badge b-sent">菜单外</span></span></div>`).join('');
-  if (counts.none) h += `<div class="row"><span class="n muted">${counts.none}</span><span class="name muted">不要这道（不用做）</span></div>`;
-  if (counts[F.OTHER]) h += `<div class="row"><span class="n pend-line">${counts[F.OTHER]}</span><span class="name pend-line">其他需求，待员工确认</span></div>`;
-  return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">共 ${total} 人</span></h3>${h}</div>`;
+  h += custom.map(k => `<div class="row"><span class="n">${counts[k]}</span><span class="name">${esc(F.line(k).es)} <span class="badge b-sent">${T.offMenu}</span></span></div>`).join('');
+  if (counts.none) h += `<div class="row"><span class="n muted">${counts.none}</span><span class="name muted">${T.none}</span></div>`;
+  if (counts[F.OTHER]) h += `<div class="row"><span class="n pend-line">${counts[F.OTHER]}</span><span class="name pend-line">${T.other}</span></div>`;
+  return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">${T.persons(total)}</span></h3>${h}</div>`;
 }
-function viewKitchen(day, bs) {
-  const done = bs.filter(valid), pending = bs.filter(b => !valid(b));
+const tableList = (bs, T) => bs.map(b => esc(b.name) + (b.table_no ? T.tableOf(esc(b.table_no)) : '')).join(T.sep);
+function viewKitchen(day, bs, lang = 'zh') {
+  const T = TX[lang], done = bs.filter(valid), pending = bs.filter(b => !valid(b));
   const ta = tally(bs, 'adult'), tk = tally(bs, 'kid');
   const ad = done.reduce((s, b) => s + b.adults, 0), kd = done.reduce((s, b) => s + b.kids, 0);
   const allergies = done.filter(b => b.order.allergies), pend = done.filter(pendingOther);
-  let h = statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印后厨单</button><button class="btn" id="exportCsv">导出 Excel</button></div>`;
-  if (pending.length) h += `<div class="locked">⚠ 下面的数量只包括已点餐的 ${done.length} 桌。还有 ${pending.length} 桌（${pending.reduce((s, b) => s + b.adults + b.kids, 0)} 人）没点餐：${pending.map(b => esc(b.name) + (b.table_no ? `（${esc(b.table_no)} 号桌）` : '')).join('、')}</div>`;
-  if (pend.length) h += `<div class="locked">⚠ 有 ${pend.length} 桌选了“其他需求”，还需要员工确认后改成具体的菜（在订台名单点“改点餐”）：${pend.map(b => esc(b.name) + (b.table_no ? `（${esc(b.table_no)} 号桌）` : '')).join('、')}</div>`;
+  let h = statsHtml(bs, lang) + (lang === 'zh' ? `<div class="tools noprint"><button class="btn primary" onclick="print()">打印后厨单（西班牙语）</button><button class="btn" id="exportCsv">导出 Excel（西班牙语）</button></div>` : '');
+  if (pending.length) h += `<div class="locked">${T.onlyDone(done.length, pending.length, pending.reduce((s, b) => s + b.adults + b.kids, 0), tableList(pending, T))}</div>`;
+  if (pend.length) h += `<div class="locked">${T.pendTables(pend.length, tableList(pend, T))}</div>`;
   h += `<div class="grid">
-    <div class="card"><h3>Pica-pica 分享拼盘</h3><div class="row"><span class="n">${bs.reduce((s, b) => s + picaSets(b), 0)}</span><span class="name">套（每桌按每 4 人 1 套计算，含全部订台）</span></div>
+    <div class="card"><h3>${T.pica}</h3><div class="row"><span class="n">${bs.reduce((s, b) => s + picaSets(b), 0)}</span><span class="name">${T.picaSets}</span></div>
       <ul class="kv" style="margin-top:6px">${day.pica.items.map(i => `<li>· ${esc(i)}</li>`).join('')}</ul></div>
-    <div class="card"><h3>大人套餐 · ${ad} 人</h3>${F.courses.map(c => courseBlock(`${c.zh} ${c.es}`, day.menu[c.id], ta[c.id], ad)).join('')}</div>
-    ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>儿童套餐 · ${kd} 人</h3>${F.courses.map(c => courseBlock(`${c.zh} ${c.es}`, F.kids[c.id], tk[c.id], kd)).join('')}</div>` : ''}
-    <div class="card"><h3>过敏 / 忌口 · ${allergies.length} 桌</h3>${allergies.length ? allergies.map(b => `<p style="margin:0 0 8px"><b>${b.table_no ? esc(b.table_no) + ' 号桌 · ' : ''}${esc(b.name)}</b><br><span class="al">${esc(b.order.allergies)}</span></p>`).join('') : '<p class="muted">暂无</p>'}</div>
+    <div class="card"><h3>${T.adultsMenu(ad)}</h3>${F.courses.map(c => courseBlock(T.course(c), day.menu[c.id], ta[c.id], ad, lang)).join('')}</div>
+    ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>${T.kidsMenu(kd)}</h3>${F.courses.map(c => courseBlock(T.course(c), F.kids[c.id], tk[c.id], kd, lang)).join('')}</div>` : ''}
+    <div class="card"><h3>${T.allergiesT(allergies.length)}</h3>${allergies.length ? allergies.map(b => `<p style="margin:0 0 8px"><b>${b.table_no ? T.tablePrefix(esc(b.table_no)) : ''}${esc(b.name)}</b><br><span class="al">${esc(b.order.allergies)}</span></p>`).join('') : `<p class="muted">${T.nothing}</p>`}</div>
   </div>`;
   return h;
 }
 
 // ---------- tab: tables ----------
-function orderList(items, menuList) {
+function orderList(items, lang) {
+  const T = TX[lang];
   return F.courses.map(c => {
     const m = (items || {})[c.id] || {};
     const lines = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, n]) => { const L = F.line(k);
-      return `<li class="${L.kind === 'otro' ? 'pend-line' : ''}"><b>${n}×</b><span>${esc(dishName(k))}${L.sup ? ` <span class="badge b-warn">+${L.sup}€</span>` : ''}${L.kind === 'custom' ? ' <span class="badge b-sent">菜单外</span>' : ''}</span></li>`; }).join('');
-    return `<div class="sub">${c.zh} · ${c.es}</div><ul class="kv">${lines}</ul>`;
+      return `<li class="${L.kind === 'otro' ? 'pend-line' : ''}"><b>${n}×</b><span>${esc(dishName(k, lang))}${L.sup ? ` <span class="badge b-warn">+${L.sup}€</span>` : ''}${L.kind === 'custom' ? ` <span class="badge b-sent">${T.offMenu}</span>` : ''}</span></li>`; }).join('');
+    return `<div class="sub">${T.sub(c)}</div><ul class="kv">${lines}</ul>`;
   }).join('');
 }
-function viewTables(day, bs) {
-  if (!bs.length) return `<div class="empty">这一天还没有订台。</div>`;
-  return statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印按桌明细</button><button class="btn" id="exportCsv">导出 Excel</button></div>
+function viewTables(day, bs, lang = 'zh') {
+  const T = TX[lang];
+  if (!bs.length) return `<div class="empty">${T.noBookings}</div>`;
+  return statsHtml(bs, lang) + (lang === 'zh' ? `<div class="tools noprint"><button class="btn primary" onclick="print()">打印按桌明细（西班牙语）</button><button class="btn" id="exportCsv">导出 Excel（西班牙语）</button></div>` : '') + `
   <div class="grid">${bs.map(b => {
-    const [cls, label] = status(b), sup = supTotal(b);
+    const [cls, label] = status(b, lang), sup = supTotal(b);
     return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
-      <div class="muted" style="font-size:13px">大人 ${b.adults}${b.kids ? ` · 小孩 ${b.kids}` : ''} · 共 ${b.adults + b.kids} 人 · Pica-pica ${picaSets(b)} 套${b.phone ? ` · ${esc(b.phone)}` : ''}</div>
+      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids, picaSets(b))}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
       ${valid(b) ? `
-        ${b.kids ? '<div class="sub" style="color:var(--ink);margin-top:10px">大人</div>' : ''}${orderList(b.order.items.adult)}
-        ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">儿童套餐</div>${orderList(b.order.items.kid)}` : ''}
-        ${b.order.allergies ? `<p class="al" style="margin:10px 0 0">⚠ 过敏：${esc(b.order.allergies)}</p>` : ''}
+        ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.adults}</div>` : ''}${orderList(b.order.items.adult, lang)}
+        ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.kidsMenuShort}</div>${orderList(b.order.items.kid, lang)}` : ''}
+        ${peopleBlock(b, lang)}
+        ${b.order.allergies ? `<p class="al" style="margin:10px 0 0">${T.allergy}${esc(b.order.allergies)}</p>` : ''}
         ${b.order.comments ? `<p style="margin:6px 0 0;font-size:13px">💬 ${esc(b.order.comments)}</p>` : ''}
-        ${sup ? `<p style="margin:6px 0 0;font-size:13px;color:var(--warn)">补差价：${sup} €</p>` : ''}`
-      : `<p class="muted" style="margin:10px 0 0">${b.order ? '订台人数改过，客人之前点的已作废，需要重新提交。' : '还没收到点餐。'}</p>`}
-      ${b.notes ? `<p class="muted" style="margin:8px 0 0;font-size:12.5px">备注：${esc(b.notes)}</p>` : ''}
-      <p class="noprint" style="margin:10px 0 0"><button class="btn sm" data-act="order">${b.order ? '改点餐' : '代客点餐'}</button></p>
+        ${sup ? `<p style="margin:6px 0 0;font-size:13px;color:var(--warn)">${T.sup(sup)}</p>` : ''}`
+      : `<p class="muted" style="margin:10px 0 0">${b.order ? T.staleOrder : T.noOrder}</p>`}
+      ${b.notes && lang === 'zh' ? `<p class="muted" style="margin:8px 0 0;font-size:12.5px">${T.notes}${esc(b.notes)}</p>` : ''}
+      ${lang === 'zh' ? `<p class="noprint" style="margin:10px 0 0"><button class="btn sm" data-act="order">${b.order ? '改点餐' : '代客点餐'}</button></p>` : ''}
     </div>`;
   }).join('')}</div>`;
+}
+// Per-person picks from the group link (filled in by the group feature; empty otherwise).
+function peopleBlock(b, lang) {
+  const sh = b.shares || [];
+  if (!sh.length) return '';
+  const T = TX[lang];
+  const picks = items => ['adult', 'kid'].map(g => F.courses.map(c => Object.entries(((items[g] || {})[c.id]) || {})
+    .map(([k, n]) => `${n}× ${esc(dishName(k, lang))}`).join(', ')).filter(Boolean).join(' / ')).filter(Boolean).join(' · ');
+  return `<div class="sub" style="color:var(--ink);margin-top:12px">${T.byPerson}</div>
+    <ul class="kv">${sh.map(x => `<li style="display:block;padding:3px 0"><b>${esc(x.name)}</b> <span class="muted">(${x.adults}${x.kids ? ` + ${x.kids} ${T.kidShort}` : ''})</span>: ${picks(x.items)}${x.notes ? ` <span class="al">· ${esc(x.notes)}</span>` : ''}</li>`).join('')}</ul>`;
 }
 
 // ---------- CSV ----------
@@ -391,15 +435,15 @@ function exportCsv() {
   const cols = [];
   for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
   for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
-  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios', 'Notas internas'];
+  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
   const rows = bs.map(b => {
     const v = valid(b);
-    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b)[1], picaSets(b),
+    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b, 'es')[1], picaSets(b),
       ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '', v ? specials(b) : '',
-      v ? b.order.allergies || '' : '', v ? b.order.comments || '' : '', b.notes || ''];
+      v ? b.order.allergies || '' : '', v ? b.order.comments || '' : ''];
   });
   const totals = ['', 'TOTAL', '', bs.reduce((s, b) => s + b.adults, 0), bs.reduce((s, b) => s + b.kids, 0), '', bs.reduce((s, b) => s + picaSets(b), 0),
-    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', '', ''];
+    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', ''];
   const csv = [head, ...rows, totals].map(r => r.map(x => { const s = String(x); return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
