@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>节日订餐管理</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ef;--card:#fff;--ink:#22201d;--muted:#77706a;--line:#e4dfd7;--accent:#9e2a2b;--ok:#2f6b3f;--okbg:#e5f1e8;--warn:#a2561a;--warnbg:#fbeee0;--info:#2c5a8a;--infobg:#e4edf7;--wa:#1f9d55}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#161513;--card:#201e1b;--ink:#eeeae4;--muted:#a59d94;--line:#36322d;--okbg:#1f3326;--warnbg:#3a2a1a;--infobg:#1c2a3a;--ok:#7cc08f;--warn:#e19a5c;--info:#8ab6e6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 Jost,"Noto Sans SC",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;gap:12px;padding:12px 0}
+.top h1{font-size:18px;margin:0;flex:1}
+.demo{background:#ffd54a;color:#3a2c00;font-size:12px;padding:2px 8px;border-radius:6px;font-weight:600}
+.days{display:flex;gap:6px;overflow-x:auto;padding-bottom:10px}
+.days button{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:7px 12px;cursor:pointer;text-align:left;font:inherit}
+.days button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.days b{display:block;font-size:15px}
+.days small{opacity:.8;font-size:12px}
+.tabs{display:flex;gap:4px;margin:16px 0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;font:inherit;font-weight:500;padding:9px 14px;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .v{font-size:24px;font-weight:600;line-height:1.1}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 12px;font:inherit;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:#b3261e}
+.btn:disabled{opacity:.45;cursor:default}
+.spacer{flex:1}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
+.search{max-width:220px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12.5px;color:var(--muted);font-weight:500;background:var(--bg)}
+td.num,th.num{text-align:center}
+tr:last-child td{border-bottom:0}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;white-space:nowrap;font-weight:500}
+.b-new{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.b-sent{background:var(--infobg);color:var(--info)}
+.b-ok{background:var(--okbg);color:var(--ok)}
+.b-warn{background:var(--warnbg);color:var(--warn)}
+.acts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.muted{color:var(--muted)}
+.al{color:#b3261e;font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h3{margin:0 0 8px;font-size:16px;display:flex;gap:8px;align-items:baseline}
+.card h3 .tn{background:var(--accent);color:#fff;border-radius:6px;padding:0 7px;font-size:13px}
+.course{margin-bottom:16px}
+.course h3{margin:0 0 6px;font-size:15px}
+.row{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.row .n{font-size:20px;font-weight:600;min-width:42px;text-align:right}
+.row .bar{height:6px;background:var(--accent);border-radius:3px;opacity:.75}
+.row .name{flex:1}
+.kv{margin:0;padding:0;list-style:none;font-size:13.5px}
+.kv li{display:flex;gap:6px;padding:2px 0}
+.kv li b{min-width:24px;text-align:right}
+.sub{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.06em;margin:8px 0 2px}
+.login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.login h2{margin:0 0 14px;font-size:18px}
+.login label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+dialog{border:0;border-radius:14px;padding:0;width:min(520px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form{padding:18px}
+dialog h2{margin:0 0 12px;font-size:17px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fgrid label{font-size:13px;color:var(--muted);display:block}
+.fgrid .full{grid-column:1/-1}
+.dlg-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:10px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.locked{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:13.5px}
+@media (max-width:720px){
+  .hide-m{display:none}
+  .top{flex-wrap:wrap;gap:8px}
+  .top h1{flex:1 0 auto;white-space:nowrap}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .stat .v{font-size:20px}
+  .search{max-width:none;flex:1 1 100%;order:5}
+  table.bk,table.bk tbody{display:block;background:none;border:0}
+  table.bk thead{display:none}
+  table.bk tr{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+  table.bk td{border:0;padding:0}
+  table.bk td:nth-child(1){min-width:26px;height:26px;border-radius:7px;background:var(--bg);display:grid;place-items:center;font-weight:600}
+  table.bk td:nth-child(4){font-weight:600}
+  table.bk td:nth-child(5){grid-column:2/-1}
+  table.bk td:nth-child(6){grid-column:1/-1;margin-top:4px}
+  table.bk .acts{justify-content:flex-start}
+  table.bk .btn.wa{flex:1 1 100%;justify-content:center;padding:9px}
+}
+@media print{
+  header,.tabs,.tools,.noprint,.toast{display:none!important}
+  body{background:#fff;color:#000;font-size:12px}
+  .card,.stat,table{border-color:#bbb;break-inside:avoid}
+  .print-title{display:block!important;font-size:18px;font-weight:600;margin-bottom:8px}
+}
+.print-title{display:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="dlg"><form method="dialog" id="bform">
+  <h2 id="dlgTitle">新增订台</h2>
+  <div class="fgrid">
+    <label class="full">姓名 / 家庭名 *<input name="name" required maxlength="120" placeholder="Familia Puig"></label>
+    <label>电话（WhatsApp）<input name="phone" inputmode="tel" maxlength="40" placeholder="612 345 678"></label>
+    <label>桌号<input name="table_no" maxlength="20" placeholder="例如 7"></label>
+    <label>大人 *<input name="adults" type="number" min="1" max="40" required value="2"></label>
+    <label>小孩（儿童套餐）<input name="kids" type="number" min="0" max="30" value="0"></label>
+    <label class="full">日期<select name="day"></select></label>
+    <label class="full">内部备注（客人看不到）<textarea name="notes" rows="2" maxlength="1000" placeholder="例如：已付定金 100€"></textarea></label>
+  </div>
+  <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">保存</button></div>
+</form></dialog>
+
+<dialog id="bulk"><form method="dialog" id="bulkForm">
+  <h2>批量粘贴订台</h2>
+  <p class="muted" style="margin:0 0 8px;font-size:13px">可以从 Excel 直接复制粘贴，一行一个家庭，列的顺序：<b>姓名、电话、大人、小孩、桌号</b>（用逗号或 Tab 分隔，小孩和桌号可以不填）。导入到当前选中的日期。</p>
+  <textarea name="text" rows="9" placeholder="Familia Puig, 612345678, 4, 2, 7&#10;Marta Soler	655111222	2	0	3"></textarea>
+  <p id="bulkPreview" class="muted" style="font-size:13px;margin:8px 0 0"></p>
+  <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">导入</button></div>
+</form></dialog>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/fiestas/menus.js"></script>
+<script src="/fiestas/api.js"></script>
+<script>
+(function () {
+'use strict';
+const F = window.FIESTAS, API = window.FiestasAPI, root = document.getElementById('root');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtDay = (iso, o) => new Intl.DateTimeFormat('zh-CN', { timeZone: 'UTC', ...o }).format(new Date(iso + 'T12:00:00Z'));
+const fmtEs = (iso, o) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', ...o }).format(new Date(iso + 'T12:00:00Z'));
+const state = { day: F.days[0].date, tab: 'list', all: [], q: '' };
+try { const s = JSON.parse(localStorage.getItem('fiestas-staff-ui') || '{}'); if (F.dayOf(s.day)) state.day = s.day; if (s.tab) state.tab = s.tab; } catch {}
+const remember = () => { try { localStorage.setItem('fiestas-staff-ui', JSON.stringify({ day: state.day, tab: state.tab })); } catch {} };
+
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); }
+
+// ---------- helpers ----------
+const linkFor = b => API.demo ? `${location.origin}/pedido.html?demo&t=${b.token}` : `${location.origin}/p/${b.token}`;
+function waPhone(p) {
+  let d = String(p || '').replace(/[^\d+]/g, '');
+  if (d.startsWith('+')) d = d.slice(1); else if (d.startsWith('00')) d = d.slice(2);
+  else if (/^[679]\d{8}$/.test(d)) d = '34' + d;
+  return /^\d{8,15}$/.test(d) ? d : '';
+}
+function waText(b) {
+  const day = F.dayOf(b.day), pax = `${b.adults} ${b.adults === 1 ? 'adulto' : 'adultos'}${b.kids ? ` y ${b.kids} ${b.kids === 1 ? 'niño' : 'niños'}` : ''}`;
+  return `¡Hola, ${b.name}! 🎄\n\nGracias por celebrar ${day.name} con nosotros en ${F.restaurant} el ${fmtEs(day.date, { weekday: 'long', day: 'numeric', month: 'long' })}.\n\n` +
+    `Aquí tenéis el menú. Podéis elegir el primero, el segundo y el postre de cada comensal (${pax}):\n${linkFor(b)}\n\n` +
+    `Os agradeceríamos la elección antes del ${fmtEs(day.deadline, { day: 'numeric', month: 'long' })}. ¡Hasta pronto!`;
+}
+const status = b => {
+  if (b.order && (b.order.adults !== b.adults || b.order.kids !== b.kids)) return ['warn', '人数已变，需重填'];
+  if (b.order) return ['ok', '已点餐'];
+  if (b.sent_at) return ['sent', '已发送，未回复'];
+  return ['new', '未发送'];
+};
+const valid = b => b.order && b.order.adults === b.adults && b.order.kids === b.kids;
+const dayBookings = () => state.all.filter(b => b.day === state.day)
+  .sort((a, b) => (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
+const dishName = k => (F.dishIndex[k] || { es: k + ' (?)' }).es;
+const picaSets = b => Math.ceil((b.adults + b.kids) / 4);
+function supTotal(b) {
+  if (!valid(b)) return 0;
+  let s = 0; for (const c of F.courses) for (const [k, n] of Object.entries((b.order.items.adult || {})[c.id] || {})) s += ((F.dishIndex[k] || {}).sup || 0) * n;
+  return s;
+}
+
+// ---------- login ----------
+function renderLogin(err) {
+  root.innerHTML = `<div class="login"><h2>节日订餐管理 · 登录</h2>
+    <p class="muted" style="font-size:13px;margin:0">用菜单系统的同一个账号登录。</p>
+    <form id="lf"><label>Email<input name="email" type="email" autocomplete="username" required></label>
+    <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+    ${err ? `<p class="al" style="font-size:13px">${esc(err)}</p>` : ''}
+    <p style="margin:16px 0 0"><button class="btn primary" style="width:100%;justify-content:center">登录</button></p></form>
+    <p class="muted" style="font-size:12px;margin:14px 0 0">只想先看看效果？<a href="?demo">打开演示版</a>（数据只保存在本机浏览器）</p></div>`;
+  document.getElementById('lf').onsubmit = async e => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    try { await API.signIn(f.get('email'), f.get('password')); await load(); } catch (x) { renderLogin('登录失败：' + x.message); }
+  };
+}
+
+async function load() {
+  try { state.all = await API.listBookings(); }
+  catch (e) { if (e.code === 'auth') return renderLogin('登录已过期，请重新登录'); root.innerHTML = `<div class="empty">读取数据失败：${esc(e.message)}<br><br><button class="btn" onclick="location.reload()">重试</button></div>`; return; }
+  render();
+}
+
+// ---------- shell ----------
+function render() {
+  const day = F.dayOf(state.day), bs = dayBookings();
+  const daysHtml = F.days.map(d => {
+    const list = state.all.filter(b => b.day === d.date), done = list.filter(valid).length;
+    return `<button role="tab" data-day="${d.date}" aria-selected="${d.date === state.day}"><b>${fmtDay(d.date, { month: 'numeric', day: 'numeric' })} ${esc(d.zh)}</b><small>${list.length} 桌 · 已点餐 ${done}</small></button>`;
+  }).join('');
+  const tabs = [['list', '订台名单'], ['kitchen', '后厨汇总'], ['tables', '按桌明细']]
+    .map(([id, l]) => `<button role="tab" data-tab="${id}" aria-selected="${state.tab === id}">${l}</button>`).join('');
+  root.innerHTML = `<header><div class="wrap">
+      <div class="top"><h1>节日订餐管理</h1>${API.demo ? '<span class="demo">演示版 · 数据只存在本机</span>' : ''}
+        <a class="btn sm" href="/" title="返回菜单系统">菜单系统</a>
+        ${API.demo ? '<button class="btn sm" id="resetDemo">重置演示数据</button>' : '<button class="btn sm" id="logout">退出</button>'}</div>
+      <div class="days" role="tablist">${daysHtml}</div></div></header>
+    <main class="wrap"><div class="tabs" role="tablist">${tabs}</div>
+      <div class="print-title">${esc(F.restaurant)} · ${esc(day.name)} ${fmtDay(day.date, { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      ${bs.length && bs.every(b => b.locked) ? `<div class="locked">这一天已截止点餐：客人打开链接只能查看，不能再修改。</div>` : ''}
+      <div id="view"></div></main>`;
+  const v = document.getElementById('view');
+  v.innerHTML = state.tab === 'list' ? viewList(day, bs) : state.tab === 'kitchen' ? viewKitchen(day, bs) : viewTables(day, bs);
+}
+
+function statsHtml(bs) {
+  const a = bs.reduce((s, b) => s + b.adults, 0), k = bs.reduce((s, b) => s + b.kids, 0);
+  const done = bs.filter(valid), sent = bs.filter(b => b.sent_at || b.order);
+  return `<div class="stats">
+    <div class="stat"><div class="v">${bs.length}</div><div class="l">订台（家庭）</div></div>
+    <div class="stat"><div class="v">${a + k}</div><div class="l">总人数：大人 ${a} · 小孩 ${k}</div></div>
+    <div class="stat"><div class="v">${sent.length}</div><div class="l">已发送菜单</div></div>
+    <div class="stat"><div class="v" style="color:var(--ok)">${done.length}</div><div class="l">已点餐（${done.reduce((s, b) => s + b.adults + b.kids, 0)} 人）</div></div>
+    <div class="stat"><div class="v" style="color:${bs.length - done.length ? 'var(--warn)' : 'inherit'}">${bs.length - done.length}</div><div class="l">还没点餐</div></div>
+  </div>`;
+}
+
+// ---------- tab: list ----------
+function viewList(day, bs) {
+  const q = state.q.trim().toLowerCase();
+  const rows = bs.filter(b => !q || [b.name, b.phone, b.table_no].some(x => String(x || '').toLowerCase().includes(q))).map(b => {
+    const [cls, label] = status(b), ph = waPhone(b.phone);
+    return `<tr data-id="${b.id}">
+      <td class="num">${esc(b.table_no || '–')}</td>
+      <td><b>${esc(b.name)}</b>${b.notes ? `<div class="muted" style="font-size:12.5px">${esc(b.notes)}</div>` : ''}${b.order && b.order.allergies ? `<div class="al" style="font-size:12.5px">⚠ ${esc(b.order.allergies)}</div>` : ''}</td>
+      <td class="hide-m">${esc(b.phone || '')}</td>
+      <td class="num">${b.adults}${b.kids ? ` + ${b.kids}<span class="muted">童</span>` : ''}</td>
+      <td><span class="badge b-${cls}">${label}</span>${b.order ? `<div class="muted" style="font-size:11.5px">${new Date(b.order.submitted_at).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}${b.order.submit_count > 1 ? ` · 改过 ${b.order.submit_count - 1} 次` : ''}</div>` : ''}</td>
+      <td><div class="acts">
+        ${ph ? `<a class="btn sm${b.order ? '' : ' wa'}" data-act="wa" href="https://wa.me/${ph}?text=${encodeURIComponent(waText(b))}" target="_blank" rel="noopener">${b.sent_at ? '再发' : '发送'} WhatsApp</a>` : `<span class="muted" style="font-size:12px">无有效电话</span>`}
+        <button class="btn sm" data-act="copy" title="复制客人链接">复制链接</button>
+        <a class="btn sm" href="${esc(linkFor(b))}" target="_blank" rel="noopener" title="以客人身份打开">预览</a>
+        <button class="btn sm" data-act="edit">编辑</button>
+        <button class="btn sm danger" data-act="del">删除</button>
+      </div></td></tr>`;
+  }).join('');
+  const locked = bs.length && bs.every(b => b.locked);
+  return statsHtml(bs) + `<div class="tools noprint">
+      <button class="btn primary" id="add">＋ 新增订台</button>
+      <button class="btn" id="bulkBtn">批量粘贴</button>
+      <input class="search" id="q" placeholder="搜索姓名 / 电话 / 桌号" value="${esc(state.q)}">
+      <span class="spacer"></span>
+      <button class="btn" id="exportCsv">导出 Excel</button>
+      ${bs.length ? `<button class="btn" id="lock">${locked ? '重新开放点餐' : '截止点餐（锁定当天）'}</button>` : ''}
+    </div>
+    ${bs.length ? `<table class="bk"><thead><tr><th class="num">桌号</th><th>姓名</th><th class="hide-m">电话</th><th class="num">人数</th><th>状态</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">没有符合搜索的订台</td></tr>'}</tbody></table>`
+      : `<div class="empty">${fmtDay(day.date, { month: 'long', day: 'numeric' })} 还没有订台。点“新增订台”或“批量粘贴”开始录入。</div>`}
+    <p class="muted noprint" style="font-size:12.5px;margin-top:14px">发送方式：点绿色按钮会打开 WhatsApp，消息和这位客人的专属链接已经填好，按发送即可，系统会记为“已发送”。客人截止日期为 ${fmtDay(day.deadline, { month: 'long', day: 'numeric' })}（写在消息里），到期后点“截止点餐”锁定。当天 0 点起系统也会自动关闭点餐。</p>`;
+}
+
+// ---------- tab: kitchen ----------
+function tally(bs, group) {
+  const t = {}; for (const c of F.courses) t[c.id] = {};
+  for (const b of bs.filter(valid)) for (const c of F.courses)
+    for (const [k, n] of Object.entries(((b.order.items[group] || {})[c.id]) || {})) t[c.id][k] = (t[c.id][k] || 0) + n;
+  return t;
+}
+function courseBlock(title, list, counts, total) {
+  const max = Math.max(1, ...list.map(d => counts[d.key] || 0));
+  const extra = Object.keys(counts).filter(k => !list.some(d => d.key === k));
+  return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">共 ${total} 份</span></h3>
+    ${list.concat(extra.map(k => ({ key: k, es: dishName(k) }))).map(d => {
+      const n = counts[d.key] || 0;
+      return `<div class="row"><span class="n">${n}</span><span class="name">${esc(d.es)}${d.sup ? ` <span class="badge b-warn">+${d.sup}€</span>` : ''}<div class="bar" style="width:${n / max * 100}%"></div></span></div>`;
+    }).join('')}</div>`;
+}
+function viewKitchen(day, bs) {
+  const done = bs.filter(valid), pending = bs.filter(b => !valid(b));
+  const ta = tally(bs, 'adult'), tk = tally(bs, 'kid');
+  const ad = done.reduce((s, b) => s + b.adults, 0), kd = done.reduce((s, b) => s + b.kids, 0);
+  const allergies = done.filter(b => b.order.allergies);
+  let h = statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印后厨单</button><button class="btn" id="exportCsv">导出 Excel</button></div>`;
+  if (pending.length) h += `<div class="locked">⚠ 下面的数量只包括已点餐的 ${done.length} 桌。还有 ${pending.length} 桌（${pending.reduce((s, b) => s + b.adults + b.kids, 0)} 人）没点餐：${pending.map(b => esc(b.name) + (b.table_no ? `（${esc(b.table_no)} 号桌）` : '')).join('、')}</div>`;
+  h += `<div class="grid">
+    <div class="card"><h3>Pica-pica 分享拼盘</h3><div class="row"><span class="n">${bs.reduce((s, b) => s + picaSets(b), 0)}</span><span class="name">套（每桌按每 4 人 1 套计算，含全部订台）</span></div>
+      <ul class="kv" style="margin-top:6px">${day.pica.items.map(i => `<li>· ${esc(i)}</li>`).join('')}</ul></div>
+    <div class="card"><h3>大人套餐 · ${ad} 人</h3>${F.courses.map(c => courseBlock(`${c.zh} ${c.es}`, day.menu[c.id], ta[c.id], ad)).join('')}</div>
+    ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>儿童套餐 · ${kd} 人</h3>${F.courses.map(c => courseBlock(`${c.zh} ${c.es}`, F.kids[c.id], tk[c.id], kd)).join('')}</div>` : ''}
+    <div class="card"><h3>过敏 / 忌口 · ${allergies.length} 桌</h3>${allergies.length ? allergies.map(b => `<p style="margin:0 0 8px"><b>${b.table_no ? esc(b.table_no) + ' 号桌 · ' : ''}${esc(b.name)}</b><br><span class="al">${esc(b.order.allergies)}</span></p>`).join('') : '<p class="muted">暂无</p>'}</div>
+  </div>`;
+  return h;
+}
+
+// ---------- tab: tables ----------
+function orderList(items, menuList) {
+  return F.courses.map(c => {
+    const m = (items || {})[c.id] || {};
+    const lines = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<li><b>${n}×</b><span>${esc(dishName(k))}${(F.dishIndex[k] || {}).sup ? ` <span class="badge b-warn">+${F.dishIndex[k].sup}€</span>` : ''}</span></li>`).join('');
+    return `<div class="sub">${c.zh} · ${c.es}</div><ul class="kv">${lines}</ul>`;
+  }).join('');
+}
+function viewTables(day, bs) {
+  if (!bs.length) return `<div class="empty">这一天还没有订台。</div>`;
+  return statsHtml(bs) + `<div class="tools noprint"><button class="btn primary" onclick="print()">打印按桌明细</button><button class="btn" id="exportCsv">导出 Excel</button></div>
+  <div class="grid">${bs.map(b => {
+    const [cls, label] = status(b), sup = supTotal(b);
+    return `<div class="card"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
+      <div class="muted" style="font-size:13px">大人 ${b.adults}${b.kids ? ` · 小孩 ${b.kids}` : ''} · 共 ${b.adults + b.kids} 人 · Pica-pica ${picaSets(b)} 套${b.phone ? ` · ${esc(b.phone)}` : ''}</div>
+      ${valid(b) ? `
+        ${b.kids ? '<div class="sub" style="color:var(--ink);margin-top:10px">大人</div>' : ''}${orderList(b.order.items.adult)}
+        ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">儿童套餐</div>${orderList(b.order.items.kid)}` : ''}
+        ${b.order.allergies ? `<p class="al" style="margin:10px 0 0">⚠ 过敏：${esc(b.order.allergies)}</p>` : ''}
+        ${b.order.comments ? `<p style="margin:6px 0 0;font-size:13px">💬 ${esc(b.order.comments)}</p>` : ''}
+        ${sup ? `<p style="margin:6px 0 0;font-size:13px;color:var(--warn)">补差价：${sup} €</p>` : ''}`
+      : `<p class="muted" style="margin:10px 0 0">${b.order ? '订台人数改过，客人之前点的已作废，需要重新提交。' : '还没收到点餐。'}</p>`}
+      ${b.notes ? `<p class="muted" style="margin:8px 0 0;font-size:12.5px">备注：${esc(b.notes)}</p>` : ''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ---------- CSV ----------
+function exportCsv() {
+  const day = F.dayOf(state.day), bs = dayBookings();
+  const cols = [];
+  for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
+  for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
+  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica', ...cols.map(c => c[3]), 'Suplementos €', 'Alergias', 'Comentarios', 'Notas internas'];
+  const rows = bs.map(b => {
+    const v = valid(b);
+    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b)[1], picaSets(b),
+      ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '',
+      v ? b.order.allergies || '' : '', v ? b.order.comments || '' : '', b.notes || ''];
+  });
+  const totals = ['', 'TOTAL', '', bs.reduce((s, b) => s + b.adults, 0), bs.reduce((s, b) => s + b.kids, 0), '', bs.reduce((s, b) => s + picaSets(b), 0),
+    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', ''];
+  const csv = [head, ...rows, totals].map(r => r.map(x => { const s = String(x); return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `pedidos-${day.date}-${day.name.replace(/\s+/g, '-')}.csv`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ---------- booking dialog ----------
+const dlg = document.getElementById('dlg'), bform = document.getElementById('bform');
+bform.day.innerHTML = F.days.map(d => `<option value="${d.date}">${fmtDay(d.date, { month: 'long', day: 'numeric' })} ${esc(d.zh)} · ${esc(d.name)}</option>`).join('');
+let editing = null;
+function openBooking(b) {
+  editing = b || null;
+  document.getElementById('dlgTitle').textContent = b ? '编辑订台' : '新增订台';
+  for (const k of ['name', 'phone', 'table_no', 'notes']) bform[k].value = b ? b[k] || '' : '';
+  bform.adults.value = b ? b.adults : 2; bform.kids.value = b ? b.kids : 0; bform.day.value = b ? b.day : state.day;
+  dlg.showModal(); bform.name.focus();
+}
+bform.addEventListener('submit', async e => {
+  if (!e.submitter || e.submitter.value !== 'ok') return;
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(bform));
+  const b = { id: editing && editing.id, day: f.day, name: f.name.trim(), phone: f.phone.trim(), table_no: f.table_no.trim(), notes: f.notes.trim(),
+    adults: Math.max(1, parseInt(f.adults) || 1), kids: Math.max(0, parseInt(f.kids) || 0) };
+  if (!b.name) return;
+  if (editing && editing.order && (editing.adults !== b.adults || editing.kids !== b.kids) &&
+      !confirm('这桌已经点过餐。改了人数后，客人需要重新打开链接点餐。确定修改吗？')) return;
+  try { await API.saveBooking(b); dlg.close(); toast('已保存'); state.day = b.day; remember(); await load(); } catch (x) { alert('保存失败：' + x.message); }
+});
+
+// ---------- bulk paste ----------
+const bulk = document.getElementById('bulk'), bulkForm = document.getElementById('bulkForm');
+function parseBulk(text) {
+  return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => l.split(/\t|;|,(?=\s*\S)/).map(x => x.trim()))
+    .filter(p => p[0] && !/^(nombre|姓名|name)$/i.test(p[0]))
+    .map(p => ({ name: p[0], phone: p[1] || '', adults: parseInt(p[2]) || 0, kids: parseInt(p[3]) || 0, table_no: p[4] || '' }));
+}
+bulkForm.text.addEventListener('input', () => {
+  const rows = parseBulk(bulkForm.text.value), bad = rows.filter(r => r.adults < 1);
+  document.getElementById('bulkPreview').innerHTML = rows.length ? `识别到 ${rows.length} 个家庭，共 ${rows.reduce((s, r) => s + r.adults + r.kids, 0)} 人${bad.length ? `；<span class="al">${bad.length} 行缺少大人数量，不会导入：${bad.map(r => esc(r.name)).join('、')}</span>` : ''}` : '';
+});
+bulkForm.addEventListener('submit', async e => {
+  if (!e.submitter || e.submitter.value !== 'ok') return;
+  e.preventDefault();
+  bulk.close();
+  const rows = parseBulk(bulkForm.text.value).filter(r => r.adults >= 1);
+  let ok = 0;
+  for (const r of rows) { try { await API.saveBooking({ ...r, day: state.day }); ok++; } catch (e) { alert(`导入 ${r.name} 失败：${e.message}`); break; } }
+  bulkForm.text.value = ''; document.getElementById('bulkPreview').textContent = '';
+  toast(`已导入 ${ok} 个家庭`); await load();
+});
+
+// ---------- events ----------
+root.addEventListener('click', async e => {
+  const el = e.target.closest('[data-day],[data-tab],[data-act],#add,#bulkBtn,#exportCsv,#lock,#logout,#resetDemo');
+  if (!el) return;
+  if (el.dataset.day) { state.day = el.dataset.day; remember(); return render(); }
+  if (el.dataset.tab) { state.tab = el.dataset.tab; remember(); return render(); }
+  if (el.id === 'add') return openBooking();
+  if (el.id === 'bulkBtn') return bulk.showModal();
+  if (el.id === 'exportCsv') return exportCsv();
+  if (el.id === 'logout') { await API.signOut(); return renderLogin(); }
+  if (el.id === 'resetDemo') { if (confirm('清空演示数据并重新生成示例？')) { API.resetDemo(); await load(); } return; }
+  if (el.id === 'lock') {
+    const locked = dayBookings().every(b => b.locked);
+    if (!locked && !confirm('锁定后，这一天的客人不能再提交或修改点餐。确定截止吗？')) return;
+    await API.setLocked(state.day, !locked); toast(locked ? '已重新开放' : '已截止点餐'); return load();
+  }
+  const id = el.closest('tr') && el.closest('tr').dataset.id, b = state.all.find(x => x.id === id);
+  if (!b) return;
+  if (el.dataset.act === 'wa') { API.markSent(b.id).then(load).catch(() => {}); return; } // the link itself opens WhatsApp
+  if (el.dataset.act === 'copy') { try { await navigator.clipboard.writeText(waText(b)); toast('已复制消息和链接，可以粘贴到 WhatsApp'); } catch { prompt('复制这个链接：', linkFor(b)); } return; }
+  if (el.dataset.act === 'edit') return openBooking(b);
+  if (el.dataset.act === 'del') {
+    if (!confirm(`删除 ${b.name} 的订台${b.order ? '和已提交的点餐' : ''}？删除后不能恢复。`)) return;
+    try { await API.deleteBooking(b.id); toast('已删除'); await load(); } catch (x) { alert('删除失败：' + x.message); }
+  }
+});
+root.addEventListener('input', e => {
+  if (e.target.id !== 'q') return;
+  state.q = e.target.value;
+  const pos = e.target.selectionStart; render();
+  const q = document.getElementById('q'); q.focus(); q.setSelectionRange(pos, pos);
+});
+// Refresh when the tab regains focus (guests may have ordered meanwhile).
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state.all.length && !dlg.open && !bulk.open) load(); });
+
+(async () => { (await API.session()) ? load() : renderLogin(); })();
+})();
+</script>
+</body>
+</html>

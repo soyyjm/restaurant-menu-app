@@ -11,3 +11,8 @@
   from = "/api-proxy/*"
   to = "/.netlify/functions/translate"
   status = 200
+# Festive pre-order: short guest links /p/<token> → pedido.html (the page reads the token from the path)
+[[redirects]]
+  from = "/p/*"
+  to = "/pedido.html"
+  status = 200

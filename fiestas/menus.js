@@ -1,0 +1,138 @@
+// Festive menus 2026/27 — the single source of truth for the guest page (pedido.html)
+// and the staff page (fiestas.html). DRAFT: replace dishes when the final menus are set.
+// Dish keys are stored in orders, so do not rename a key once guests have started ordering.
+// Photos: fiestas/img/<key>.jpg (missing photo → text card).
+window.FIESTAS = {
+  restaurant: 'Restaurant Sol',
+  courses: [
+    { id: 'primero', es: 'Primer plato', ca: 'Primer plat', zh: '头道' },
+    { id: 'segundo', es: 'Segundo plato', ca: 'Segon plat', zh: '主菜' },
+    { id: 'postre',  es: 'Postre',        ca: 'Postres',    zh: '甜点' }
+  ],
+  tags: {
+    firma: { es: 'Del chef', ca: 'Del xef' },
+    veg:   { es: 'Vegetariano', ca: 'Vegetarià' },
+    sup:   { es: 'Suplemento', ca: 'Suplement' }
+  },
+  days: [
+    {
+      date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55, kidsPrice: 25,
+      deadline: '2026-12-19', theme: 'navidad',
+      pica: { key: 'pica25', items: ['Coca de vidre con tomate', 'Croquetas de setas y trufa', 'Mini brioche de rustido', 'Tartaleta de esqueixada'] },
+      menu: {
+        primero: [
+          { key: 'sopa25', es: 'Sopa de galets con pilota', tags: ['firma'] },
+          { key: 'carp25', es: 'Carpaccio de langostino, granada y aceite de mandarina' },
+          { key: 'perd25', es: 'Ensalada tibia de perdiz escabechada' },
+          { key: 'cast25', es: 'Crema de castañas, setas y aceite de trufa', tags: ['veg'] }
+        ],
+        segundo: [
+          { key: 'pula25', es: 'Pularda rellena, salsa Pedro Ximénez y puré de castaña', tags: ['firma'] },
+          { key: 'pato25', es: 'Confit de pato, salsa de naranja y gratén de patata' },
+          { key: 'merl25', es: 'Lomo de merluza al cava con almejas' },
+          { key: 'riso25', es: 'Risotto de setas y trufa', tags: ['veg'] }
+        ],
+        postre: [
+          { key: 'bola25', es: 'Bola de Navidad', tags: ['firma'] },
+          { key: 'ques25', es: 'Tarta de queso con frutos rojos' },
+          { key: 'sorm', es: 'Sorbete de mandarina al cava' }
+        ]
+      }
+    },
+    {
+      date: '2026-12-26', name: 'Sant Esteve', ca: 'Sant Esteve', zh: '圣斯德望节', price: 55, kidsPrice: 25,
+      deadline: '2026-12-20', theme: 'esteve',
+      pica: { key: 'pica26', items: ['Pa de pagès con tomate', 'Embutidos de Osona', 'Alcachofas fritas con romesco', 'Buñuelos de bacalao con allioli de miel'] },
+      menu: {
+        primero: [
+          { key: 'cane26', es: 'Gran canelón de rustido, bechamel de setas y teja de parmesano', tags: ['firma'] },
+          { key: 'xato26', es: 'Xató de bacalao y anchoas' },
+          { key: 'pulp26', es: 'Pulpo a la brasa con parmentier y pimentón de la Vera' },
+          { key: 'coli26', es: 'Crema de coliflor asada con avellana tostada', tags: ['veg'] }
+        ],
+        segundo: [
+          { key: 'baca26', es: 'Bacalao confitado sobre samfaina, espuma de allioli' },
+          { key: 'fric26', es: 'Fricandó de ternera con moixernons', tags: ['firma'] },
+          { key: 'coch26', es: 'Cochinillo a baja temperatura con compota de manzana' },
+          { key: 'timb26', es: 'Timbal de escalivada y queso de cabra con romesco', tags: ['veg'] }
+        ],
+        postre: [
+          { key: 'cata26', es: 'Tarta de crema catalana quemada', tags: ['firma'] },
+          { key: 'turr26', es: 'Coulant de turrón con helado' },
+          { key: 'liml26', es: 'Sorbete de limón al cava' }
+        ]
+      }
+    },
+    {
+      date: '2027-01-01', name: 'Año Nuevo', ca: 'Any Nou', zh: '元旦', price: 55, kidsPrice: 25,
+      deadline: '2026-12-27', theme: 'nuevo',
+      pica: { key: 'pica1', items: ['Focaccia de romero', 'Bombón de foie y frambuesa', 'Tostada de tartar de salmón', 'Croquetas de jamón ibérico'] },
+      menu: {
+        primero: [
+          { key: 'velo1', es: 'Velouté de calabaza asada con vieira dorada', tags: ['firma'] },
+          { key: 'tart1', es: 'Tartar de atún con aguacate y cítricos' },
+          { key: 'cons1', es: 'Consomé de cocido al Jerez con yema curada' },
+          { key: 'burr1', es: 'Burrata con tomates confitados, granada y pesto', tags: ['veg'] }
+        ],
+        segundo: [
+          { key: 'pres1', es: 'Presa ibérica glaseada al Oporto, puré de boniato', tags: ['firma'] },
+          { key: 'lubi1', es: 'Lomo de lubina con beurre blanc de cava' },
+          { key: 'solo1', es: 'Solomillo de ternera con salsa de foie', tags: ['sup'], sup: 8 },
+          { key: 'ravi1', es: 'Raviolis de calabaza con mantequilla de salvia', tags: ['veg'] }
+        ],
+        postre: [
+          { key: 'uvas1', es: 'Las 12 uvas', tags: ['firma'] },
+          { key: 'torr1', es: 'Torrija de brioche caramelizada' },
+          { key: 'pist1', es: 'Coulant de pistacho' }
+        ]
+      }
+    },
+    {
+      date: '2027-01-06', name: 'Reyes', ca: 'Reis', zh: '三王节', price: 40, kidsPrice: 20,
+      deadline: '2027-01-02', theme: 'reyes',
+      pica: { key: 'pica6', items: ['Pan de coca con tomate', 'Croquetas de pollo rustido', 'Calamares a la andaluza', 'Bravas “corona”'] },
+      menu: {
+        primero: [
+          { key: 'huev6', es: 'Huevo a baja temperatura, parmentier, setas y jamón', tags: ['firma'] },
+          { key: 'mari6', es: 'Crema de marisco con picatostes' },
+          { key: 'cabr6', es: 'Ensalada de queso de cabra, granada y nueces', tags: ['veg'] }
+        ],
+        segundo: [
+          { key: 'carr6', es: 'Carrillera ibérica al vino tinto, puré trufado', tags: ['firma'] },
+          { key: 'merl6', es: 'Merluza al horno con patata panadera y ajada' },
+          { key: 'poll6', es: 'Pollo de corral asado al tomillo' }
+        ],
+        postre: [
+          { key: 'tort6', es: 'Mini tortell de Reyes', tags: ['firma'] },
+          { key: 'brow6', es: 'Brownie con helado de vainilla' },
+          { key: 'sorm', es: 'Sorbete de mandarina' }
+        ]
+      }
+    }
+  ],
+  // Menú infantil, same for the four days (price per day above).
+  kids: {
+    primero: [
+      { key: 'kmac', es: 'Macarrones a la boloñesa' },
+      { key: 'kcro', es: 'Croquetas caseras de jamón con patatas chips' }
+    ],
+    segundo: [
+      { key: 'kesc', es: 'Escalopa de pollo con patatas fritas' },
+      { key: 'kmer', es: 'Merluza rebozada con puré de patata' }
+    ],
+    postre: [
+      { key: 'khel', es: 'Helado de chocolate y vainilla' },
+      { key: 'kbro', es: 'Brownie de chocolate' }
+    ]
+  }
+};
+
+// Shared helpers (both pages).
+window.FIESTAS.dayOf = date => window.FIESTAS.days.find(d => d.date === date);
+window.FIESTAS.dishIndex = (() => {
+  const idx = {};
+  for (const d of window.FIESTAS.days)
+    for (const c of window.FIESTAS.courses) for (const x of d.menu[c.id]) idx[x.key] = x;
+  for (const c of window.FIESTAS.courses) for (const x of window.FIESTAS.kids[c.id]) idx[x.key] = x;
+  return idx;
+})();
