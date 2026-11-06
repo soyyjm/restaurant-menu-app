@@ -87,3 +87,12 @@
 - 后厨汇总会显示：总盘数和各尺寸盘的数量（例如“4 人盘 × 4、3 人盘 × 4”）、每种单品的总数、每桌怎么拆。打印版是西班牙语（Bandejas…）。
   按桌明细显示“Pica-pica 2 盘（4+3）”，Excel 的列是 “Pica-pica (bandejas)”，格式为“2 (4+3)”。
 - 可以在 `fiestas/menus.js` 的 `picaRules` 里调整：`countKids`（小孩算不算人数）、`perPerson`（每人几个）。
+
+### 出菜当天：Comandas 出菜单（2026-11-06）
+- 后台 →“按桌明细”→ **打印出菜单 Comandas（每桌 2 联）**：每桌一页 A4，上半张 **COCINA**（厨房），下半张 **SALA**（跑堂），沿虚线裁开。全部是西班牙语，按桌号排序。
+- 按出菜顺序排：Pica-pica（几盘、每盘几人）→ Primer plato → Segundo plato → Postre。每道菜前面有 ☐ 勾选框，每一轮右边有“MARCHAR ☐”（通知厨房开始做）。儿童套餐的菜标 “INF ·”。
+- 过敏和特殊要求放在顶部的黑框里；半份、菜单外的菜用粗体，“Sin este plato”（不要这道）用斜体、不带勾选框，还没确认的“Otra opción”加 ⚠ 粗体。
+  客人留言印在底部；补差价金额只印在 SALA 联，结账时用。
+- 没点餐的桌也会打印（只有 pica-pica，并标明“SIN PEDIDO — tomar nota en la mesa”，意思是到桌再记）。
+- 半张放不下的大桌，打印前会实际测量排版，自动改成每联一整页，不会被截断。
+- 建议：出菜用 comandas；Agora 只在结账时录入套餐行（Menú × N、Infantil × N、补差价），不再逐道菜录入。
