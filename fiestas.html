@@ -215,7 +215,7 @@ const TX = {
     picaRule: '规则：大人和小孩都算人数；每桌盘数 = 人数 ÷ 4 四舍五入（至少 1 盘），人数平均分到各盘。', picaTable: (n, sp) => `${n} 人 → ${sp}`, picaShort: sp => `Pica-pica ${sp.length} 盘（${sp.join('+')}）`,
     adultsMenu: n => `大人套餐 · ${n} 人`, kidsMenu: n => `儿童套餐 · ${n} 人`, allergiesT: n => `过敏 / 忌口 · ${n} 桌`, nothing: '暂无',
     tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
-    adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n, p) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人 · ${p}`,
+    adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人`, picaPlates: sp => `${sp.length} 盘：${sp.map(n => `${n} 人`).join(' + ')}`,
     allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
     noBookings: '这一天还没有订台。' },
   es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
@@ -227,7 +227,7 @@ const TX = {
     picaRule: 'Regla: cuentan adultos y niños; bandejas por mesa = personas ÷ 4 redondeado (mínimo 1), repartiendo las personas por igual.', picaTable: (n, sp) => `${n} pers. → ${sp}`, picaShort: sp => `Pica-pica: ${sp.length} bandeja${sp.length === 1 ? '' : 's'} (${sp.join('+')})`,
     adultsMenu: n => `Menú adultos · ${n} personas`, kidsMenu: n => `Menú infantil · ${n} niños`, allergiesT: n => `Alergias / intolerancias · ${n} mesa(s)`, nothing: 'Ninguna',
     tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
-    adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n, p) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas · ${p}`,
+    adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas`, picaPlates: sp => `${sp.length} bandeja${sp.length === 1 ? '' : 's'}: ${sp.map(n => `${n} pers.`).join(' + ')}`,
     allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
     noBookings: 'No hay reservas para este día.' }
 };
@@ -418,7 +418,9 @@ function viewTables(day, bs, lang = 'zh') {
   <div class="grid">${bs.map(b => {
     const [cls, label] = status(b, lang), sup = supTotal(b);
     return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
-      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids, T.picaShort(picaSplitOf(b)))}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
+      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids)}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
+      <div class="sub" style="margin-top:10px">Pica-pica</div>
+      <ul class="kv"><li><b>${picaSets(b)}</b><span>${esc(T.picaPlates(picaSplitOf(b)).replace(/^\d+\s*/, ''))}</span></li></ul>
       ${valid(b) ? `
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.adults}</div>` : ''}${orderList(b.order.items.adult, lang)}
         ${b.kids ? `<div class="sub" style="color:var(--ink);margin-top:10px">${T.kidsMenuShort}</div>${orderList(b.order.items.kid, lang)}` : ''}
