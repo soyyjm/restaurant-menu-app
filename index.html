@@ -2068,6 +2068,47 @@ kbd {
   font-family: 'Lato', sans-serif; font-size: 12px; font-style: italic; text-transform: none; letter-spacing: 0.01em;
   color: var(--dor-soft) !important;
 }
+/* ── Allergens (Menús Cerrados) ── */
+.mcp-allergens { display: inline-flex; align-items: center; gap: 0.2em; margin-left: 0.42em; vertical-align: -0.1em; white-space: nowrap; }
+.mcp-allergens .mc-allergen-icon { width: 1em; height: 1em; opacity: 0.85; stroke-width: 2; }
+.mcp-legend-item .mc-allergen-icon { stroke-width: 2; }
+.mcp-allergen-legend { display: none; }
+.mcp-allergen-legend:not(:empty) {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 3px 12px;
+  max-width: 620px; margin: 0 auto 8px; font-family: 'DM Sans', sans-serif; font-size: 9.5px; letter-spacing: 0.02em;
+}
+.mcp-legend-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+.mcp-legend-item { display: inline-flex; align-items: center; gap: 4px; }
+.mcp-legend-item .mc-allergen-icon { width: 12px; height: 12px; }
+.mcp-root.mcp-color .mcp-allergen-legend { color: #6b5d4a; }
+.mcp-root.mcp-bw .mcp-allergen-legend { color: #333; }
+.mcp-template-dorado .mcp-allergen-legend { font-family: 'Lato', sans-serif; font-size: 10.5px; color: var(--dor-soft) !important; margin-bottom: 10px; }
+.mcp-template-dorado .mcp-legend-title { color: var(--dor-gold); }
+.mcp-template-marinero .mcp-allergen-legend { margin-bottom: 10px; }
+/* Canva export keeps the icons in the background image; the text becomes editable boxes. */
+.mcp-root.mcp-text-hidden .mcp-page .mc-allergen-icon { color: #555 !important; }
+/* Editor: allergen button and picker */
+.mc-dish-allergen-btn {
+  display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; min-height: 34px; padding: 0 8px;
+  border: 1px solid var(--cream); border-radius: var(--radius); background: white; color: var(--ink-soft);
+  font: inherit; font-size: 11.5px; cursor: pointer; white-space: nowrap;
+}
+.mc-dish-allergen-btn .mc-allergen-icon { width: 16px; height: 16px; }
+.mc-dish-allergen-btn.unset { border-style: dashed; color: var(--ink-faint); }
+.mc-dish-allergen-btn.inherited { font-style: italic; opacity: 0.85; }
+.mc-dish-allergen-btn[aria-expanded="true"] { border-color: var(--terracotta); color: var(--terracotta); }
+.mc-allergen-panel { margin: 2px 0 10px; padding: 10px; border: 1px solid var(--terracotta); border-radius: var(--radius); background: #fffaf5; }
+.mc-allergen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.mc-allergen-chip {
+  display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 10px; text-align: left;
+  border: 1px solid var(--cream); border-radius: var(--radius); background: white; font: inherit; font-size: 13px; cursor: pointer; color: var(--ink-soft);
+}
+.mc-allergen-chip .mc-allergen-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.mc-allergen-chip[aria-pressed="true"] { border-color: var(--terracotta); background: var(--terracotta-light); color: var(--ink); font-weight: 600; }
+.mc-allergen-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+.mc-allergen-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px 10px; border-radius: var(--radius); background: var(--olive-light); font-size: 12.5px; }
+.mc-allergen-panel .mc-help-text { margin: 8px 0 0; }
+@media (max-width: 600px) { .mc-allergen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Canva export: capture decoration only; text is added as editable boxes. */
 .mcp-root.mcp-text-hidden .mcp-page * { color: transparent !important; text-shadow: none !important; }
 @media (max-width: 1180px) {
@@ -2500,6 +2541,7 @@ kbd {
     <div class="mcp-body" id="mcp-body"></div>
     <div class="mcp-footer">
       <div class="mcp-closing" id="mcp-closing"></div>
+      <div class="mcp-allergen-legend" id="mcp-allergen-legend"></div>
       <div class="mcp-footer-rule"></div>
       <div class="mcp-footer-text" id="mcp-footer-text">Restaurante Sol · Barcelona</div>
     </div>
@@ -5100,10 +5142,82 @@ const MC_TEMPLATES = {
 // Near-duplicate designs kept for menus that already use them; listed apart in the selector.
 const MC_LEGACY_TEMPLATES = new Set(['editorial', 'grupo', 'fiesta', 'tapas', 'minimal']);
 const MC_LANG_LABELS = { es: 'Español', ca: 'Català', en: 'English' };
+// The 14 allergens of EU Regulation 1169/2011, in its order. Icons are single-colour line drawings
+// (currentColor) so they print equally well in colour and in black and white.
+const MC_ALLERGENS = [
+  { id: 'gluten', es: 'Gluten', ca: 'Gluten', en: 'Gluten',
+    svg: '<path d="M12 21V7"/><path d="M12 9.5C10 8.8 9 7 9 5c2 .3 3 1.8 3 3.8M12 9.5c2-.7 3-2.5 3-4.5-2 .3-3 1.8-3 3.8M12 13.5c-2-.7-3.2-2.4-3.2-4.4 2 .3 3.2 1.9 3.2 3.9M12 13.5c2-.7 3.2-2.4 3.2-4.4-2 .3-3.2 1.9-3.2 3.9M12 17.5c-2-.7-3.2-2.4-3.2-4.4 2 .3 3.2 1.9 3.2 3.9M12 17.5c2-.7 3.2-2.4 3.2-4.4-2 .3-3.2 1.9-3.2 3.9M12 7V3"/>' },
+  { id: 'crustaceos', es: 'Crustáceos', ca: 'Crustacis', en: 'Crustaceans',
+    svg: '<ellipse cx="12" cy="14.5" rx="5" ry="3.4"/><path d="M7.6 12.8 4.5 9.5M4.5 9.5 3.4 6.2M4.5 9.5l2.3-1.6M16.4 12.8l3.1-3.3M19.5 9.5l1.1-3.3M19.5 9.5l-2.3-1.6M8.5 17.2 6.5 20M15.5 17.2l2 2.8M10.6 17.9 9.8 20.5M13.4 17.9l.8 2.6"/>' },
+  { id: 'huevos', es: 'Huevos', ca: 'Ous', en: 'Eggs',
+    svg: '<path d="M12 3c3.4 0 6 5.2 6 9.6A6 6 0 0 1 6 12.6C6 8.2 8.6 3 12 3z"/>' },
+  { id: 'pescado', es: 'Pescado', ca: 'Peix', en: 'Fish',
+    svg: '<path d="M3 12c3-4.2 8.3-5.2 12.2-1.9L20 7v10l-4.8-3.1C11.3 17.2 6 16.2 3 12z"/><circle cx="7.6" cy="11.2" r=".9" fill="currentColor" stroke="none"/>' },
+  { id: 'cacahuetes', es: 'Cacahuetes', ca: 'Cacauets', en: 'Peanuts',
+    svg: '<path d="M12 3a4 4 0 0 1 4 4c0 1.7-1 2.5-1 5s1 3.3 1 5a4 4 0 0 1-8 0c0-1.7 1-2.5 1-5S8 8.7 8 7a4 4 0 0 1 4-4z"/><path d="M10.6 7.2h.01M13.4 9h.01M10.6 15.6h.01M13.4 17.6h.01"/>' },
+  { id: 'soja', es: 'Soja', ca: 'Soja', en: 'Soy',
+    svg: '<path d="M4 19C5.6 10 12.6 4.4 20 5c-.8 7.6-7 13.6-16 14z"/><circle cx="9" cy="14.6" r="1.5"/><circle cx="12.4" cy="11.4" r="1.5"/><circle cx="15.8" cy="8.2" r="1.5"/>' },
+  { id: 'lacteos', es: 'Lácteos', ca: 'Lactis', en: 'Milk',
+    svg: '<path d="M10 3h4v2.4l2.4 3.4V21H7.6V8.8L10 5.4z"/><path d="M7.6 12.5h8.8"/>' },
+  { id: 'frutos_cascara', es: 'Frutos de cáscara', ca: 'Fruits de closca', en: 'Tree nuts',
+    svg: '<path d="M4.6 10.2C4.6 7 7.9 5 12 5s7.4 2 7.4 5.2z"/><path d="M12 5V2.8"/><path d="M6.2 10.2c0 5.6 2.9 8.8 5.8 9.8 2.9-1 5.8-4.2 5.8-9.8"/>' },
+  { id: 'apio', es: 'Apio', ca: 'Api', en: 'Celery',
+    svg: '<path d="M9 21V10.5M12 21V8.5M15 21V10.5"/><path d="M9 10.5C6.2 9.6 5.2 7 6 4.6c1.9.2 3 2 3 4.3M12 8.5c-1-2.8 0-5.5 0-5.5s1 2.7 0 5.5M15 10.5c2.8-.9 3.8-3.5 3-5.9-1.9.2-3 2-3 4.3"/>' },
+  { id: 'mostaza', es: 'Mostaza', ca: 'Mostassa', en: 'Mustard',
+    svg: '<path d="M10.2 2.8h3.6v3.4h-3.6z"/><path d="M9.2 6.2h5.6l1.6 3V21H7.6V9.2z"/><path d="M7.6 12.6h8.8M7.6 16.4h8.8"/>' },
+  { id: 'sesamo', es: 'Sésamo', ca: 'Sèsam', en: 'Sesame',
+    svg: '<path d="M7.5 4.5c1.6 1.1 1.6 4.3 0 5.4-1.6-1.1-1.6-4.3 0-5.4zM15.5 3.5c1.6 1.1 1.6 4.3 0 5.4-1.6-1.1-1.6-4.3 0-5.4zM11.5 10.5c1.6 1.1 1.6 4.3 0 5.4-1.6-1.1-1.6-4.3 0-5.4zM17.5 12.5c1.6 1.1 1.6 4.3 0 5.4-1.6-1.1-1.6-4.3 0-5.4zM6.5 14.5c1.6 1.1 1.6 4.3 0 5.4-1.6-1.1-1.6-4.3 0-5.4z"/>' },
+  { id: 'sulfitos', es: 'Sulfitos', ca: 'Sulfits', en: 'Sulphites',
+    svg: '<path d="M7.6 3h8.8l-.6 5.6a3.8 3.8 0 0 1-7.6 0z"/><path d="M12 12.4V20.5M8.6 20.5h6.8"/><path d="M8 6.4h8"/>' },
+  { id: 'altramuces', es: 'Altramuces', ca: 'Tramussos', en: 'Lupin',
+    svg: '<path d="M12 21V3.5"/><path d="M12 6.2 9 7.4M12 6.2l3 1.2M12 10.2l-3.6 1.4M12 10.2l3.6 1.4M12 14.2l-4.2 1.6M12 14.2l4.2 1.6"/>' },
+  { id: 'moluscos', es: 'Moluscos', ca: 'Mol·luscs', en: 'Molluscs',
+    svg: '<path d="M12 20.5 3.6 10.2a8.4 8.4 0 0 1 16.8 0z"/><path d="M12 20.5 7.8 5.2M12 20.5V3.8M12 20.5l4.2-15.3"/>' }
+];
+const MC_ALLERGEN_IDS = new Set(MC_ALLERGENS.map(a => a.id));
+const MC_ALLERGEN_TITLE = { es: 'Alérgenos', ca: 'Al·lèrgens', en: 'Allergens' };
+
+function mcAllergenIcon(id, lang = 'es') {
+  const a = MC_ALLERGENS.find(x => x.id === id);
+  if (!a) return '';
+  return `<svg class="mc-allergen-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="${esc(a[lang] || a.es)}">${a.svg}</svg>`;
+}
+
+// Allergens of a dish: its own list when set; otherwise the same dish (same id) in another language
+// version of this menu, so a translated menu does not need them entered again.
+// Returns an array (possibly empty = reviewed, no allergens) or null when nobody has set them.
+function mcDishAllergens(menu, si, di) {
+  const dish = menu?.sections?.[si]?.dishes?.[di];
+  if (!dish) return null;
+  if (Array.isArray(dish.allergens)) return dish.allergens.filter(id => MC_ALLERGEN_IDS.has(id));
+  if (!dish.id) return null;
+  const fam = MenuWorkflows.family(menu);
+  for (const m of [...Object.values(mcDrafts), ...mcMenus]) {
+    if (m.id === menu.id || MenuWorkflows.family(m) !== fam) continue;
+    for (const sec of m.sections || []) for (const d of sec.dishes || []) {
+      if (d.id === dish.id && Array.isArray(d.allergens)) return d.allergens.filter(id => MC_ALLERGEN_IDS.has(id));
+    }
+  }
+  return null;
+}
+
+// The same dish (by name) already set in another menu: offered as a suggestion, never applied silently.
+function mcKnownAllergens(menu, name) {
+  const key = MenuWorkflows.looseName(name);
+  if (!key) return null;
+  for (const m of [...Object.values(mcDrafts), ...mcMenus]) {
+    if (m.id === menu.id) continue;
+    for (const sec of m.sections || []) for (const d of sec.dishes || []) {
+      if (Array.isArray(d.allergens) && MenuWorkflows.looseName(d.name) === key) return { allergens: d.allergens.filter(id => MC_ALLERGEN_IDS.has(id)), from: m.name || 'otro menú' };
+    }
+  }
+  return null;
+}
+
 const MC_STATUSES = { borrador: 'Borrador', revisar: 'Revisar', listo: 'Listo', archivado: 'Archivado' };
 const MC_SYSTEM_TAG_PREFIXES = ['template:', 'langs:', 'status:', 'layout:'];
 // Per-menu print tweaks on top of the template. Stored as a `layout:` tag with only non-default values.
-const MC_LAYOUT_DEFAULT = { size: 'md', spacing: 'auto', align: 'template', accent: 'template', header: '', footer: '', showType: true, showPrice: true };
+const MC_LAYOUT_DEFAULT = { size: 'md', spacing: 'auto', align: 'template', accent: 'template', header: '', footer: '', showType: true, showPrice: true, showAllergens: true };
 const MC_LAYOUT_SIZES = { sm: ['Pequeño', 0.88], md: ['Normal', 1], lg: ['Grande', 1.14], xl: ['Muy grande', 1.28] };
 const MC_LAYOUT_SPACING = { auto: 'Repartir en la página', compact: 'Compacto (arriba)', center: 'Compacto (centrado)' };
 const MC_LAYOUT_ALIGN = { template: 'Según plantilla', center: 'Centrado', left: 'Izquierda' };
@@ -5125,6 +5239,7 @@ let mcFilterType = 'all';
 let mcShowArchived = false;
 let mcLoaded = false;
 let mcCollapsedSections = new Set();
+let mcAllergenOpen = null; // { si, di } whose allergen picker is open
 let mcActiveDish = null; // { si, di }: the dish row last focused, moved by the section's order buttons
 let mcDrafts = {};
 let mcDraftError = false;
@@ -5254,7 +5369,8 @@ function mcCleanLayout(raw) {
     header: text(raw?.header),
     footer: text(raw?.footer),
     showType: raw?.showType !== false,
-    showPrice: raw?.showPrice !== false
+    showPrice: raw?.showPrice !== false,
+    showAllergens: raw?.showAllergens !== false
   };
 }
 
@@ -5278,7 +5394,8 @@ function mcGatherLayout() {
     header: $('mc-layout-header').value,
     footer: $('mc-layout-footer').value,
     showType: $('mc-layout-show-type').checked,
-    showPrice: $('mc-layout-show-price').checked
+    showPrice: $('mc-layout-show-price').checked,
+    showAllergens: $('mc-layout-show-allergens').checked
   });
 }
 
@@ -5355,6 +5472,12 @@ function mcValidateMenu(menu, langs = mcGetDisplayLangs(menu)) {
     if (!menu.drinks || !menu.drinks.trim()) warnings.push('No indica bebidas incluidas.');
   }
   if (!menu.min_people && menu.type === 'grupos') warnings.push('Menú de grupos sin mínimo de personas.');
+  // Once a menu uses allergens, every dish should have been reviewed (an empty list counts as reviewed).
+  if (mcGetLayout(menu).showAllergens) {
+    const states = sections.flatMap((sec, si) => (sec.dishes || []).map((d, di) => d.name ? mcDishAllergens(menu, si, di) : undefined)).filter(x => x !== undefined);
+    const unset = states.filter(x => x === null).length;
+    if (unset && states.some(x => x !== null)) warnings.push(`${unset} ${unset === 1 ? 'plato sin' : 'platos sin'} alérgenos revisados (márcalos o elige «Sin alérgenos»).`);
+  }
 
   langs.filter(lang => lang !== source && MC_LANG_LABELS[lang]).forEach(lang => {
     sections.forEach((sec, si) => (sec.dishes || []).forEach((d, di) => {
@@ -5685,6 +5808,7 @@ function mcRenderLayoutPanel(menu, template) {
       <div class="mc-layout-checks mc-layout-wide">
         <label class="mc-check-pill"><input type="checkbox" id="mc-layout-show-type"${layout.showType ? ' checked' : ''}>Mostrar tipo de menú</label>
         <label class="mc-check-pill"><input type="checkbox" id="mc-layout-show-price"${layout.showPrice ? ' checked' : ''}>Mostrar precio</label>
+        <label class="mc-check-pill"><input type="checkbox" id="mc-layout-show-allergens"${layout.showAllergens ? ' checked' : ''}>Mostrar alérgenos</label>
       </div>
       <button type="button" class="btn btn-secondary btn-small mc-layout-wide" id="mc-layout-reset">Restablecer diseño</button>
     </div>
@@ -5754,7 +5878,36 @@ function mcRenderDish(menu, d, si, di, extraLangs) {
     <input class="mc-dish-name-input" value="${esc(d.name||'')}" placeholder="Nombre del plato" data-si="${si}" data-di="${di}"${listAttr} lang="${menu.language || 'es'}" aria-label="Nombre del plato">
     ${translations}
     ${priceCell}
+    ${mcAllergenButton(menu, d, si, di)}
     <button type="button" class="mc-dish-remove" data-si="${si}" data-di="${di}" title="Quitar plato" aria-label="Quitar plato">✕</button>
+  </div>${mcAllergenOpen?.si === si && mcAllergenOpen?.di === di ? mcAllergenPanel(menu, d, si, di) : ''}`;
+}
+
+function mcAllergenButton(menu, d, si, di) {
+  const list = mcDishAllergens(menu, si, di);
+  const inherited = list && !Array.isArray(d.allergens);
+  const open = mcAllergenOpen?.si === si && mcAllergenOpen?.di === di;
+  const label = list === null ? 'Alérgenos' : list.length ? '' : 'Sin alérgenos';
+  const icons = (list || []).slice(0, 4).map(id => mcAllergenIcon(id)).join('') + ((list || []).length > 4 ? `<span>+${list.length - 4}</span>` : '');
+  const title = list === null ? 'Marcar alérgenos' : `${list.length ? list.map(id => MC_ALLERGENS.find(a => a.id === id).es).join(', ') : 'Sin alérgenos'}${inherited ? ' · del menú original' : ''}`;
+  return `<button type="button" class="mc-dish-allergen-btn${list === null ? ' unset' : ''}${inherited ? ' inherited' : ''}" data-si="${si}" data-di="${di}" aria-expanded="${open}" title="${esc(title)}" aria-label="Alérgenos: ${esc(title)}">${icons}${label ? `<span>${label}</span>` : ''}</button>`;
+}
+
+function mcAllergenPanel(menu, d, si, di) {
+  const current = new Set(mcDishAllergens(menu, si, di) || []);
+  const known = !Array.isArray(d.allergens) && d.name ? mcKnownAllergens(menu, d.name) : null;
+  const suggestion = known ? `<div class="mc-allergen-suggest">En «${esc(known.from)}» este plato tiene: <b>${known.allergens.length ? known.allergens.map(id => esc(MC_ALLERGENS.find(a => a.id === id).es)).join(', ') : 'sin alérgenos'}</b>
+      <button type="button" class="btn btn-secondary btn-small mc-allergen-apply" data-si="${si}" data-di="${di}" data-value="${known.allergens.join(',')}">Usar lo mismo</button></div>` : '';
+  return `<div class="mc-allergen-panel" data-si="${si}" data-di="${di}">
+    ${suggestion}
+    <div class="mc-allergen-grid" role="group" aria-label="Alérgenos de ${esc(d.name || 'este plato')}">
+      ${MC_ALLERGENS.map(a => `<button type="button" class="mc-allergen-chip" data-si="${si}" data-di="${di}" data-allergen="${a.id}" aria-pressed="${current.has(a.id)}">${mcAllergenIcon(a.id)}<span>${a.es}</span></button>`).join('')}
+    </div>
+    <div class="mc-allergen-actions">
+      <button type="button" class="btn btn-secondary btn-small mc-allergen-none" data-si="${si}" data-di="${di}">Sin alérgenos</button>
+      <button type="button" class="btn btn-primary btn-small mc-allergen-close" data-si="${si}" data-di="${di}">Listo</button>
+    </div>
+    <p class="mc-help-text">Marca lo que contiene el plato. Revisa la información con cocina: el menú imprime lo que marques aquí.</p>
   </div>`;
 }
 
@@ -5839,7 +5992,27 @@ function mcSectionAction(action, si, di, direction) {
   if (!sec && action !== 'add-section') return;
   let focus = null;
   // Indexes shift after other structural edits, so only a move keeps (and follows) the selected dish.
-  if (action !== 'move-dish' && action !== 'toggle') mcActiveDish = null;
+  const allergenAction = action.startsWith('allergen-');
+  if (action !== 'move-dish' && action !== 'toggle' && !allergenAction) mcActiveDish = null;
+  if (!allergenAction) mcAllergenOpen = null;
+  if (allergenAction) {
+    const dish = sec.dishes?.[di];
+    if (!dish) return;
+    if (action === 'allergen-open') mcAllergenOpen = mcAllergenOpen?.si === si && mcAllergenOpen?.di === di ? null : { si, di };
+    else if (action === 'allergen-close') mcAllergenOpen = null;
+    else {
+      // Start from what is shown (own list, or inherited from the original language version).
+      const set = new Set(mcDishAllergens(mcCurrentMenu, si, di) || []);
+      if (action === 'allergen-toggle') set.has(direction) ? set.delete(direction) : set.add(direction);
+      if (action === 'allergen-none') set.clear();
+      if (action === 'allergen-apply') { set.clear(); String(direction || '').split(',').filter(Boolean).forEach(id => set.add(id)); }
+      dish.allergens = MC_ALLERGENS.map(a => a.id).filter(id => set.has(id));
+      if (action === 'allergen-none') mcAllergenOpen = null;
+    }
+    mcRefreshSections();
+    mcFlushEditor();
+    return;
+  }
   if (action === 'move-dish') {
     const list = sec.dishes || [];
     const target = { top: 0, up: di - 1, down: di + 1, bottom: list.length - 1 }[direction];
@@ -6117,8 +6290,17 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   const closingFrom = isDorado ? (includes(m.drinks) ? 'drinks' : includes(m.notes) ? 'notes' : '') : '';
   $('mcp-closing').textContent = closingFrom ? m[closingFrom].trim() : '';
 
+  // Allergen icons after each dish name, and a legend with only the allergens this menu uses.
+  const usedAllergens = new Set();
+  const allergenIcons = (si, di) => {
+    if (!layout.showAllergens) return '';
+    const list = mcDishAllergens(m, si, di) || [];
+    list.forEach(id => usedAllergens.add(id));
+    return list.length ? `<span class="mcp-allergens">${list.map(id => mcAllergenIcon(id, primaryLang)).join('')}</span>` : '';
+  };
+
   // Body sections
-  let bodyHtml = isCarta ? mcCartaBodyHtml(m, langs) : '';
+  let bodyHtml = isCarta ? mcCartaBodyHtml(m, langs, allergenIcons) : '';
   for (let si = 0; !isCarta && si < (m.sections || []).length; si++) {
     const sec = m.sections[si];
     if (!sec.title && !(sec.dishes || []).some(d => d.name)) continue;
@@ -6142,7 +6324,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
         const text = li === 0 ? d.name : mcLangDishName(m, displayLang, si, di);
         if (!text) return '';
         const cls = li === 0 ? 'mcp-dish' : (displayLang === 'ca' ? 'mcp-dish-ca' : 'mcp-dish-en');
-        return `<span class="${cls}" data-mc="dish:${si}:${di}:${displayLang}">${esc(text)}</span>`;
+        return `<span class="${cls}" data-mc="dish:${si}:${di}:${displayLang}">${esc(text)}${li === 0 ? allergenIcons(si, di) : ''}</span>`;
       }).join('');
       const supp = parseFloat(d.supplement);
       const suppText = isDorado ? `+${Number.isInteger(supp) ? supp : supp.toFixed(2).replace('.', ',')} €` : `+${supp.toFixed(2)}€`;
@@ -6167,13 +6349,19 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     </div>`;
   }
   $('mcp-body').innerHTML = bodyHtml;
+  const legend = $('mcp-allergen-legend');
+  legend.innerHTML = usedAllergens.size
+    ? `<span class="mcp-legend-title">${esc(MC_ALLERGEN_TITLE[primaryLang] || MC_ALLERGEN_TITLE.es)}:</span>${MC_ALLERGENS.filter(a => usedAllergens.has(a.id)).map(a => `<span class="mcp-legend-item">${mcAllergenIcon(a.id, primaryLang)}${esc(a[primaryLang] || a.es)}</span>`).join('')}`
+    : '';
   $('mcp-body').style.transform = '';
   $('mcp-body').style.justifyContent = '';
   $('mcp-body').style.removeProperty('--dor-fit');
-  // Text size: scale leaf text nodes so nested spans are not scaled twice.
+  // Text size: scale the elements that hold text themselves, so nested spans are not scaled twice
+  // (allergen icons are sized in em and follow their dish name).
   const factor = MC_LAYOUT_SIZES[layout.size][1];
   if (factor !== 1) $('mcp-body').querySelectorAll('*').forEach(el => {
-    if (!el.childElementCount) el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * factor}px`;
+    if (el.closest('svg')) return;
+    if ([...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * factor}px`;
   });
 
   // Footer note
@@ -6192,7 +6380,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
 
 // Carta: one line per dish with dotted leader and its own price, translations underneath.
 // Section titles only appear when there is more than one section.
-function mcCartaBodyHtml(m, langs) {
+function mcCartaBodyHtml(m, langs, allergenIcons = () => '') {
   const visible = (m.sections || []).map((sec, si) => ({ sec, si })).filter(({ sec }) => (sec.dishes || []).some(d => d.name));
   return visible.map(({ sec, si }) => {
     const header = visible.length > 1 || sec.subtitle
@@ -6209,7 +6397,7 @@ function mcCartaBodyHtml(m, langs) {
       }).join('');
       return `<div class="mcp-dish-row mcp-carta-item">
         <div class="mcp-carta-line">
-          <span class="mcp-dish mcp-carta-name" data-mc="dish:${si}:${di}:${langs[0]}">${esc(main || d.name)}</span>${detail ? `<span class="mcp-carta-detail">${esc(detail)}</span>` : ''}
+          <span class="mcp-dish mcp-carta-name" data-mc="dish:${si}:${di}:${langs[0]}">${esc(main || d.name)}</span>${detail ? `<span class="mcp-carta-detail">${esc(detail)}</span>` : ''}${allergenIcons(si, di)}
           <span class="mcp-carta-leader"></span>
           ${price ? `<span class="mcp-carta-price" data-mc="dish:${si}:${di}:price">${esc(price)}</span>` : ''}
         </div>
@@ -6779,7 +6967,7 @@ function mcBindEditorEvents() {
       $('mc-layout-size').value = 'md'; $('mc-layout-spacing').value = 'auto'; $('mc-layout-align').value = 'template';
       document.querySelector('.mc-accent-input[value="template"]').checked = true;
       $('mc-layout-header').value = ''; $('mc-layout-footer').value = '';
-      $('mc-layout-show-type').checked = true; $('mc-layout-show-price').checked = true;
+      $('mc-layout-show-type').checked = true; $('mc-layout-show-price').checked = true; $('mc-layout-show-allergens').checked = true;
       mcFlushEditor();
     }
     else if (t.id === 'mc-canva-btn') mcExportCanva();
@@ -6798,6 +6986,11 @@ function mcBindEditorEvents() {
     else if (has('mc-add-dish-btn')) mcSectionAction('add-dish', si);
     else if (has('mc-dish-remove')) mcSectionAction('remove-dish', si, di);
     else if (has('mc-dish-order') && mcActiveDish?.si === si) mcSectionAction('move-dish', si, mcActiveDish.di, t.dataset.direction);
+    else if (has('mc-dish-allergen-btn')) mcSectionAction('allergen-open', si, di);
+    else if (has('mc-allergen-chip')) mcSectionAction('allergen-toggle', si, di, t.dataset.allergen);
+    else if (has('mc-allergen-none')) mcSectionAction('allergen-none', si, di);
+    else if (has('mc-allergen-apply')) mcSectionAction('allergen-apply', si, di, t.dataset.value);
+    else if (has('mc-allergen-close')) mcSectionAction('allergen-close', si, di);
     else if (has('mc-paste-add')) mcSectionAction('paste', si);
     else if (has('mc-section-paste') || has('mc-paste-cancel')) {
       const panel = area.querySelector(`.mc-paste-panel[data-si="${si}"]`);

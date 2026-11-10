@@ -43,7 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
-    readHistoryCloud, mergeCloudHistory, moveInMenu, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
+    readHistoryCloud, mergeCloudHistory, moveInMenu, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcDishAllergens, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
     setBatch: b => batchDraft = b,
@@ -548,4 +548,23 @@ test('reorder moves a dish up, down, to the top or bottom and saves; edges are n
   await h.api.moveInMenu(1, 'postre', 'bottom'); assert.deepEqual(ids(), [4,2,3,1]);
   await h.api.moveInMenu(2, 'postre', 'down'); assert.deepEqual(ids(), [4,3,2,1]);
   assert.deepEqual(plain(h.api.state().menuHistory['2026-09-06'].postre.map(d => d.id)), [4,3,2,1]);
+});
+
+test('closed-menu allergens: translations inherit by dish id, review warning, hide option', () => {
+  const h = harness({user:false});
+  const dish = (id, name, allergens) => allergens === undefined ? { id, name } : { id, name, allergens };
+  const es = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', name: 'Sugerencias', language: 'es', version: 1, tags: ['template:carta'],
+    sections: [{ id: 's', title: 'Platos', mode: 'fixed', dishes: [dish('d1', 'Croquetas', ['gluten', 'lacteos', 'bogus']), dish('d2', 'Chuletón'), dish('d3', 'Ensalada', [])] }] };
+  const ca = { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', parent_id: es.id, name: 'Suggeriments', language: 'ca', version: 1, tags: [],
+    sections: [{ id: 's', title: 'Plats', mode: 'fixed', dishes: [dish('d1', 'Croquetes'), dish('d2', 'Xuletó')] }] };
+  h.api.setClosed(ca, [es, ca]);
+  assert.deepEqual(plain(h.api.mcDishAllergens(es, 0, 0)), ['gluten', 'lacteos']);   // unknown ids dropped
+  assert.equal(h.api.mcDishAllergens(es, 0, 1), null);                                 // not reviewed
+  assert.deepEqual(plain(h.api.mcDishAllergens(es, 0, 2)), []);                         // reviewed, none
+  assert.deepEqual(plain(h.api.mcDishAllergens(ca, 0, 0)), ['gluten', 'lacteos']);     // inherited from the Spanish original
+  assert.match(h.api.mcValidateMenu(es, ['es']).warnings.join(' '), /1 plato sin alérgenos revisados/);
+  es.tags.push('layout:{"showAllergens":false}');
+  assert.doesNotMatch(h.api.mcValidateMenu(es, ['es']).warnings.join(' '), /alérgenos/);
+  const untouched = { ...es, tags: [], sections: [{ id: 's', title: 'P', mode: 'fixed', dishes: [dish('x1', 'Sopa'), dish('x2', 'Flan')] }] };
+  assert.doesNotMatch(h.api.mcValidateMenu(untouched, ['es']).warnings.join(' '), /alérgenos/);   // feature unused: no nagging
 });
