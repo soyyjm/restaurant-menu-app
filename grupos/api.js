@@ -59,7 +59,7 @@
   };
 
   // ---------- demo store ----------
-  const KEY = 'grupos-demo-v1';
+  const KEY = 'grupos-demo-v2';
   const newToken = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
   const save = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
@@ -67,7 +67,8 @@
   const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
   const isOpen = e => !e.locked && madridToday() < e.date && (!e.deadline || madridToday() <= e.deadline);
 
-  // The example group: Menú Degustación for 24 people (organizer Ana).
+  // The example group (a real booking, without contact details): Menú Degustación for 24 people,
+  // Friday 11 December 2026 at 15:00, organizer Ana. If that date has passed, it moves 12 days ahead.
   const EXAMPLE_MENU_ROW = {
     id: 'demo-degustacion', name: 'Menú Degustación', type: 'degustacion', price: 27, price_label: 'por persona (IVA incluido)', language: 'es',
     drinks: 'Incluido la bebida (una botella de vino para 4) y el postre', notes: '',
@@ -96,7 +97,7 @@
     ]
   };
   function seed() {
-    const date = addDays(madridToday(), 12), menu = M.snapshot(EXAMPLE_MENU_ROW, []);
+    const date = madridToday() < '2026-12-11' ? '2026-12-11' : addDays(madridToday(), 12), menu = M.snapshot(EXAMPLE_MENU_ROW, []);
     const ev = { id: newToken(), date, time: '15:00', title: 'Comida de grupo · Ana', organizer: 'Ana', phone: '', email: '', pax: 24,
       menu, menu_id: EXAMPLE_MENU_ROW.id, deadline: addDays(date, -2), notes: 'Señal 20 € (Bizum)', counts: {}, counts_notes: null, counts_at: null,
       token: newToken(), share_token: newToken(), locked: false, sent_at: null, created_at: new Date().toISOString() };
