@@ -195,7 +195,7 @@ function viewList() {
       <label class="muted" style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="showPast" style="width:auto" ${state.showPast ? 'checked' : ''}> 显示过去的</label></div>
     ${list.length ? `<div class="grid">${list.map(e => { const [c, l] = status(e), acc = M.accounted(e);
       return `<div class="card ev" data-open="${e.id}"><div class="d">${fmtZh(e.date, { month: 'long', day: 'numeric', weekday: 'short' })}${e.time ? ' · ' + esc(e.time) : ''}</div>
-        <div class="t">${esc(e.title)}</div><div class="muted" style="font-size:13px">${esc(e.menu.name)} · ${e.pax} 人${e.organizer ? ' · ' + esc(e.organizer) : ''}</div>
+        <div class="t">${esc(e.title)}</div><div class="muted" style="font-size:13px">${esc(e.menu.name)}${e.menu.variant ? ` (${esc(e.menu.variant)})` : ''}${e.menu.price != null ? ` · ${Number(e.menu.price).toFixed(2)}€` : ''} · ${e.pax} 人${e.organizer ? ' · ' + esc(e.organizer) : ''}</div>
         <div class="prog"><i style="width:${Math.min(100, acc / e.pax * 100)}%"></i></div><span class="badge b-${c}">${l}</span></div>`; }).join('')}</div>`
       : `<div class="empty">还没有团餐。点“新建团餐”，选一个 Menú cerrado 即可。</div>`}`;
 }
@@ -208,7 +208,7 @@ function viewEvent(e) {
     <div class="grid">
       <div class="card"><h2>${esc(e.title)} <span class="badge b-${c}">${l}</span></h2>
         <div>${fmtZh(e.date, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}${e.time ? ' · ' + esc(e.time) : ''}</div>
-        <div class="muted">${esc(e.menu.name)}${e.menu.price != null ? ` · ${Number(e.menu.price).toFixed(2)} €/人` : ''} · ${e.pax} 人</div>
+        <div class="muted">${esc(e.menu.name)}${e.menu.variant ? ` (${esc(e.menu.variant)})` : ''}${e.menu.price != null ? ` · ${Number(e.menu.price).toFixed(2)} €/人` : ''} · ${e.pax} 人</div>
         <div style="margin-top:6px">组织者：${esc(e.organizer || '—')}${e.phone ? ' · ' + esc(e.phone) : ''}${e.email ? ' · ' + esc(e.email) : ''}</div>
         ${e.deadline ? `<div class="muted">选菜截止：${fmtZh(e.deadline, { month: 'long', day: 'numeric' })}</div>` : ''}
         ${e.notes ? `<div class="muted">备注：${esc(e.notes)}</div>` : ''}
@@ -265,9 +265,22 @@ function printComanda(e) {
 const evDlg = document.getElementById('evDlg'), evForm = document.getElementById('evForm');
 let editing = null;
 function menuOptions(sel) {
-  // Main-language menus only (Catalan/English copies have parent_id).
-  const list = state.menus.filter(m => !m.parent_id && (m.sections || []).length);
-  return list.map(m => `<option value="${esc(m.id)}" ${m.id === sel ? 'selected' : ''}>${esc(m.name)}${m.price != null ? ` · ${Number(m.price).toFixed(2)}€` : ''}${(m.sections || []).some(s => s.mode === 'choose_one') ? '' : '（没有可选的菜）'}</option>`).join('');
+  // Every version of every menu, grouped by family (versions are separate rows with parent_id).
+  // Only the Spanish rows are listed (Catalan copies are translations of them); archived ones are hidden.
+  const fam = m => m.parent_id || m.id;
+  const fams = new Map();
+  for (const m of state.menus) {
+    if (!(m.sections || []).length || (M.archived(m) && m.id !== sel)) continue;
+    if (!fams.has(fam(m))) fams.set(fam(m), []);
+    fams.get(fam(m)).push(m);
+  }
+  const groups = [...fams.values()].map(ms => {
+    const es = ms.filter(m => (m.language || 'es') === 'es');
+    return (es.length ? es : ms).sort((a, b) => (Number(a.version) || 1) - (Number(b.version) || 1));
+  }).filter(ms => ms.length).sort((a, b) => a[0].name.localeCompare(b[0].name));
+  const opt = m => `<option value="${esc(m.id)}" ${m.id === sel ? 'selected' : ''}>${esc(m.name)} — ${M.variant(m)}${m.price != null ? ` · ${Number(m.price).toFixed(2)}€` : ''}${(m.sections || []).some(s => s.mode === 'choose_one') ? '' : '（没有可选的菜）'}</option>`;
+  return `<option value="" ${sel ? '' : 'selected'} disabled>— 选择菜单和版本 —</option>` +
+    groups.map(ms => ms.length > 1 ? `<optgroup label="${esc(ms[0].name)}">${ms.map(opt).join('')}</optgroup>` : opt(ms[0])).join('');
 }
 function openEvent(e) {
   editing = e || null;
@@ -275,7 +288,9 @@ function openEvent(e) {
   evForm.menu_id.innerHTML = (e && !state.menus.some(m => m.id === e.menu_id) ? `<option value="">${esc(e.menu.name)}（原菜单）</option>` : '') + menuOptions(e ? e.menu_id : null);
   for (const k of ['date', 'time', 'title', 'organizer', 'phone', 'email', 'deadline', 'notes']) evForm[k].value = e ? e[k] || '' : '';
   evForm.pax.value = e ? e.pax : '';
-  document.getElementById('evMenuNote').textContent = e ? '改了菜单的话，已经选过的人会保留，但不在新菜单里的菜会显示为“?”。' : '截止日期不填时默认是用餐前 2 天。';
+  document.getElementById('evMenuNote').textContent = e
+    ? (e.personas.length || M.countsPeople(e.counts) ? `已经有 ${M.accounted(e)} 人选过。换菜单或版本后他们的选择会保留，但新版本里没有的菜会显示为“?”，需要请他们重选。` : '可以换成别的菜单或版本，保存后组织者看到的就是新菜单。')
+    : '截止日期不填时默认是用餐前 2 天。';
   evDlg.showModal();
 }
 evForm.date.addEventListener('change', () => { if (!editing && evForm.date.value && !evForm.deadline.value) evForm.deadline.value = addDays(evForm.date.value, -2); });

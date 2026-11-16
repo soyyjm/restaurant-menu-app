@@ -18,6 +18,9 @@
   };
   const M = {
     choice: menu => (menu.sections || []).filter(s => s.mode === 'choose_one'),
+    // Same label as the main app's version chips: "ES", "ES v2", "CA v3"…
+    variant: m => `${(m.language || 'es').toUpperCase()}${Number(m.version) > 1 ? ` v${m.version}` : ''}`,
+    archived: m => (m.tags || []).includes('status:archivado'),
     other: menu => (menu.sections || []).filter(s => s.mode !== 'choose_one'),
     tr: (obj, field, lang) => (lang === 'ca' && obj.ca && obj.ca[field]) || obj[field] || '',
     dish: (menu, sid, did) => { const s = (menu.sections || []).find(x => x.id === sid); return s && (s.dishes || []).find(d => d.id === did); },
@@ -40,9 +43,11 @@
     // Snapshot of a menus_cerrados row (staff side), with Catalan from inline translations or sibling rows.
     snapshot(row, all) {
       const W = window.MenuWorkflows, ca = (si, di, f) => { try { return W ? W.translatedField(row, all || [], 'ca', si, di, f) : ''; } catch { return ''; } };
-      const caRow = (all || []).find(m => m.parent_id === row.id && m.language === 'ca');
+      // Catalan copy of the same family and the same version (versions are separate rows with parent_id).
+      const fam = m => m.parent_id || m.id, ver = m => Number(m.version) || 1;
+      const caRow = (all || []).find(m => m.id !== row.id && fam(m) === fam(row) && ver(m) === ver(row) && m.language === 'ca');
       return {
-        name: row.name, type: row.type || null, price: row.price != null ? Number(row.price) : null,
+        name: row.name, type: row.type || null, version: ver(row), variant: M.variant(row), price: row.price != null ? Number(row.price) : null,
         price_label: row.price_label || 'por persona (IVA incluido)', drinks: row.drinks || '', notes: row.notes || '',
         ca: caRow ? { name: caRow.name, price_label: caRow.price_label, drinks: caRow.drinks } : null,
         sections: (row.sections || []).map((s, si) => ({
@@ -59,7 +64,7 @@
   };
 
   // ---------- demo store ----------
-  const KEY = 'grupos-demo-v2';
+  const KEY = 'grupos-demo-v3';
   const newToken = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
   const save = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
@@ -70,7 +75,7 @@
   // The example group (a real booking, without contact details): Menú Degustación for 24 people,
   // Friday 11 December 2026 at 15:00, organizer Ana. If that date has passed, it moves 12 days ahead.
   const EXAMPLE_MENU_ROW = {
-    id: 'demo-degustacion', name: 'Menú Degustación', type: 'degustacion', price: 27, price_label: 'por persona (IVA incluido)', language: 'es',
+    id: 'demo-degustacion-v2', parent_id: 'demo-degustacion', version: 2, name: 'Menú Degustación', type: 'degustacion', price: 27, price_label: 'por persona (IVA incluido)', language: 'es',
     drinks: 'Incluido la bebida (una botella de vino para 4) y el postre', notes: '',
     sections: [
       { id: 's-pica', title: 'Pica pica', mode: 'shared', dishes: [{ id: 'd-nachos', name: 'Nachos Sol (cheddar, pico de gallo, guacamole, jalapeños, carne picada)', allergens: ['gluten', 'lacteos'] }] },
@@ -86,6 +91,16 @@
         { id: 'd-paella', name: 'Paella de marisco con vieira al momento', allergens: ['crustaceos', 'moluscos', 'pescado'] },
         { id: 'd-lomo', name: 'Lomo Alto de Vaca a la Parrilla con patata gajo y Verduras de Temporada', allergens: [] },
         { id: 'd-chuleton', name: 'Chuletón de ternera 350 g con su guarnición', supplement: 5.5, allergens: [] }] }
+    ]
+  };
+  // Version 1 of the same family (older dishes and price), like in the real library.
+  const EXAMPLE_MENU_V1 = {
+    id: 'demo-degustacion', version: 1, name: 'Menú Degustación', type: 'degustacion', price: 26.5, price_label: 'por persona (IVA incluido)', language: 'es',
+    drinks: 'Incluido la bebida y el postre',
+    sections: [
+      { id: 'v1-pica', title: 'Pica pica', mode: 'shared', dishes: [{ id: 'v1-bravas', name: 'Patatas bravas' }] },
+      { id: 'v1-pri', title: 'Primer plato', mode: 'choose_one', dishes: [{ id: 'v1-sopa', name: 'Sopa de pescado' }, { id: 'v1-ens', name: 'Ensalada César' }] },
+      { id: 'v1-seg', title: 'Segundo plato', mode: 'choose_one', dishes: [{ id: 'v1-pollo', name: 'Pollo asado' }, { id: 'v1-merluza', name: 'Merluza a la romana' }] }
     ]
   };
   const EXAMPLE_MENU_ROW_2 = {
@@ -106,7 +121,7 @@
     const personas = names.map((name, i) => ({ id: newToken(), evento_id: ev.id, name, picks: { 's-primero': P[(i * 3) % 5], 's-segundo': S[(i * 2 + 1) % 5] },
       notes: i === 4 ? 'Sin gluten' : null, added_by: i === 0 ? 'organizer' : 'self', edit_key: newToken(),
       created_at: new Date(Date.now() - (9 - i) * 3600e3).toISOString(), updated_at: new Date(Date.now() - (9 - i) * 3600e3).toISOString() }));
-    return { events: [ev], personas, menus: [EXAMPLE_MENU_ROW, EXAMPLE_MENU_ROW_2] };
+    return { events: [ev], personas, menus: [EXAMPLE_MENU_V1, EXAMPLE_MENU_ROW, EXAMPLE_MENU_ROW_2] };
   }
   const store = () => { let s = load(); if (!s) { s = seed(); save(s); } return s; };
   const pub = p => ({ id: p.id, name: p.name, picks: p.picks, notes: p.notes, added_by: p.added_by, updated_at: p.updated_at });
