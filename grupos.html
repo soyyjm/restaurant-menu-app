@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>团餐管理</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f3ef;--card:#fff;--ink:#22201d;--muted:#77706a;--line:#e4dfd7;--accent:#8a6a3a;--ok:#2f6b3f;--okbg:#e5f1e8;--warn:#a2561a;--warnbg:#fbeee0;--info:#2c5a8a;--infobg:#e4edf7;--wa:#1f9d55}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#161513;--card:#201e1b;--ink:#eeeae4;--muted:#a59d94;--line:#36322d;--okbg:#1f3326;--warnbg:#3a2a1a;--infobg:#1c2a3a;--ok:#7cc08f;--warn:#e19a5c;--info:#8ab6e6;--accent:#d2ad6c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 Jost,"Noto Sans SC",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top{display:flex;align-items:center;gap:10px;padding:12px 0;flex-wrap:wrap}
+.top h1{font-size:18px;margin:0;flex:1 0 auto}
+.demo{background:#ffd54a;color:#3a2c00;font-size:12px;padding:2px 8px;border-radius:6px;font-weight:600}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 12px;font:inherit;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:#b3261e}
+.btn:disabled{opacity:.45;cursor:default}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.spacer{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.card h2{margin:0 0 8px;font-size:16px}
+.card h3{margin:12px 0 6px;font-size:14px}
+.ev{cursor:pointer}
+.ev:hover{border-color:var(--accent)}
+.ev .d{font-size:13px;color:var(--muted)}
+.ev .t{font-size:16px;font-weight:600;margin:2px 0}
+.prog{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}
+.prog i{display:block;height:100%;background:var(--ok)}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;white-space:nowrap;font-weight:500}
+.b-new{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.b-sent{background:var(--infobg);color:var(--info)}
+.b-ok{background:var(--okbg);color:var(--ok)}
+.b-warn{background:var(--warnbg);color:var(--warn)}
+.muted{color:var(--muted)}
+.al{color:#b3261e;font-weight:500}
+.kv{margin:0;padding:0;list-style:none}
+.kv li{display:flex;gap:8px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.kv li b{min-width:28px;text-align:right}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13.5px}
+th{font-size:12.5px;color:var(--muted);font-weight:500}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:7px 10px;width:100%}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog form,dialog .in{padding:18px}
+dialog h2{margin:0 0 12px;font-size:17px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fgrid label{font-size:13px;color:var(--muted);display:block}
+.fgrid .full{grid-column:1/-1}
+.dlg-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.login label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:9px 16px;border-radius:10px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.pick{display:block;margin:4px 0}
+.linkbox{font-size:12.5px;word-break:break-all;background:var(--bg);border-radius:8px;padding:6px 8px;margin:6px 0}
+/* Print: Spanish comanda only */
+#print{display:none}
+@media print{
+  body > *:not(#print){display:none!important}
+  #print{display:block}
+  body{background:#fff}
+}
+@page{size:A4;margin:10mm}
+.pp{font:10.5pt/1.35 Jost,Arial,sans-serif;color:#000;background:#fff}
+.pp + .pp{break-before:page;page-break-before:always}
+.pp-h{display:flex;align-items:center;gap:5mm;border-bottom:2.5px solid #000;padding-bottom:2mm;margin-bottom:2mm}
+.pp-h .t{font:700 20pt/1.1 Jost,Arial,sans-serif}
+.pp-h .copy{margin-left:auto;font:700 13pt Jost,Arial,sans-serif;border:2.5px solid #000;padding:1mm 3mm;letter-spacing:.12em}
+.pp h4{display:flex;align-items:center;gap:2mm;margin:3mm 0 1mm;font:700 11pt Jost,Arial,sans-serif;text-transform:uppercase;border-bottom:1.5px solid #000}
+.pp h4 .mar{margin-left:auto;font-size:9pt;font-weight:600;display:flex;gap:1.5mm;align-items:center}
+.bx{display:inline-block;flex:none;width:3.6mm;height:3.6mm;border:1.6px solid #000}
+.pp .li{display:flex;gap:2mm;align-items:baseline;padding:.5mm 0}
+.pp .li b{min-width:8mm;text-align:right}
+.pp .alert{border:2.5px solid #000;padding:1.5mm 3mm;margin:2mm 0;font-weight:600}
+.pp .alert div{font-weight:400}
+.pp table{border-collapse:collapse;width:100%;margin-top:1mm}
+.pp th,.pp td{border:1px solid #888;padding:1mm 2mm;font-size:9.5pt;text-align:left;vertical-align:top;color:#000}
+.pp th{background:#eee;font-weight:700}
+.pp .cols{display:grid;grid-template-columns:1fr 1fr;gap:0 8mm}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="print"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<dialog id="evDlg"><form method="dialog" id="evForm">
+  <h2 id="evTitle">新建团餐</h2>
+  <div class="fgrid">
+    <label class="full">菜单（Menú cerrado）*<select name="menu_id" required></select></label>
+    <label>日期 *<input name="date" type="date" required></label>
+    <label>时间<input name="time" placeholder="15:00" maxlength="10"></label>
+    <label class="full">名称 *<input name="title" required maxlength="120" placeholder="例如：Comida empresa X / 生日聚会"></label>
+    <label>组织者<input name="organizer" maxlength="120" placeholder="Ana"></label>
+    <label>人数 *<input name="pax" type="number" min="1" max="300" required></label>
+    <label>电话（WhatsApp）<input name="phone" inputmode="tel" maxlength="40"></label>
+    <label>Email<input name="email" type="email" maxlength="200"></label>
+    <label>选菜截止日期<input name="deadline" type="date"></label>
+    <label class="full">内部备注（客人看不到）<textarea name="notes" rows="2" maxlength="1000" placeholder="例如：Señal 20€ Bizum"></textarea></label>
+  </div>
+  <p class="muted" id="evMenuNote" style="font-size:12.5px;margin:8px 0 0"></p>
+  <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">保存</button></div>
+</form></dialog>
+
+<dialog id="pDlg"><div class="in" id="pBody"></div></dialog>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/menu-workflows.js"></script>
+<script src="/grupos/api.js"></script>
+<script src="/grupos/menu-card.js"></script>
+<script>
+(function () {
+'use strict';
+const API = window.GruposAPI, M = API.M, root = document.getElementById('root');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmtZh = (iso, o) => new Intl.DateTimeFormat('zh-CN', { timeZone: 'UTC', ...o }).format(new Date(iso + 'T12:00:00Z'));
+const fmtEs = (iso, o) => new Intl.DateTimeFormat('es-ES', { timeZone: 'UTC', ...o }).format(new Date(iso + 'T12:00:00Z'));
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date());
+const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const state = { events: [], menus: [], open: null, showPast: false };
+function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); }
+
+const orgLink = e => API.demo ? `${location.origin}/grupo.html?demo&m=${e.token}` : `${location.origin}/m/${e.token}`;
+const groupLink = e => API.demo ? `${location.origin}/grupo.html?demo&e=${e.share_token}` : `${location.origin}/e/${e.share_token}`;
+function waPhone(p) {
+  let d = String(p || '').replace(/[^\d+]/g, '');
+  if (d.startsWith('+')) d = d.slice(1); else if (d.startsWith('00')) d = d.slice(2); else if (/^[679]\d{8}$/.test(d)) d = '34' + d;
+  return /^\d{8,15}$/.test(d) ? d : '';
+}
+function orgMsg(e) {
+  const d = fmtEs(e.date, { weekday: 'long', day: 'numeric', month: 'long' });
+  return `¡Hola${e.organizer ? ' ' + e.organizer : ''}! Gracias por reservar en Restaurante Sol para el ${d}${e.time ? ' a las ' + e.time : ''} (${e.pax} personas).\n\n` +
+    `Aquí tienes el menú y la página para organizar la elección de tu grupo:\n${orgLink(e)}\n\n` +
+    `Desde ahí puedes enviar a cada persona un enlace para que elija su plato, o descargar el menú en PDF y apuntar tú las cantidades.` +
+    (e.deadline ? `\n\nTe agradeceríamos la elección antes del ${fmtEs(e.deadline, { day: 'numeric', month: 'long' })}.` : '') + `\n\n¡Gracias!`;
+}
+const openNow = e => !e.locked && today() < e.date && (!e.deadline || today() <= e.deadline);
+function status(e) {
+  const acc = M.accounted(e);
+  if (acc >= e.pax) return ['ok', '已选齐'];
+  if (!openNow(e)) return ['warn', `已截止 · 缺 ${e.pax - acc} 人`];
+  if (acc) return ['sent', `进行中 ${acc}/${e.pax}`];
+  if (e.sent_at) return ['sent', '已发给组织者'];
+  return ['new', '未发送'];
+}
+const dishName = (e, sid, did) => { const d = M.dish(e.menu, sid, did); return d ? d.name : '?'; };
+
+// ---------- login / load ----------
+function renderLogin(err) {
+  root.innerHTML = `<div class="login"><h2 style="margin:0 0 12px">团餐管理 · 登录</h2>
+    <form id="lf"><label>Email<input name="email" type="email" autocomplete="username" required></label>
+    <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+    ${err ? `<p class="al" style="font-size:13px">${esc(err)}</p>` : ''}
+    <p style="margin:16px 0 0"><button class="btn primary" style="width:100%;justify-content:center">登录</button></p></form>
+    <p class="muted" style="font-size:12px;margin:14px 0 0"><a href="?demo">打开演示版</a>（数据只保存在本机浏览器）</p></div>`;
+  document.getElementById('lf').onsubmit = async e => { e.preventDefault(); const f = new FormData(e.target);
+    try { await API.signIn(f.get('email'), f.get('password')); await load(); } catch (x) { renderLogin('登录失败：' + x.message); } };
+}
+async function load() {
+  try { [state.events, state.menus] = await Promise.all([API.listEvents(), API.listMenus()]); }
+  catch (e) {
+    if (e.code === 'auth') return renderLogin('登录已过期，请重新登录');
+    root.innerHTML = `<div class="empty">读取数据失败：${esc(e.message)}<br><small>如果是第一次使用，请先在 Supabase 运行 supabase/006_grupos.sql</small><br><br><button class="btn" onclick="location.reload()">重试</button></div>`; return;
+  }
+  render();
+}
+
+// ---------- views ----------
+function shell(body) {
+  return `<header><div class="wrap"><div class="top"><h1>团餐管理 · Menús de grupo</h1>${API.demo ? '<span class="demo">演示版</span>' : ''}
+    <a class="btn sm" href="/fiestas.html${API.demo ? '?demo' : ''}">节日订餐</a><a class="btn sm" href="/">菜单系统</a>
+    ${API.demo ? '<button class="btn sm" id="resetDemo">重置演示数据</button>' : '<button class="btn sm" id="logout">退出</button>'}</div></div></header>
+    <main class="wrap">${body}</main>`;
+}
+function render() {
+  const e = state.events.find(x => x.id === state.open);
+  root.innerHTML = shell(e ? viewEvent(e) : viewList());
+}
+function viewList() {
+  const t = today(), list = state.events.filter(e => state.showPast || e.date >= t).sort((a, b) => a.date.localeCompare(b.date) || String(a.time).localeCompare(String(b.time)));
+  return `<div class="tools"><button class="btn primary" id="newEv">＋ 新建团餐</button><span class="spacer"></span>
+      <label class="muted" style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="showPast" style="width:auto" ${state.showPast ? 'checked' : ''}> 显示过去的</label></div>
+    ${list.length ? `<div class="grid">${list.map(e => { const [c, l] = status(e), acc = M.accounted(e);
+      return `<div class="card ev" data-open="${e.id}"><div class="d">${fmtZh(e.date, { month: 'long', day: 'numeric', weekday: 'short' })}${e.time ? ' · ' + esc(e.time) : ''}</div>
+        <div class="t">${esc(e.title)}</div><div class="muted" style="font-size:13px">${esc(e.menu.name)} · ${e.pax} 人${e.organizer ? ' · ' + esc(e.organizer) : ''}</div>
+        <div class="prog"><i style="width:${Math.min(100, acc / e.pax * 100)}%"></i></div><span class="badge b-${c}">${l}</span></div>`; }).join('')}</div>`
+      : `<div class="empty">还没有团餐。点“新建团餐”，选一个 Menú cerrado 即可。</div>`}`;
+}
+function viewEvent(e) {
+  const tot = M.totals(e), acc = M.accounted(e), [c, l] = status(e), ph = waPhone(e.phone), sup = M.supplements(e);
+  const cp = M.countsPeople(e.counts);
+  const allergies = [...e.personas.filter(p => p.notes).map(p => `${p.name}: ${p.notes}`), ...(e.counts_notes ? [`(organizador) ${e.counts_notes}`] : [])];
+  return `<div class="tools"><button class="btn" id="back">← 全部团餐</button><span class="spacer"></span>
+      <button class="btn" id="editEv">编辑</button><button class="btn" id="lockEv">${e.locked ? '重新开放选菜' : '截止选菜'}</button><button class="btn danger" id="delEv">删除</button></div>
+    <div class="grid">
+      <div class="card"><h2>${esc(e.title)} <span class="badge b-${c}">${l}</span></h2>
+        <div>${fmtZh(e.date, { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}${e.time ? ' · ' + esc(e.time) : ''}</div>
+        <div class="muted">${esc(e.menu.name)}${e.menu.price != null ? ` · ${Number(e.menu.price).toFixed(2)} €/人` : ''} · ${e.pax} 人</div>
+        <div style="margin-top:6px">组织者：${esc(e.organizer || '—')}${e.phone ? ' · ' + esc(e.phone) : ''}${e.email ? ' · ' + esc(e.email) : ''}</div>
+        ${e.deadline ? `<div class="muted">选菜截止：${fmtZh(e.deadline, { month: 'long', day: 'numeric' })}</div>` : ''}
+        ${e.notes ? `<div class="muted">备注：${esc(e.notes)}</div>` : ''}
+        <div class="prog"><i style="width:${Math.min(100, acc / e.pax * 100)}%"></i></div><div><b>${acc} / ${e.pax}</b> 人已选（个人 ${e.personas.length} + 组织者代填 ${cp}）</div></div>
+      <div class="card"><h2>发给组织者</h2>
+        <p class="muted" style="margin:0 0 8px;font-size:13px">组织者用这个链接选择方式：把个人链接发给同事各自选，或下载菜单 PDF 后自己统计数量。</p>
+        <div class="tools" style="margin:0">${ph ? `<a class="btn wa" data-sent href="https://wa.me/${ph}?text=${encodeURIComponent(orgMsg(e))}" target="_blank" rel="noopener">WhatsApp 发给组织者</a>` : ''}
+          ${e.email ? `<a class="btn" data-sent href="mailto:${esc(e.email)}?subject=${encodeURIComponent('Menú de grupo · Restaurante Sol · ' + fmtEs(e.date, { day: 'numeric', month: 'long' }))}&body=${encodeURIComponent(orgMsg(e))}">Email</a>` : ''}
+          <button class="btn" id="copyMsg">复制消息</button><a class="btn" href="${esc(orgLink(e))}" target="_blank" rel="noopener">预览组织者页面</a></div>
+        <div class="linkbox">组织者链接：${esc(orgLink(e))}</div><div class="linkbox">个人选菜链接：${esc(groupLink(e))}</div>
+        <div class="tools" style="margin:6px 0 0"><button class="btn sm" id="mImg">菜单图片</button><button class="btn sm" id="mPdf">菜单 PDF</button>
+          <button class="btn sm" id="refreshMenu" title="Menú cerrado 改过之后，把新内容同步到这次团餐">同步菜单</button></div></div>
+      <div class="card"><h2>后厨汇总</h2>${M.choice(e.menu).map(s => { const m = tot[s.id] || {}, sum = Object.values(m).reduce((a, b) => a + b, 0);
+        return `<h3>${esc(s.title)} <span class="badge ${sum === e.pax ? 'b-ok' : 'b-warn'}">${sum} / ${e.pax}</span></h3><ul class="kv">${s.dishes.map(d => `<li><b>${m[d.id] || 0}</b><span>${esc(d.name)}${d.supplement ? ` <span class="badge b-warn">+${Number(d.supplement).toFixed(2)}€</span>` : ''}</span></li>`).join('')}</ul>`; }).join('')}
+        ${M.other(e.menu).map(s => `<h3>${esc(s.title)} <span class="muted" style="font-weight:400">（${s.mode === 'shared' ? '共享' : '固定'}）</span></h3><div class="muted">${s.dishes.map(d => esc(d.name)).join('、')}</div>`).join('')}
+        ${sup ? `<p style="margin:10px 0 0">补差价合计：<b>${sup.toFixed(2)} €</b></p>` : ''}
+        <div class="tools" style="margin:12px 0 0"><button class="btn primary" id="printC">打印出菜单（西班牙语）</button></div></div>
+      <div class="card"><h2>过敏 / 备注</h2>${allergies.length ? allergies.map(a => `<p class="al" style="margin:0 0 6px">⚠ ${esc(a)}</p>`).join('') : '<p class="muted">暂无</p>'}</div>
+    </div>
+    <div class="card" style="margin-top:12px"><h2>按人明细（${e.personas.length}）</h2>
+      ${e.personas.length ? `<table><thead><tr><th>姓名</th>${M.choice(e.menu).map(s => `<th>${esc(s.title)}</th>`).join('')}<th>备注</th><th>来源</th><th></th></tr></thead><tbody>
+        ${e.personas.map(p => `<tr><td><b>${esc(p.name)}</b></td>${M.choice(e.menu).map(s => `<td>${esc(dishName(e, s.id, p.picks[s.id]))}</td>`).join('')}
+          <td class="al">${esc(p.notes || '')}</td><td class="muted">${p.added_by === 'self' ? '本人' : p.added_by === 'organizer' ? '组织者' : '员工'}</td>
+          <td style="white-space:nowrap"><button class="btn sm" data-pedit="${p.id}">改</button> <button class="btn sm danger" data-pdel="${p.id}">删</button></td></tr>`).join('')}</tbody></table>` : '<p class="muted">还没有人选。</p>'}
+      ${cp ? `<h3>组织者代填的数量（${cp} 人，无姓名）</h3>${M.choice(e.menu).map(s => `<div><b>${esc(s.title)}：</b>${Object.entries(e.counts[s.id] || {}).map(([d, n]) => `${n}× ${esc(dishName(e, s.id, d))}`).join('，') || '—'}</div>`).join('')}` : ''}
+      <p style="margin:10px 0 0"><button class="btn" id="addP">＋ 员工代录一人</button></p></div>`;
+}
+
+// ---------- print (Spanish) ----------
+function printComanda(e) {
+  const tot = M.totals(e), cp = M.countsPeople(e.counts), sup = M.supplements(e);
+  const when = `${fmtEs(e.date, { weekday: 'long', day: 'numeric', month: 'long' })}${e.time ? ' · ' + e.time : ''}`;
+  const allergies = [...e.personas.filter(p => p.notes).map(p => `<div><b>${esc(p.name)}:</b> ${esc(p.notes)}</div>`), ...(e.counts_notes ? [`<div><b>Otros:</b> ${esc(e.counts_notes)}</div>`] : [])];
+  const head = copy => `<div class="pp-h"><div><div class="t">${esc(e.title)}</div><div>${e.pax} personas · ${esc(when)} · ${esc(e.menu.name)}${e.organizer ? ' · Org.: ' + esc(e.organizer) : ''}</div></div><div class="copy">${copy}</div></div>`;
+  const sec = s => { const m = tot[s.id] || {}, sum = Object.values(m).reduce((a, b) => a + b, 0);
+    return `<h4><span class="bx"></span>${esc(s.title)} (${sum}/${e.pax})<span class="mar">MARCHAR <span class="bx"></span></span></h4>` +
+      s.dishes.filter(d => m[d.id]).map(d => `<div class="li"><span class="bx"></span><b>${m[d.id]}×</b><span>${esc(d.name)}</span></div>`).join(''); };
+  const others = M.other(e.menu).map(s => `<h4><span class="bx"></span>${esc(s.title)}${s.mode === 'shared' ? ' (para compartir)' : ''}<span class="mar">MARCHAR <span class="bx"></span></span></h4>${s.dishes.map(d => `<div class="li"><span class="bx"></span><span>${esc(d.name)}</span></div>`).join('')}`).join('');
+  const choice = M.choice(e.menu);
+  const page1 = `<div class="pp">${head('COCINA')}${allergies.length ? `<div class="alert">⚠ ALERGIAS / PETICIONES${allergies.join('')}</div>` : ''}
+    <div class="cols"><div>${others}${choice[0] ? sec(choice[0]) : ''}</div><div>${choice.slice(1).map(sec).join('')}</div></div>
+    ${M.accounted(e) < e.pax ? `<div class="alert">Faltan ${e.pax - M.accounted(e)} personas por elegir.</div>` : ''}</div>`;
+  const rows = e.personas.map((p, i) => `<tr><td>${i + 1}</td><td><b>${esc(p.name)}</b></td>${choice.map(s => { const d = M.dish(e.menu, s.id, p.picks[s.id]); return `<td>${esc(d ? d.name : '?')}${d && d.supplement ? ` (+${Number(d.supplement).toFixed(2)}€)` : ''}</td>`; }).join('')}<td>${esc(p.notes || '')}</td></tr>`).join('');
+  const page2 = `<div class="pp">${head('SALA')}${allergies.length ? `<div class="alert">⚠ ALERGIAS / PETICIONES${allergies.join('')}</div>` : ''}
+    <div class="cols"><div>${choice[0] ? sec(choice[0]) : ''}</div><div>${choice.slice(1).map(sec).join('')}</div></div>
+    ${e.personas.length ? `<h4>Por persona</h4><table><thead><tr><th>#</th><th>Nombre</th>${choice.map(s => `<th>${esc(s.title)}</th>`).join('')}<th>Notas</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
+    ${cp ? `<p style="margin-top:2mm">Además, ${cp} personas sin nombre (apuntadas por el organizador): ${choice.map(s => `${esc(s.title)}: ${Object.entries(e.counts[s.id] || {}).map(([d, n]) => `${n}× ${esc(dishName(e, s.id, d))}`).join(', ')}`).join(' · ')}</p>` : ''}
+    ${sup ? `<p style="margin-top:2mm"><b>Suplementos: ${sup.toFixed(2)} €</b></p>` : ''}</div>`;
+  document.getElementById('print').innerHTML = page1 + page2;
+  print();
+}
+
+// ---------- event dialog ----------
+const evDlg = document.getElementById('evDlg'), evForm = document.getElementById('evForm');
+let editing = null;
+function menuOptions(sel) {
+  // Main-language menus only (Catalan/English copies have parent_id).
+  const list = state.menus.filter(m => !m.parent_id && (m.sections || []).length);
+  return list.map(m => `<option value="${esc(m.id)}" ${m.id === sel ? 'selected' : ''}>${esc(m.name)}${m.price != null ? ` · ${Number(m.price).toFixed(2)}€` : ''}${(m.sections || []).some(s => s.mode === 'choose_one') ? '' : '（没有可选的菜）'}</option>`).join('');
+}
+function openEvent(e) {
+  editing = e || null;
+  document.getElementById('evTitle').textContent = e ? '编辑团餐' : '新建团餐';
+  evForm.menu_id.innerHTML = (e && !state.menus.some(m => m.id === e.menu_id) ? `<option value="">${esc(e.menu.name)}（原菜单）</option>` : '') + menuOptions(e ? e.menu_id : null);
+  for (const k of ['date', 'time', 'title', 'organizer', 'phone', 'email', 'deadline', 'notes']) evForm[k].value = e ? e[k] || '' : '';
+  evForm.pax.value = e ? e.pax : '';
+  document.getElementById('evMenuNote').textContent = e ? '改了菜单的话，已经选过的人会保留，但不在新菜单里的菜会显示为“?”。' : '截止日期不填时默认是用餐前 2 天。';
+  evDlg.showModal();
+}
+evForm.date.addEventListener('change', () => { if (!editing && evForm.date.value && !evForm.deadline.value) evForm.deadline.value = addDays(evForm.date.value, -2); });
+evForm.addEventListener('submit', async ev => {
+  if (!ev.submitter || ev.submitter.value !== 'ok') return;
+  ev.preventDefault();
+  const f = Object.fromEntries(new FormData(evForm));
+  const row = { id: editing && editing.id, date: f.date, time: f.time.trim(), title: f.title.trim(), organizer: f.organizer.trim(), phone: f.phone.trim(), email: f.email.trim(),
+    pax: Math.max(1, parseInt(f.pax) || 1), deadline: f.deadline || (editing ? null : addDays(f.date, -2)), notes: f.notes.trim() };
+  if (!editing || (f.menu_id && f.menu_id !== editing.menu_id)) {
+    const m = state.menus.find(x => x.id === f.menu_id);
+    if (!m) return alert('请选择菜单');
+    row.menu = M.snapshot(m, state.menus); row.menu_id = m.id;
+    if (!M.choice(row.menu).length && !confirm('这个菜单没有“A elegir uno”的分区，客人没有可选的菜。仍然保存吗？')) return;
+  }
+  try { await API.saveEvent(row); evDlg.close(); toast('已保存'); await load(); } catch (x) { alert('保存失败：' + x.message); }
+});
+
+// ---------- staff: add / edit one person ----------
+const pDlg = document.getElementById('pDlg'), pBody = document.getElementById('pBody');
+let pDraft = null;
+function openPerson(e, p) {
+  pDraft = { ev: e, id: p ? p.id : null, name: p ? p.name : '', picks: p ? { ...p.picks } : {}, notes: p ? p.notes || '' : '' };
+  pBody.innerHTML = `<h2>${p ? '修改' : '员工代录'}</h2><label class="muted" style="font-size:13px">姓名<input id="pn" maxlength="60" value="${esc(pDraft.name)}"></label>
+    ${M.choice(e.menu).map(s => `<h3>${esc(s.title)}</h3>${s.dishes.map(d => `<label class="pick"><input type="radio" style="width:auto" name="s-${esc(s.id)}" value="${esc(d.id)}" ${pDraft.picks[s.id] === d.id ? 'checked' : ''}> ${esc(d.name)}</label>`).join('')}`).join('')}
+    <label class="muted" style="font-size:13px;display:block;margin-top:10px">过敏 / 备注<input id="pnotes" maxlength="300" value="${esc(pDraft.notes)}"></label>
+    <div class="dlg-acts"><button class="btn" id="pCancel">取消</button><button class="btn primary" id="pSave">保存</button></div>`;
+  pDlg.showModal();
+}
+pDlg.addEventListener('click', async ev => {
+  if (ev.target.id === 'pCancel') return pDlg.close();
+  if (ev.target.id !== 'pSave') return;
+  const e = pDraft.ev, name = document.getElementById('pn').value.trim(), picks = {};
+  for (const s of M.choice(e.menu)) { const r = pBody.querySelector(`input[name="s-${CSS.escape(s.id)}"]:checked`); if (r) picks[s.id] = r.value; }
+  if (!name || Object.keys(picks).length !== M.choice(e.menu).length) return alert('请填写姓名并为每个分区选一道菜');
+  try { await API.staffSavePerson(e, { id: pDraft.id, name, picks, notes: document.getElementById('pnotes').value }); pDlg.close(); toast('已保存'); await load(); }
+  catch (x) { alert('保存失败：' + x.message); }
+});
+
+// ---------- events ----------
+root.addEventListener('click', async ev => {
+  const t = ev.target, e = state.events.find(x => x.id === state.open);
+  const op = t.closest('[data-open]'); if (op) { state.open = op.dataset.open; render(); window.scrollTo(0, 0); return; }
+  if (t.id === 'resetDemo') { if (confirm('清空演示数据并重新生成示例？')) { API.resetDemo(); state.open = null; await load(); } return; }
+  if (t.id === 'logout') { await API.signOut(); return renderLogin(); }
+  if (t.id === 'newEv') return openEvent(null);
+  if (t.id === 'showPast') { state.showPast = t.checked; return render(); }
+  if (!e) return;
+  if (t.id === 'back') { state.open = null; return render(); }
+  if (t.id === 'editEv') return openEvent(e);
+  if (t.id === 'delEv') { if (!confirm(`删除“${e.title}”和所有人的选择？删除后不能恢复。`)) return; await API.deleteEvent(e.id); state.open = null; toast('已删除'); return load(); }
+  if (t.id === 'lockEv') { await API.patchEvent(e.id, { locked: !e.locked }); toast(e.locked ? '已重新开放' : '已截止选菜'); return load(); }
+  if (t.closest('[data-sent]')) { API.patchEvent(e.id, { sent_at: new Date().toISOString() }).then(load).catch(() => {}); return; }
+  if (t.id === 'copyMsg') { try { await navigator.clipboard.writeText(orgMsg(e)); toast('已复制，可以粘贴到 WhatsApp 或邮件'); } catch { prompt('复制：', orgLink(e)); } return; }
+  if (t.id === 'mImg' || t.id === 'mPdf') { const card = { menu: e.menu, date: e.date, time: e.time, organizer: e.organizer || '' };
+    try { t.id === 'mImg' ? await GruposMenuCard.downloadImage(card, { lang: 'es' }) : await GruposMenuCard.downloadPdf(card, { lang: 'es' }); } catch (x) { alert('生成失败：' + x.message); } return; }
+  if (t.id === 'refreshMenu') {
+    const m = state.menus.find(x => x.id === e.menu_id); if (!m) return alert('找不到原来的 Menú cerrado（可能被删除了）。');
+    if (!confirm('用 Menú cerrado 的最新内容更新这次团餐的菜单？已经选过的人会保留。')) return;
+    await API.patchEvent(e.id, { menu: M.snapshot(m, state.menus) }); toast('菜单已同步'); return load();
+  }
+  if (t.id === 'printC') return printComanda(e);
+  if (t.id === 'addP') return openPerson(e, null);
+  const pe = t.closest('[data-pedit]'); if (pe) return openPerson(e, e.personas.find(p => p.id === pe.dataset.pedit));
+  const pdl = t.closest('[data-pdel]');
+  if (pdl) { const p = e.personas.find(x => x.id === pdl.dataset.pdel); if (!confirm(`删除 ${p.name} 的选择？`)) return; await API.staffDeletePerson(p.id); toast('已删除'); return load(); }
+});
+document.addEventListener('visibilitychange', () => { if (!document.hidden && state.events.length && !evDlg.open && !pDlg.open) load(); });
+
+(async () => { (await API.session()) ? load() : renderLogin(); })();
+})();
+</script>
+</body>
+</html>

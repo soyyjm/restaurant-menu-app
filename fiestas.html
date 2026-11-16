@@ -321,6 +321,7 @@ function render() {
     .map(([id, l]) => `<button role="tab" data-tab="${id}" aria-selected="${state.tab === id}">${l}</button>`).join('');
   root.innerHTML = `<header><div class="wrap">
       <div class="top"><h1>节日订餐管理</h1>${API.demo ? '<span class="demo">演示版 · 数据只存在本机</span>' : ''}
+        <a class="btn sm" href="/grupos.html${API.demo ? '?demo' : ''}">团餐</a>
         <a class="btn sm" href="/" title="返回菜单系统">菜单系统</a>
         ${API.demo ? '<button class="btn sm" id="resetDemo">重置演示数据</button>' : '<button class="btn sm" id="logout">退出</button>'}</div>
       <div class="days" role="tablist">${daysHtml}</div></div></header>

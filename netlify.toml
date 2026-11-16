@@ -16,3 +16,14 @@
   from = "/p/*"
   to = "/pedido.html"
   status = 200
+
+# Group menus: organizer link /m/<token>, personal link /e/<share_token> -> grupo.html
+[[redirects]]
+  from = "/m/*"
+  to = "/grupo.html"
+  status = 200
+
+[[redirects]]
+  from = "/e/*"
+  to = "/grupo.html"
+  status = 200
