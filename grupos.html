@@ -75,7 +75,8 @@ dialog h2{margin:0 0 12px;font-size:17px}
 }
 @page{size:A4;margin:10mm}
 .pp{font:10.5pt/1.35 Jost,Arial,sans-serif;color:#000;background:#fff}
-.pp + .pp{break-before:page;page-break-before:always}
+.pp{break-after:page;page-break-after:always}
+.pp:last-child{break-after:auto;page-break-after:auto}
 .pp-h{display:flex;align-items:center;gap:5mm;border-bottom:2.5px solid #000;padding-bottom:2mm;margin-bottom:2mm}
 .pp-h .t{font:700 20pt/1.1 Jost,Arial,sans-serif}
 .pp-h .copy{margin-left:auto;font:700 13pt Jost,Arial,sans-serif;border:2.5px solid #000;padding:1mm 3mm;letter-spacing:.12em}
@@ -225,7 +226,7 @@ function viewEvent(e) {
         return `<h3>${esc(s.title)} <span class="badge ${sum === e.pax ? 'b-ok' : 'b-warn'}">${sum} / ${e.pax}</span></h3><ul class="kv">${s.dishes.map(d => `<li><b>${m[d.id] || 0}</b><span>${esc(d.name)}${d.supplement ? ` <span class="badge b-warn">+${Number(d.supplement).toFixed(2)}€</span>` : ''}</span></li>`).join('')}</ul>`; }).join('')}
         ${M.other(e.menu).map(s => `<h3>${esc(s.title)} <span class="muted" style="font-weight:400">（${s.mode === 'shared' ? '共享' : '固定'}）</span></h3><div class="muted">${s.dishes.map(d => esc(d.name)).join('、')}</div>`).join('')}
         ${sup ? `<p style="margin:10px 0 0">补差价合计：<b>${sup.toFixed(2)} €</b></p>` : ''}
-        <div class="tools" style="margin:12px 0 0"><button class="btn primary" id="printC">打印出菜单（西班牙语）</button></div></div>
+        <div class="tools" style="margin:12px 0 0"><button class="btn primary" id="printC" title="两页 A4：第 1 页厨房 COCINA，第 2 页大厅 SALA">打印出菜单 2 联（西班牙语）</button><button class="btn" id="printCk">只打厨房联 COCINA</button><button class="btn" id="printCs">只打大厅联 SALA</button></div></div>
       <div class="card"><h2>过敏 / 备注</h2>${allergies.length ? allergies.map(a => `<p class="al" style="margin:0 0 6px">⚠ ${esc(a)}</p>`).join('') : '<p class="muted">暂无</p>'}</div>
     </div>
     <div class="card" style="margin-top:12px"><h2>按人明细（${e.personas.length}）</h2>
@@ -238,7 +239,7 @@ function viewEvent(e) {
 }
 
 // ---------- print (Spanish) ----------
-function printComanda(e) {
+function printComanda(e, only) {
   const tot = M.totals(e), cp = M.countsPeople(e.counts), sup = M.supplements(e);
   const when = `${fmtEs(e.date, { weekday: 'long', day: 'numeric', month: 'long' })}${e.time ? ' · ' + e.time : ''}`;
   const allergies = [...e.personas.filter(p => p.notes).map(p => `<div><b>${esc(p.name)}:</b> ${esc(p.notes)}</div>`), ...(e.counts_notes ? [`<div><b>Otros:</b> ${esc(e.counts_notes)}</div>`] : [])];
@@ -257,7 +258,7 @@ function printComanda(e) {
     ${e.personas.length ? `<h4>Por persona</h4><table><thead><tr><th>#</th><th>Nombre</th>${choice.map(s => `<th>${esc(s.title)}</th>`).join('')}<th>Notas</th></tr></thead><tbody>${rows}</tbody></table>` : ''}
     ${cp ? `<p style="margin-top:2mm">Además, ${cp} personas sin nombre (apuntadas por el organizador): ${choice.map(s => `${esc(s.title)}: ${Object.entries(e.counts[s.id] || {}).map(([d, n]) => `${n}× ${esc(dishName(e, s.id, d))}`).join(', ')}`).join(' · ')}</p>` : ''}
     ${sup ? `<p style="margin-top:2mm"><b>Suplementos: ${sup.toFixed(2)} €</b></p>` : ''}</div>`;
-  document.getElementById('print').innerHTML = page1 + page2;
+  document.getElementById('print').innerHTML = only === 'cocina' ? page1 : only === 'sala' ? page2 : page1 + page2;
   print();
 }
 
@@ -353,6 +354,8 @@ root.addEventListener('click', async ev => {
     await API.patchEvent(e.id, { menu: M.snapshot(m, state.menus) }); toast('菜单已同步'); return load();
   }
   if (t.id === 'printC') return printComanda(e);
+  if (t.id === 'printCk') return printComanda(e, 'cocina');
+  if (t.id === 'printCs') return printComanda(e, 'sala');
   if (t.id === 'addP') return openPerson(e, null);
   const pe = t.closest('[data-pedit]'); if (pe) return openPerson(e, e.personas.find(p => p.id === pe.dataset.pedit));
   const pdl = t.closest('[data-pdel]');
