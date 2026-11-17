@@ -21,7 +21,7 @@ window.FIESTAS = {
       pica: { key: 'pica25b', items: [
         { es: 'Tabla de embutidos ibéricos', plate: true },
         { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
-        'Langostinos cocidos con mahonesa de cítricos',
+        { es: 'Langostinos cocidos con mahonesa de cítricos', perPerson: 2 },
         { es: 'Pan de coca de Folgueroles con tomate y aceite de oliva virgen extra', plate: true }
       ] },
       menu: {
@@ -167,10 +167,14 @@ window.FIESTAS.line = key => {
 //   possible, bigger plates first: 5 → [5], 6 → [3,3], 7 → [4,3], 9 → [5,4], 10 → [4,3,3].
 //   Items are counted two ways (keep it simple):
 //     'Croquetas de …'                       → by pieces: perPerson pieces per person (pieces = people × perPerson)
+//     { es: 'Langostinos …', perPerson: 2 }  → by pieces, with its own pieces per person
 //     { es: 'Calamares …', plate: true }     → by plate: one serving per pica-pica plate, sized like the plate
 //                                             (a 4-person plate gets a 4-person serving), no piece count
 window.FIESTAS.picaRules = { countKids: true, perPerson: 1 };
-window.FIESTAS.picaItem = it => typeof it === 'string' ? { es: it, plate: false } : { es: it.es, plate: !!it.plate };
+window.FIESTAS.picaItem = it => {
+  const pp = window.FIESTAS.picaRules.perPerson;
+  return typeof it === 'string' ? { es: it, plate: false, pp } : { es: it.es, plate: !!it.plate, pp: it.perPerson || pp };
+};
 window.FIESTAS.picaPeople = b => b.adults + (window.FIESTAS.picaRules.countKids ? b.kids : 0);
 window.FIESTAS.picaSplit = n => {
   if (n <= 0) return [];
