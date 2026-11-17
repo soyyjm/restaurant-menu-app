@@ -16,26 +16,32 @@ window.FIESTAS = {
   },
   days: [
     {
-      date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55, kidsPrice: 25,
+      date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55.5, kidsPrice: 25,
       deadline: '2026-12-19', theme: 'navidad',
-      pica: { key: 'pica25', items: ['Coca de vidre con tomate', 'Croquetas de setas y trufa', 'Mini brioche de rustido', 'Tartaleta de esqueixada'] },
+      pica: { key: 'pica25b', items: [
+        { es: 'Tabla de embutidos ibéricos', plate: true },
+        { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
+        'Langostinos cocidos con mahonesa de cítricos',
+        { es: 'Pan de coca de Folgueroles con tomate y aceite de oliva virgen extra', plate: true }
+      ] },
       menu: {
         primero: [
-          { key: 'sopa25', es: 'Sopa de galets con pilota', tags: ['firma'] },
-          { key: 'carp25', es: 'Carpaccio de langostino, granada y aceite de mandarina' },
-          { key: 'perd25', es: 'Ensalada tibia de perdiz escabechada' },
-          { key: 'cast25', es: 'Crema de castañas, setas y aceite de trufa', tags: ['veg'] }
+          { key: 'alca25', es: 'Corazón de alcachofa confitada con setas de temporada y salsa romesco' },
+          { key: 'escu25', es: "Escudella de Navidad: galets con pilota y su carn d'olla" },
+          { key: 'lasa25', es: 'Lasaña de cochinillo con bechamel trufada y jugo de asado' },
+          { key: 'tart25', es: 'Steak tartar de ternera cortado a cuchillo, yema curada, alcaparras y tostas' }
         ],
         segundo: [
-          { key: 'pula25', es: 'Pularda rellena, salsa Pedro Ximénez y puré de castaña', tags: ['firma'] },
-          { key: 'pato25', es: 'Confit de pato, salsa de naranja y gratén de patata' },
-          { key: 'merl25', es: 'Lomo de merluza al cava con almejas' },
-          { key: 'riso25', es: 'Risotto de setas y trufa', tags: ['veg'] }
+          { key: 'cabr25', es: 'Paletilla de cabrito al horno con patatas panaderas y su jugo al romero' },
+          { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con flor de patata y salsa demi-glace al vino tinto' },
+          { key: 'seny25', es: 'Arroz del senyoret con vieiras y gambas, con allioli suave' },
+          { key: 'roda25', es: 'Lomo de rodaballo con salsa de cava y azafrán y espinacas a la catalana' }
         ],
         postre: [
           { key: 'bola25', es: 'Bola de Navidad', tags: ['firma'] },
-          { key: 'ques25', es: 'Tarta de queso con frutos rojos' },
-          { key: 'sorm', es: 'Sorbete de mandarina al cava' }
+          { key: 'qpis25', es: 'Tarta de queso casera al horno con crema de pistacho' },
+          { key: 'coul25', es: 'Coulant de chocolate con helado de vainilla' },
+          { key: 'tira25', es: 'Tiramisú casero' }
         ]
       }
     },
@@ -128,6 +134,8 @@ window.FIESTAS = {
 };
 
 // Shared helpers (both pages).
+// Price as written in Spain: 55 → "55", 55.5 → "55,50".
+window.FIESTAS.eur = n => Number.isInteger(+n) ? String(+n) : (+n).toFixed(2).replace('.', ',');
 window.FIESTAS.dayOf = date => window.FIESTAS.days.find(d => d.date === date);
 window.FIESTAS.dishIndex = (() => {
   const idx = {};

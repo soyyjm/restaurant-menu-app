@@ -244,7 +244,7 @@ function dishRow(g, n, c, d) {
 function renderForm() {
   const p = day.pica;
   let h = header() + `<main class="wrap">
-    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), day.price, B.kids ? day.kidsPrice : 0)}</p>
+    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), F.eur(day.price), B.kids ? F.eur(day.kidsPrice) : 0)}</p>
     ${shareCard()}
     ${error ? `<p class="note" style="color:var(--warn)">${esc(error)}</p>` : ''}
     <section><div class="sec-head"><h2>${t().pica}</h2></div>

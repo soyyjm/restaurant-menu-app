@@ -63,7 +63,7 @@
     ctx.font = `600 84px ${SERIF}`; ctx.fillText(`${L.menu} ${opts.lang === 'ca' ? day.ca : day.name}`, W / 2, 180);
     const when = new Intl.DateTimeFormat(L.locale, { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(day.date + 'T12:00:00Z'));
     ctx.font = `400 32px ${SANS}`; ctx.fillText(when.charAt(0).toUpperCase() + when.slice(1), W / 2, 236);
-    ctx.font = `600 36px ${SANS}`; ctx.fillText(`${day.price} € ${L.perAdult}${opts.kids ? `  ·  ${L.kids} ${day.kidsPrice} €` : ''}`, W / 2, 308);
+    ctx.font = `600 36px ${SANS}`; ctx.fillText(`${window.FIESTAS.eur(day.price)} € ${L.perAdult}${opts.kids ? `  ·  ${L.kids} ${window.FIESTAS.eur(day.kidsPrice)} €` : ''}`, W / 2, 308);
 
     // Intro
     let y = 360 + 62;
