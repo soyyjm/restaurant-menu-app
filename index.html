@@ -1219,14 +1219,17 @@ kbd {
 .mc-archived-toggle input { accent-color: var(--terracotta); }
 .mc-library-list { flex: 1; overflow-y: auto; padding: 4px 0; }
 .mc-library-empty { padding: 24px 16px; font-size: 13px; color: var(--ink-faint); text-align: center; }
+.mc-library-create { margin: 10px 12px 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; }
 .mc-library-new-btn {
-  margin: 10px 12px; padding: 10px 0; font-family: var(--font-body); font-size: 13px;
+  padding: 10px 4px; font-family: var(--font-body); font-size: 13px;
   font-weight: 600; background: var(--terracotta); color: white; border: none;
   border-radius: var(--radius); cursor: pointer; transition: background var(--transition);
-  width: calc(100% - 24px); flex-shrink: 0;
 }
 .mc-library-new-btn:hover { background: var(--terracotta-dark); }
-.mc-library-new-btn { margin-bottom: 4px; }
+.mc-library-pdf-btn { background: var(--paper-warm); color: var(--ink); }
+.mc-library-pdf-btn:hover:not(:disabled) { background: var(--terracotta-light); }
+.mc-library-pdf-btn:disabled { opacity: .65; cursor: wait; }
+.mc-library-pdf-hint { grid-column: 1 / -1; color: var(--ink-faint); font-size: 11px; }
 .mc-library-backup { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 12px 10px; flex-shrink: 0; }
 .mc-library-export-btn {
   padding: 6px 0; font: 600 12px var(--font-body); color: var(--ink-soft);
@@ -2157,7 +2160,7 @@ kbd {
   .mc-type-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
   .mc-type-filters::-webkit-scrollbar { display: none; }
   .mc-type-chip { flex-shrink: 0; }
-  .mc-library-new-btn { position: sticky; bottom: 8px; z-index: 5; }
+  .mc-library-create { position: sticky; bottom: 8px; z-index: 5; background: var(--paper); }
 
   .mc-editor { padding: 0 12px 40px; overflow: visible; }
   .mc-topbar { top: 43px; flex-wrap: wrap; row-gap: 8px; padding: 8px 0; }
@@ -2492,7 +2495,12 @@ kbd {
           </div>
         </div>
         <div class="mc-library-list" id="mc-library-list"></div>
-        <button class="mc-library-new-btn" id="mc-new-btn">+ Nuevo menú</button>
+        <div class="mc-library-create">
+          <button class="mc-library-new-btn" id="mc-new-btn" type="button">+ Nuevo menú</button>
+          <button class="mc-library-new-btn mc-library-pdf-btn" id="mc-import-pdf-btn" type="button" aria-describedby="mc-pdf-hint">Importar PDF</button>
+          <span class="mc-library-pdf-hint" id="mc-pdf-hint">Se envía a Gemini para crear un borrador. Máx. 4 MB.</span>
+          <input id="mc-import-pdf-file" type="file" accept=".pdf,application/pdf" hidden>
+        </div>
         <div class="mc-library-backup">
           <button class="mc-library-export-btn" id="mc-export-btn" type="button" title="Descarga todos los menús cerrados y los borradores sin guardar en un archivo JSON">⬇ Exportar copia</button>
           <button class="mc-library-export-btn" id="mc-restore-btn" type="button" title="Añade los menús que falten a partir de una copia descargada antes">⬆ Restaurar copia…</button>
@@ -3454,21 +3462,23 @@ function parseGeminiTranslation(raw) {
   return null;
 }
 
-// Returns { text, model } or { error }. Needs a Supabase session: the function
+// Returns { text, model }, { menu, model }, or { error }. Needs a Supabase session: the function
 // checks the token and keeps the Gemini key server-side.
-async function callGeminiProxy(payload) {
+async function callGeminiProxy({ pdf, ...payload }) {
   if (!supabase || !currentUser) return { error: 'sin sesión (inicia sesión en Ajustes)' };
+  const generation = authGeneration;
   try {
     const { data: auth } = await supabase.auth.getSession();
     const token = auth?.session?.access_token;
-    if (!token) return { error: 'sin sesión (inicia sesión en Ajustes)' };
+    if (!token || generation !== authGeneration) return { error: 'sin sesión (inicia sesión en Ajustes)' };
     const res = await fetch('/api/gemini', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': pdf ? 'application/pdf' : 'application/json', Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(45000),
-      body: JSON.stringify({ ...payload, model: getGeminiModel() })
+      body: pdf || JSON.stringify({ ...payload, model: getGeminiModel() })
     });
     const data = await res.json().catch(() => ({}));
+    if (res.ok && pdf && data.menu) return { menu: data.menu, model: data.model };
     if (res.ok && data.text) return { text: data.text, model: data.model };
     return { error: `HTTP ${res.status}: ${data.error || 'error del servidor'}` };
   } catch (e) {
@@ -5247,6 +5257,7 @@ let mcSavingIds = new Set();
 let mcViewBaselines = {};
 let mcEditTimer = null;
 let mcTranslating = false;
+let mcImportingPdf = false;
 
 function mcWriteDrafts() {
   if (PREVIEW_ONLY) return true;
@@ -5583,34 +5594,111 @@ async function mcDeleteMenu() {
   } catch { toast('No se confirmó la eliminación. Se conserva la copia local.', 'error'); }
 }
 
+function mcOpenNewDraft({ name = '', type = 'grupos', occasion = null, price = null,
+  price_label = 'por persona (IVA incluido)', min_people = null, notes = '',
+  sections = mcPresetSections(type), drinks = '', language = 'es', tags = ['template:dorado'] } = {}) {
+  const now = new Date().toISOString();
+  const newMenu = { id: mcUUID(), name, type, occasion, price, price_label, min_people, notes,
+    sections, drinks, language, tags, parent_id: null, version: 1, created_at: now, updated_at: now, _isNew: true };
+  mcCurrentMenu = newMenu;
+  mcCurrentId = newMenu.id;
+  mcCollapsedSections.clear();
+  mcAllergenOpen = null;
+  mcDrafts[newMenu.id] = MenuWorkflows.clone(newMenu);
+  mcWriteDrafts();
+  mcRenderEditor();
+  mcRenderLibrary();
+}
+
 function mcDuplicateMenu() {
   if (!mcCurrentMenu || !mcPersistCurrent()) return;
-  const base = MenuWorkflows.clone(mcCurrentMenu);
-  const parentId = base.parent_id || (base._isNew ? null : base.id);
-  const family = [...mcMenus.filter(m => !mcDrafts[m.id]), ...Object.values(mcDrafts)].filter(m => m.id === parentId || (parentId && m.parent_id === parentId));
-  const maxVer = Math.max(...family.map(m => m.version || 1), base.version || 1);
-  const newMenu = {
-    id: mcUUID(),
-    name: base.name,
-    type: base.type,
-    occasion: base.occasion,
-    price: base.price,
-    price_label: base.price_label,
-    min_people: base.min_people,
-    notes: base.notes,
-    sections: base.sections || [],
-    drinks: base.drinks,
-    language: base.language || 'es',
-    parent_id: parentId,
-    version: parentId ? maxVer + 1 : 1,
-    tags: [...(base.tags || [])],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    _isNew: true
+  const source = mcCurrentMenu;
+  const base = MenuWorkflows.clone(source);
+  const sourceLang = source.language || 'es';
+  // Once detached, a copy no longer looks up translations or allergens in the old family.
+  const preserveTranslations = (item, si, di, fields) => {
+    for (const lang of Object.keys(MC_LANG_LABELS).filter(l => l !== sourceLang)) {
+      for (const field of fields) {
+        const text = MenuWorkflows.translatedField(source, mcMenus, lang, si, di, field);
+        if (!text) continue;
+        (item.translations ||= {})[lang] ||= {};
+        item.translations[lang][field] = { text, source: item[field] };
+      }
+    }
+    delete item.language_links;
   };
-  mcCurrentMenu = newMenu; mcCurrentId = newMenu.id;
-  mcRenderEditor();
-  toast(`Copia creada (v${newMenu.version}) · cambia lo necesario y pulsa Guardar`, 'info');
+  (base.sections || []).forEach((section, si) => {
+    preserveTranslations(section, si, null, ['title', 'subtitle']);
+    (section.dishes || []).forEach((dish, di) => {
+      preserveTranslations(dish, si, di, ['name']);
+      const allergens = mcDishAllergens(source, si, di);
+      if (allergens !== null) dish.allergens = allergens;
+    });
+  });
+  const name = base.name ? `${base.name.slice(0, 192)} (copia)` : '';
+  mcSetTagValue(base, 'status:', 'borrador');
+  mcOpenNewDraft({ ...base, name });
+  $('mc-name-input')?.focus();
+  toast('Nuevo menú creado a partir de una copia · revísalo y pulsa Guardar', 'info');
+}
+
+function mcPdfMenuFields(menu, filename) {
+  const text = (value, max) => typeof value === 'string' ? value.trim().slice(0, max) : '';
+  const amount = value => typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 9999.99 ? value : null;
+  const list = (value, max) => {
+    if (!Array.isArray(value) || value.length > max) throw new Error('El contenido del PDF no es válido o supera el tamaño de un menú.');
+    return value;
+  };
+  const sections = list(menu.sections, 100).map(sec => ({
+    id: mcUUID(), title: text(sec?.title, 300), subtitle: text(sec?.subtitle, 300),
+    mode: Object.hasOwn(MC_MODES, sec?.mode) ? sec.mode : 'fixed',
+    dishes: list(sec?.dishes, 300).flatMap(dish => {
+      const name = text(dish?.name, 500);
+      const price = text(dish?.price, 80);
+      return name ? [{ id: mcUUID(), name, supplement: amount(dish.supplement), ...(price ? { price } : {}) }] : [];
+    })
+  })).filter(sec => sec.dishes.length);
+  if (!sections.length) throw new Error('No se encontró un solo menú legible. Selecciona un PDF con un menú.');
+  const price = amount(menu.price);
+  const language = Object.hasOwn(MC_LANG_LABELS, menu.language) ? menu.language : 'es';
+  return {
+    name: text(menu.name, 200) || text(filename.replace(/\.pdf$/i, ''), 200) || 'Menú importado',
+    type: Object.hasOwn(MC_TYPES, menu.type) ? menu.type : 'otro',
+    occasion: text(menu.occasion, 500) || null, price,
+    price_label: text(menu.price_label, 200).replace(/\s+/g, ' '),
+    min_people: Number.isInteger(menu.min_people) && menu.min_people > 0 && menu.min_people <= 2147483647 ? menu.min_people : null,
+    notes: text(menu.notes, 5000), drinks: text(menu.drinks, 5000), sections, language,
+    tags: [!price && sections.some(s => s.dishes.some(d => d.price)) ? 'template:carta' : 'template:dorado', 'status:revisar']
+  };
+}
+
+async function mcImportPdf(file) {
+  if (!file || mcImportingPdf) return;
+  if (!currentUser || !supabase) { toast('Inicia sesión para importar un PDF.', 'info'); return; }
+  if (file.size > 4 * 1024 * 1024) { toast('El PDF supera el máximo de 4 MB.', 'error'); return; }
+  const owner = cacheOwner, generation = authGeneration;
+  const sameAccount = () => owner === cacheOwner && generation === authGeneration;
+  const btn = $('mc-import-pdf-btn');
+  mcImportingPdf = true;
+  btn.disabled = true;
+  btn.textContent = 'Leyendo PDF…';
+  try {
+    if (await file.slice(0, 5).text() !== '%PDF-') throw new Error('Selecciona un archivo PDF válido.');
+    if (!sameAccount()) return;
+    const result = await callGeminiProxy({ pdf: file });
+    if (!sameAccount()) return;
+    if (!result.menu) throw new Error(summarizeGeminiError(result.error));
+    const fields = mcPdfMenuFields(result.menu, file.name);
+    if (!mcPersistCurrent()) return;
+    mcOpenNewDraft(fields);
+    toast('Nuevo menú importado · revisa los platos y precios antes de guardar', 'info');
+  } catch (error) {
+    if (sameAccount()) toast(`No se pudo importar: ${error.message}`, 'error');
+  } finally {
+    mcImportingPdf = false;
+    btn.disabled = false;
+    btn.textContent = 'Importar PDF';
+  }
 }
 
 function mcRenderLibrary() {
@@ -5696,7 +5784,7 @@ function mcRenderEditor() {
       <span id="mc-draft-status" class="mc-save-badge" role="status"></span>
       <div class="mc-topbar-actions">
         <button class="mc-btn mc-btn-save" id="mc-save-btn" type="button">💾 Guardar</button>
-        <button class="mc-btn mc-btn-dup" id="mc-dup-btn" type="button" title="Crear una copia editable (nueva versión)">⧉ Duplicar</button>
+        <button class="mc-btn mc-btn-dup" id="mc-dup-btn" type="button" title="Crear un menú nuevo e independiente a partir de este">⧉ Duplicar</button>
         <button class="mc-btn mc-btn-dup mc-jump-preview" id="mc-jump-preview" type="button">Vista previa ↓</button>
         <details class="mc-menu">
           <summary class="mc-btn mc-btn-dup" title="Más acciones" aria-label="Más acciones">⋯</summary>
@@ -5733,7 +5821,7 @@ function mcRenderEditor() {
               ${Object.entries(MC_STATUSES).map(([k,v]) => `<option value="${k}"${selectedStatus===k?' selected':''}>${v}</option>`).join('')}
             </select></label>
           <label class="mc-meta-field">Texto junto al precio
-            <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label||'por persona (IVA incluido)')}"></label>
+            <input class="mc-meta-input" id="mc-price-label-input" value="${esc(m.price_label ?? 'por persona (IVA incluido)')}"></label>
           <label class="mc-meta-field">Subtítulo (plantillas Marinero y Carta)
             <input class="mc-meta-input" id="mc-occasion-input" value="${esc(m.occasion||'')}" placeholder="Entrante + Principal + Postre"></label>
           <label class="mc-meta-field">Etiquetas internas
@@ -6130,7 +6218,7 @@ function mcGatherFromEditor() {
     type: $('mc-type-select')?.value || mcCurrentMenu.type,
     occasion: $('mc-occasion-input') ? ($('mc-occasion-input').value.trim() || null) : (mcCurrentMenu.occasion ?? null),
     price: parseFloat($('mc-price-input')?.value) || null,
-    price_label: $('mc-price-label-input')?.value.trim() || 'por persona (IVA incluido)',
+    price_label: $('mc-price-label-input')?.value.trim() ?? mcCurrentMenu.price_label ?? 'por persona (IVA incluido)',
     min_people: parseInt($('mc-min-people-input')?.value) || null,
     notes: $('mc-notes-input')?.value.trim() || '',
     drinks: $('mc-drinks-input')?.value.trim() || '',
@@ -6265,7 +6353,8 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   if (m.price && isDorado) {
     // "29 € / persona"; a note in brackets such as "(IVA incluido)" goes on its own line under the pill.
     const value = parseFloat(m.price);
-    const [, main, note] = (m.price_label || 'por persona (IVA incluido)').match(/^(.*?)\s*(?:\((.*)\))?\s*$/);
+    const priceLabel = m.price_label ?? 'por persona (IVA incluido)';
+    const [, main = priceLabel, note] = priceLabel.match(/^(.*?)\s*(?:\((.*)\))?\s*$/) || [];
     $('mcp-price').textContent = `${Number.isInteger(value) ? value : value.toFixed(2).replace('.', ',')} €`;
     $('mcp-price-label').textContent = main.replace(/^(por|per)\s+/i, '/ ');
     $('mcp-price-note').textContent = note || '';
@@ -6273,7 +6362,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
   } else if (m.price) {
     const priceText = parseFloat(m.price).toFixed(2);
     $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
-    $('mcp-price-label').textContent = m.price_label || 'por persona (IVA incluido)';
+    $('mcp-price-label').textContent = m.price_label ?? 'por persona (IVA incluido)';
     $('mcp-price-note').textContent = '';
     priceRow.style.display = 'flex';
   } else {
@@ -6714,7 +6803,7 @@ async function mcGeneratePDF(colorMode) {
   }
 }
 
-// Creates a separate menu row in another language (e.g. an English-only menu for tourists).
+// Creates an independent menu in another language (e.g. an English-only menu for tourists).
 async function mcTranslateAll(targetLang) {
   if (!mcCurrentMenu) return;
   if (mcCurrentMenu._isNew) { toast('Guarda el menú primero antes de crear una traducción', 'info'); return; }
@@ -6722,17 +6811,15 @@ async function mcTranslateAll(targetLang) {
   if (!mcPersistCurrent()) return;
   const sourceMenu = MenuWorkflows.clone(mcCurrentMenu);
   const sourceOwner = cacheOwner;
+  const generation = authGeneration;
   const sourceLang = sourceMenu.language || 'es';
   const langName = targetLang === 'ca' ? 'catalán' : 'inglés';
-  const parentId = mcCurrentMenu.parent_id || mcCurrentMenu.id;
-  const existing = [...mcMenus, ...Object.values(mcDrafts)].find(m => (m.id === parentId || m.parent_id === parentId) && m.language === targetLang && m.id !== mcCurrentMenu.id);
-  if (existing && !confirm(`Ya existe una versión en ${langName} ("${existing.name}"). ¿Crear de todas formas una nueva?`)) return;
 
   const caBtn = $('mc-translate-ca-btn');
   const enBtn = $('mc-translate-en-btn');
   if (caBtn) caBtn.disabled = true;
   if (enBtn) enBtn.disabled = true;
-  toast(`Creando versión en ${langName}…`, 'info');
+  toast(`Creando un menú en ${langName}…`, 'info');
 
   try {
     const tr = async (text) => text ? mcTranslateOneDish(text, targetLang, sourceLang) : text;
@@ -6752,35 +6839,32 @@ async function mcTranslateAll(targetLang) {
         if (!d.name) continue;
         // Reuse translations already written in the editor.
         const name = mcLangDishName(sourceMenu, targetLang, si, di) || await tr(d.name);
-        tDishes.push({ ...d, name, name_ca: null, name_en: null, translations: {}, language_links: {}, translation_changed: [], translation_source: { language: sourceLang, name: d.name } });
+        const allergens = mcDishAllergens(sourceMenu, si, di);
+        tDishes.push({ ...d, name, name_ca: null, name_en: null, translations: {}, language_links: {}, translation_changed: [], translation_source: { language: sourceLang, name: d.name }, ...(allergens === null ? {} : { allergens }) });
         done++;
         if (done % 3 === 0) toast(`Traduciendo… ${done} elementos`, 'info');
       }
       translatedSections.push({ ...sec, title: tTitle, subtitle: tSubtitle, title_ca: null, title_en: null, subtitle_ca: null, subtitle_en: null, language_links: {}, translation_changed: [], translation_source: { language: sourceLang, title: sec.title, subtitle: sec.subtitle }, dishes: tDishes });
     }
 
-    const newMenu = {
-      id: mcUUID(), name: translatedName,
+    const copy = {
+      name: translatedName,
       type: sourceMenu.type, occasion: sourceMenu.occasion,
       price: sourceMenu.price, price_label: translatedPriceLabel,
       min_people: sourceMenu.min_people, notes: translatedNotes,
       sections: translatedSections, drinks: translatedDrinks,
-      language: targetLang, parent_id: parentId,
-      version: sourceMenu.version || 1,
-      tags: (sourceMenu.tags || []).filter(t => !String(t).startsWith('langs:')),
-      created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-      _isNew: true
+      language: targetLang,
+      tags: (sourceMenu.tags || []).filter(t => !String(t).startsWith('langs:'))
     };
 
+    if (generation !== authGeneration) return;
     if (cacheOwner !== sourceOwner || mcCurrentId !== sourceMenu.id) { toast('El menú abierto ha cambiado. Vuelve al original para traducirlo.', 'info'); return; }
     if (!mcPersistCurrent()) return;
-    mcCurrentMenu = newMenu;
-    mcCurrentId = newMenu.id;
-    mcRenderEditor();
-    mcRenderLibrary();
+    mcSetTagValue(copy, 'status:', 'borrador');
+    mcOpenNewDraft(copy);
     toast(`Copia en ${langName} creada · revísala y pulsa Guardar`, 'info');
   } catch {
-    toast('Traducción incompleta. No se ha creado ninguna versión; el menú original se conserva.', 'error');
+    toast('Traducción incompleta. No se ha creado ningún menú; el original se conserva.', 'error');
   } finally {
     if (caBtn) caBtn.disabled = false;
     if (enBtn) enBtn.disabled = false;
@@ -7076,12 +7160,17 @@ function mcInitTabs() {
   });
   $('mc-new-btn').addEventListener('click', () => {
     if (!mcPersistCurrent()) return;
-    mcCurrentMenu = { id: mcUUID(), name: '', type: 'grupos', occasion: null, price: null, price_label: 'por persona (IVA incluido)', min_people: null, notes: '', sections: mcPresetSections('grupos'), drinks: '', language: 'es', parent_id: null, version: 1, tags: ['template:dorado'], created_at: new Date().toISOString(), updated_at: new Date().toISOString(), _isNew: true };
-    mcCurrentId = mcCurrentMenu.id;
-    mcRenderLibrary(); mcRenderEditor();
+    mcOpenNewDraft();
     $('mc-name-input')?.focus();
   });
   mcBindEditorEvents();
+  $('mc-import-pdf-btn').addEventListener('click', () => {
+    if (!currentUser) { toast('Inicia sesión para importar un PDF.', 'info'); return; }
+    const input = $('mc-import-pdf-file');
+    input.value = '';
+    input.click();
+  });
+  $('mc-import-pdf-file').addEventListener('change', e => mcImportPdf(e.target.files[0]));
   $('mc-export-btn').addEventListener('click', mcExportBackup);
   $('mc-restore-btn').addEventListener('click', () => { $('mc-restore-file').value = ''; $('mc-restore-file').click(); });
   $('mc-restore-file').addEventListener('change', e => mcReviewRestore(e.target.files[0]));

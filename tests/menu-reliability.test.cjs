@@ -43,6 +43,7 @@ function harness({ user = true, fail = false, storage, response } = {}) {
     window: {}, alert: () => {}, confirm: () => true, fetch: async () => { throw Error('offline'); }, cloud };
   vm.createContext(context);
   vm.runInContext(inline.replace(startup, `globalThis.api = {
+    mcDuplicateMenu, mcImportPdf, mcTranslateAll, setTranslateDish: fn => mcTranslateOneDish = fn,
     readHistoryCloud, mergeCloudHistory, moveInMenu, setDate, defaultPriceFor, normalizePrintSettings, parseHolidays, dailyMenuIssues, deleteFromLibrary, restoreLibraryDish, removeFromMenu, lastServedIndex, setPrint: v => printSettings = v, setHistory: v => menuHistory = v, saveLocal, findHistoryDate, searchHistoryMonth, planningDate, openPlanningToday, copyRelativeMenu, reviewDailyBackup, restoreDailyBackup, mcPersistCurrent, mcRestoreDrafts, mcSaveMenu, mcSelectMenuById, mcValidateMenu, mcDishAllergens, mcGetDisplayLangs, mcExportBackup, mcReviewRestore, mcApplyRestore, mcGetLayout, mcLayoutTag, addBatch, translateBatch, prepareBatch, localDate, changeMenuDate, saveMenu, saveLibrary, saveSettings, deleteFromCloud, syncPending, loadAll, stageMenu, unpackMenu, doTranslate, addToMenu, clearMenu, restoreUndo, loadFromHistory, mcTranslateOneDish,
     state: () => ({ todayMenu, menuHistory, menuMetadata, pendingSaves, printSettings, cacheOwner, mcDrafts, mcCurrentMenu, mcCurrentId, mcMenus, batchDraft, library, dishPreferences }),
     setMenu: m => todayMenu = m,
@@ -215,6 +216,67 @@ test('switching date opens that date menu instead of overwriting it with the cur
   assert.equal(h.api.state().todayMenu.primer[0].spanish,'Monday');
 });
 const closedMenu=()=>({id:'closed-1',name:'Menu prueba',language:'es',version:1,type:'otro',price:25,drinks:'Agua',updated_at:'2026-09-06T10:00:00Z',sections:[{id:'sec',title:'Entrantes',dishes:[{id:'dish',name:'Sopa'}]}]});
+test('duplicating a legacy version creates a separate menu and keeps its existing translations and allergens', async () => {
+ const h = harness({response: ({payload}) => ({error: null, data: payload[0]})});
+ const root = closedMenu();
+ const source = {...closedMenu(), id: 'closed-v2', parent_id: root.id, version: 2, tags: ['status:listo']};
+ const ca = {...plain(source), id: 'closed-v2-ca', language: 'ca'};
+ Object.assign(ca.sections[0].dishes[0], {name: 'Sopa catalana', allergens: ['gluten']});
+ h.api.setClosed(plain(source), [root, source, ca]);
+ h.api.mcDuplicateMenu();
+ const draft = h.api.state().mcCurrentMenu;
+ assert.notEqual(draft.id, source.id);
+ assert.equal(draft.parent_id, null);
+ assert.equal(draft.version, 1);
+ assert.equal(draft.name, 'Menu prueba (copia)');
+ assert.deepEqual(plain(draft.tags), ['status:borrador']);
+ assert.equal(draft.sections[0].dishes[0].translations.ca.name.text, 'Sopa catalana');
+ assert.deepEqual(plain(draft.sections[0].dishes[0].allergens), ['gluten']);
+ draft.sections[0].dishes[0].name = 'Crema';
+ await h.api.mcSaveMenu();
+ assert.deepEqual(h.writes.map(w => [w.op, w.payload[0].id]), [['insert', draft.id]]);
+ assert.equal(h.api.state().mcMenus.find(m => m.id === source.id).sections[0].dishes[0].name, 'Sopa');
+});
+
+test('a translated copy is a new draft even when the source has a translation in its legacy family', async () => {
+ const h = harness(), source = {...closedMenu(), version: 3};
+ const ca = {...closedMenu(), id: 'old-ca', parent_id: source.id, language: 'ca', version: 3};
+ h.api.setTranslateDish(async text => `CA: ${text}`);
+ h.api.setClosed(plain(source), [source, ca]);
+ await h.api.mcTranslateAll('ca');
+ const {mcCurrentMenu: draft, mcDrafts} = h.api.state();
+ assert.equal(draft.language, 'ca');
+ assert.equal(draft.parent_id, null);
+ assert.equal(draft.version, 1);
+ assert.equal(mcDrafts[draft.id].name, 'CA: Menu prueba');
+ assert.equal(h.writes.length, 0);
+});
+
+test('importing a same-name PDF twice creates two independent drafts and keeps the open edits', async () => {
+ const h = harness(), source = closedMenu();
+ const file = new File(['%PDF-1.7\n'], 'Menu prueba.pdf', {type: 'application/pdf'});
+ h.context.cloud.auth = {getSession: async () => ({data: {session: {access_token: 'synthetic-test-token'}}})};
+ h.context.fetch = async (url, req) => {
+  assert.equal(url, '/api/gemini');
+  assert.equal(req.headers['Content-Type'], 'application/pdf');
+  assert.equal(req.body, file);
+  return new Response(JSON.stringify({menu: {name: source.name, price: 29, sections: [{title: 'Principal', mode: 'choose_one', dishes: [{name: 'Arroz', supplement: 3}]}]}}));
+ };
+ h.api.setClosed({...plain(source), notes: 'Unsaved edit'}, [source]);
+ await h.api.mcImportPdf(file);
+ const first = h.api.state().mcCurrentId;
+ await h.api.mcImportPdf(file);
+ const second = h.api.state().mcCurrentId;
+ assert.equal(new Set([source.id, first, second]).size, 3);
+ assert.equal(h.writes.length, 0);
+ const reloaded = harness({storage: h.saved});
+ reloaded.api.mcRestoreDrafts();
+ const {mcCurrentMenu: draft, mcDrafts} = reloaded.api.state();
+ assert.equal(mcDrafts[source.id].notes, 'Unsaved edit');
+ assert.equal(mcDrafts[first].parent_id, null);
+ assert.deepEqual([draft.parent_id, draft.version, draft.price, draft.price_label], [null, 1, 29, '']);
+ assert.equal(draft.sections[0].dishes[0].supplement, 3);
+});
 test('closed drafts survive reload with all metadata and original cloud timestamp',()=>{
  const h=harness(),original=closedMenu(),draft={...plain(original),name:'Modified',notes:'New notes',price:30};
  h.api.setClosed(draft,[original]);assert.equal(h.api.mcPersistCurrent(),true);

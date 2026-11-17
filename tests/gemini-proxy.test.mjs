@@ -81,6 +81,32 @@ test('limits size, task and languages', async () => {
   assert.equal(calls.length, 0);
 });
 
+function pdfReq(body, headers = {}) {
+  return new Request('http://localhost/api/gemini', { method: 'POST', body,
+    headers: { 'Content-Type': 'application/pdf', Authorization: 'Bearer good-token', ...headers } });
+}
+
+test('PDF extraction forwards the document bytes with a fixed schema and returns editable fields', async () => {
+  const bytes = Buffer.from('%PDF-1.7\n\x00\xff', 'latin1');
+  const menu = { name: 'Menú Sol', sections: [{ title: 'Platos', dishes: [{ name: 'Arroz' }] }] };
+  geminiReply = () => ({ status: 200, body: { candidates: [{ finishReason: 'STOP', content: { parts: [{ text: JSON.stringify(menu) }] } }] } });
+  const res = await handler(pdfReq(bytes));
+  assert.equal(res.status, 200);
+  assert.deepEqual((await res.json()).menu, menu);
+  const sent = JSON.parse(calls.find(c => c.url.includes('generativelanguage')).init.body);
+  const { inlineData } = sent.contents[0].parts[0];
+  assert.equal(inlineData.mimeType, 'application/pdf');
+  assert.deepEqual(Buffer.from(inlineData.data, 'base64'), bytes);
+  assert.ok(sent.generationConfig.responseJsonSchema.properties.sections);
+});
+
+test('PDF extraction refuses unauthenticated, invalid and oversized files before contacting Gemini', async () => {
+  assert.equal((await handler(pdfReq('%PDF-1.7', {Authorization: ''}))).status, 401);
+  assert.equal((await handler(pdfReq('not a PDF'))).status, 400);
+  assert.equal((await handler(pdfReq(Buffer.alloc(4 * 1024 * 1024 + 1)))).status, 413);
+  assert.equal(calls.filter(c => c.url.includes('generativelanguage')).length, 0);
+});
+
 test('missing server key gives a clear 503', async () => {
   delete process.env.GEMINI_API_KEY;
   const res = await handler(req({ task: 'dish', text: 'Sopa' }));
