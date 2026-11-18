@@ -19,27 +19,27 @@ window.FIESTAS = {
       date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55.5, kidsPrice: 25,
       deadline: '2026-12-19', theme: 'navidad',
       pica: { key: 'pica25b', items: [
-        { es: 'Tabla de embutidos ibéricos', plate: true },
-        { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
+        { es: 'Tabla de embutidos ibéricos y queso', plate: true },
         { es: 'Langostinos cocidos con mahonesa de cítricos', perPerson: 2 },
-        { es: 'Pan de coca de Folgueroles con tomate y aceite de oliva virgen extra', plate: true }
+        { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
+        { es: 'Pan de coca con tomate y aceite de oliva virgen extra', plate: true }
       ] },
       menu: {
         primero: [
           { key: 'alca25', es: 'Corazón de alcachofa confitada con setas de temporada y salsa romesco' },
-          { key: 'escu25', es: "Escudella de Navidad: galets con pilota y su carn d'olla" },
-          { key: 'lasa25', es: 'Lasaña de cochinillo con bechamel trufada y jugo de asado' },
-          { key: 'tart25', es: 'Steak tartar de ternera cortado a cuchillo, yema curada, alcaparras y tostas' }
+          { key: 'escu25', es: "Escudella i carn d'olla tradicional de Navidad" },
+          { key: 'lasa25', es: 'Lasaña de cochinillo con bechamel trufada' },
+          { key: 'tart25', es: 'Steak tartar de ternera cortado a cuchillo, alcaparras y tostas' }
         ],
         segundo: [
           { key: 'cabr25', es: 'Paletilla de cabrito al horno con patatas panaderas y su jugo al romero' },
-          { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con flor de patata y salsa demi-glace al vino tinto' },
-          { key: 'seny25', es: 'Arroz del senyoret con vieiras y gambas, con allioli suave' },
+          { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con flor de patata y salsa demi‑glace al vino tinto' },
+          { key: 'seny25', es: 'Arroz del senyoret con vieiras' },
           { key: 'roda25', es: 'Lomo de rodaballo con salsa de cava y azafrán y espinacas a la catalana' }
         ],
         postre: [
-          { key: 'bola25', es: 'Bola de Navidad', tags: ['firma'] },
           { key: 'qpis25', es: 'Tarta de queso casera al horno con crema de pistacho' },
+          { key: 'bola25', es: 'Bola de Navidad', tags: ['firma'] },
           { key: 'coul25', es: 'Coulant de chocolate con helado de vainilla' },
           { key: 'tira25', es: 'Tiramisú casero' }
         ]
