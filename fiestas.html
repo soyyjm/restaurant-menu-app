@@ -122,6 +122,7 @@ dialog h2{margin:0 0 12px;font-size:17px}
 .tk-who b{font-size:13pt}
 .tk-copy{margin-left:auto;font:700 13pt Jost,Arial,sans-serif;border:2.5px solid #000;padding:1mm 3mm;letter-spacing:.12em}
 .tk-day{font-size:9pt;color:#444}
+.tk-hora{font:700 13pt/1.2 Jost,Arial,sans-serif;margin-top:2px}
 .tk-alert{border:2.5px solid #000;padding:1.5mm 3mm;margin:2mm 0 0;font-weight:600}
 .tk-alert span{font-weight:400}
 .tk-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 6mm;margin-top:1mm}
@@ -182,7 +183,8 @@ dialog.wide{width:min(760px,96vw)}
     <label>桌号<input name="table_no" maxlength="20" placeholder="例如 7"></label>
     <label>大人 *<input name="adults" type="number" min="1" max="40" required value="2"></label>
     <label>小孩（儿童套餐）<input name="kids" type="number" min="0" max="30" value="0"></label>
-    <label class="full">日期<select name="day"></select></label>
+    <label>日期<select name="day"></select></label>
+    <label>约定到店时间<input name="arrival" type="time" step="900"></label>
     <label class="full">内部备注（客人看不到）<textarea name="notes" rows="2" maxlength="1000" placeholder="例如：已付定金 100€"></textarea></label>
   </div>
   <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">保存</button></div>
@@ -201,7 +203,7 @@ dialog.wide{width:min(760px,96vw)}
 
 <dialog id="bulk"><form method="dialog" id="bulkForm">
   <h2>批量粘贴订台</h2>
-  <p class="muted" style="margin:0 0 8px;font-size:13px">可以从 Excel 直接复制粘贴，一行一个家庭，列的顺序：<b>姓名、电话、大人、小孩、桌号</b>（用逗号或 Tab 分隔，小孩和桌号可以不填）。导入到当前选中的日期。</p>
+  <p class="muted" style="margin:0 0 8px;font-size:13px">可以从 Excel 直接复制粘贴，一行一个家庭，列的顺序：<b>姓名、电话、大人、小孩、桌号、到店时间</b>（用逗号或 Tab 分隔，小孩、桌号和时间可以不填；时间写成 14:00）。导入到当前选中的日期。</p>
   <textarea name="text" rows="9" placeholder="Familia Puig, 612345678, 4, 2, 7&#10;Marta Soler	655111222	2	0	3"></textarea>
   <p id="bulkPreview" class="muted" style="font-size:13px;margin:8px 0 0"></p>
   <div class="dlg-acts"><button class="btn" value="cancel" formnovalidate>取消</button><button class="btn primary" value="ok">导入</button></div>
@@ -234,7 +236,7 @@ function waPhone(p) {
 }
 function waText(b) {
   const day = F.dayOf(b.day), pax = `${b.adults} ${b.adults === 1 ? 'adulto' : 'adultos'}${b.kids ? ` y ${b.kids} ${b.kids === 1 ? 'niño' : 'niños'}` : ''}`;
-  return `¡Hola, ${b.name}! 🎄\n\nGracias por celebrar ${day.name} con nosotros en ${F.restaurant} el ${fmtEs(day.date, { weekday: 'long', day: 'numeric', month: 'long' })}.\n\n` +
+  return `¡Hola, ${b.name}! 🎄\n\nGracias por celebrar ${day.name} con nosotros en ${F.restaurant} el ${fmtEs(day.date, { weekday: 'long', day: 'numeric', month: 'long' })}${b.arrival ? ` a las ${b.arrival} h` : ''}.\n\n` +
     `Aquí tenéis el menú. Podéis elegir el primero, el segundo y el postre de cada comensal (${pax}):\n${linkFor(b)}\n\n` +
     `Os agradeceríamos la elección antes del ${fmtEs(day.deadline, { day: 'numeric', month: 'long' })}. ¡Hasta pronto!`;
 }
@@ -253,7 +255,7 @@ const TX = {
     tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
     adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人`, picaPlates: sp => `${sp.length} 盘：${sp.map(n => `${n} 人`).join(' + ')}`,
     allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
-    noBookings: '这一天还没有订台。' },
+    noBookings: '这一天还没有订台。', arrivalT: '约定到店时间', noTime: '未定时间', slot: (n, p) => `${n} 桌 · ${p} 人：`, at: t => `到店 ${t} · ` },
   es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
     tables: 'Reservas', people: (a, k) => `Personas: ${a} adultos · ${k} niños`, sentN: 'Menús enviados', doneN: n => `Con pedido (${n} pers.)`, notYet: 'Sin pedido',
     persons: n => `${n} personas`, half: n => `+ ${n} media${n === 1 ? '' : 's'} ración${n === 1 ? '' : 'es'}`, offMenu: 'fuera de carta', none: 'Sin este plato (no preparar)', other: 'Otra opción, pendiente de confirmar',
@@ -265,7 +267,7 @@ const TX = {
     tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
     adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas`, picaPlates: sp => `${sp.length} bandeja${sp.length === 1 ? '' : 's'}: ${sp.map(n => `${n} pers.`).join(' + ')}`,
     allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
-    noBookings: 'No hay reservas para este día.' }
+    noBookings: 'No hay reservas para este día.', arrivalT: 'Horario de llegada', noTime: 'Sin hora', slot: (n, p) => `${n} mesa${n === 1 ? '' : 's'} · ${p} pers.: `, at: t => `Llegada ${t} h · ` }
 };
 const status = (b, lang = 'zh') => {
   const T = TX[lang];
@@ -277,8 +279,9 @@ const status = (b, lang = 'zh') => {
   return ['new', T.fresh];
 };
 const valid = b => b.order && b.order.adults === b.adults && b.order.kids === b.kids;
+// By agreed arrival time (bookings without one last), then table number.
 const dayBookings = () => state.all.filter(b => b.day === state.day)
-  .sort((a, b) => (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
+  .sort((a, b) => String(a.arrival || '99').localeCompare(String(b.arrival || '99')) || (parseInt(a.table_no) || 1e9) - (parseInt(b.table_no) || 1e9) || String(a.table_no || '').localeCompare(String(b.table_no || '')) || a.name.localeCompare(b.name));
 const dishName = (k, lang = 'zh') => { const L = F.line(k); return lang === 'zh' && (L.kind === 'none' || L.kind === 'otro') ? L.zh : L.es; };
 const picaSplitOf = b => F.picaSplit(F.picaPeople(b));
 const picaSets = b => picaSplitOf(b).length;
@@ -353,6 +356,7 @@ function viewList(day, bs) {
   const rows = bs.filter(b => !q || [b.name, b.phone, b.table_no].some(x => String(x || '').toLowerCase().includes(q))).map(b => {
     const [cls, label] = status(b), ph = waPhone(b.phone);
     return `<tr data-id="${b.id}">
+      <td class="num">${esc(b.arrival || '–')}</td>
       <td class="num">${esc(b.table_no || '–')}</td>
       <td><b>${esc(b.name)}</b>${b.notes ? `<div class="muted" style="font-size:12.5px">${esc(b.notes)}</div>` : ''}${b.order && b.order.allergies ? `<div class="al" style="font-size:12.5px">⚠ ${esc(b.order.allergies)}</div>` : ''}</td>
       <td class="hide-m">${esc(b.phone || '')}</td>
@@ -379,7 +383,7 @@ function viewList(day, bs) {
       <button class="btn" id="exportCsv">导出 Excel</button>
       ${bs.length ? `<button class="btn" id="lock">${locked ? '重新开放点餐' : '截止点餐（锁定当天）'}</button>` : ''}
     </div>
-    ${bs.length ? `<table class="bk"><thead><tr><th class="num">桌号</th><th>姓名</th><th class="hide-m">电话</th><th class="num">人数</th><th>状态</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="empty">没有符合搜索的订台</td></tr>'}</tbody></table>`
+    ${bs.length ? `<table class="bk"><thead><tr><th class="num">到店</th><th class="num">桌号</th><th>姓名</th><th class="hide-m">电话</th><th class="num">人数</th><th>状态</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="empty">没有符合搜索的订台</td></tr>'}</tbody></table>`
       : `<div class="empty">${fmtDay(day.date, { month: 'long', day: 'numeric' })} 还没有订台。点“新增订台”或“批量粘贴”开始录入。</div>`}
     <p class="muted noprint" style="font-size:12.5px;margin-top:14px">发送方式：点绿色按钮会打开 WhatsApp，消息和这位客人的专属链接已经填好，按发送即可，系统会记为“已发送”。客人截止日期为 ${fmtDay(day.deadline, { month: 'long', day: 'numeric' })}（写在消息里），到期后点“截止点餐”锁定。当天 0 点起系统也会自动关闭点餐。</p>`;
 }
@@ -421,6 +425,14 @@ function picaCard(day, bs, T) {
     <p class="muted" style="font-size:12px;margin:8px 0 0">${T.picaRule}</p></div>`;
 }
 const tableList = (bs, T) => bs.map(b => esc(b.name) + (b.table_no ? T.tableOf(esc(b.table_no)) : '')).join(T.sep);
+// Arrival times: tables and people per time slot, so floor and kitchen can pace the service.
+function arrivalCard(bs, T) {
+  if (!bs.some(b => b.arrival)) return '';
+  const slots = {}; for (const b of bs) (slots[b.arrival || ''] = slots[b.arrival || ''] || []).push(b);
+  return `<div class="card"><h3>${T.arrivalT}</h3><ul class="kv">${Object.keys(slots).sort((a, b) => (a || '99').localeCompare(b || '99')).map(k => {
+    const l = slots[k], p = l.reduce((s, b) => s + b.adults + b.kids, 0);
+    return `<li><b style="white-space:nowrap">${k || T.noTime}</b><span>${T.slot(l.length, p)}${tableList(l, T)}</span></li>`; }).join('')}</ul></div>`;
+}
 function viewKitchen(day, bs, lang = 'zh') {
   const T = TX[lang], done = bs.filter(valid), pending = bs.filter(b => !valid(b));
   const ta = tally(bs, 'adult'), tk = tally(bs, 'kid');
@@ -430,6 +442,7 @@ function viewKitchen(day, bs, lang = 'zh') {
   if (pending.length) h += `<div class="locked">${T.onlyDone(done.length, pending.length, pending.reduce((s, b) => s + b.adults + b.kids, 0), tableList(pending, T))}</div>`;
   if (pend.length) h += `<div class="locked">${T.pendTables(pend.length, tableList(pend, T))}</div>`;
   h += `<div class="grid">
+    ${arrivalCard(bs, T)}
     ${picaCard(day, bs, T)}
     <div class="card"><h3>${T.adultsMenu(ad)}</h3>${F.courses.map(c => courseBlock(T.course(c), day.menu[c.id], ta[c.id], ad, lang)).join('')}</div>
     ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>${T.kidsMenu(kd)}</h3>${F.courses.map(c => courseBlock(T.course(c), F.kids[c.id], tk[c.id], kd, lang)).join('')}</div>` : ''}
@@ -455,7 +468,7 @@ function viewTables(day, bs, lang = 'zh') {
   <div class="grid">${bs.map(b => {
     const [cls, label] = status(b, lang), sup = supTotal(b);
     return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
-      <div class="muted" style="font-size:13px">${T.paxLine(b.adults, b.kids, b.adults + b.kids)}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
+      <div class="muted" style="font-size:13px">${b.arrival ? `<b style="color:var(--ink)">${T.at(esc(b.arrival))}</b>` : ''}${T.paxLine(b.adults, b.kids, b.adults + b.kids)}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
       <div class="sub" style="margin-top:10px">Pica-pica</div>
       <ul class="kv"><li><b>${picaSets(b)}</b><span>${esc(T.picaPlates(picaSplitOf(b)).replace(/^\d+\s*/, ''))}</span></li></ul>
       ${valid(b) ? `
@@ -503,7 +516,7 @@ function ticketHtml(b, day, copy) {
   const al = v && b.order.allergies, co = v && b.order.comments, sup = supTotal(b);
   return `<div class="tk">
     <div class="tk-h"><div class="tk-mesa">${b.table_no ? 'MESA ' + esc(b.table_no) : '—'}</div>
-      <div class="tk-who"><b>${esc(b.name)}</b><br>${b.adults + b.kids} pers.: ${b.adults} adultos${b.kids ? ` + ${b.kids} niños` : ''}<div class="tk-day">${esc(day.name)} · ${fmtEs(day.date, { day: 'numeric', month: 'long' })}</div></div>
+      <div class="tk-who"><b>${esc(b.name)}</b><br>${b.adults + b.kids} pers.: ${b.adults} adultos${b.kids ? ` + ${b.kids} niños` : ''}${b.arrival ? `<div class="tk-hora">LLEGADA ${esc(b.arrival)} h</div>` : ''}<div class="tk-day">${esc(day.name)} · ${fmtEs(day.date, { day: 'numeric', month: 'long' })}</div></div>
       <div class="tk-copy">${copy}</div></div>
     ${al ? `<div class="tk-alert">⚠ ALERGIAS / PETICIONES: <span>${esc(al)}</span></div>` : ''}
     ${body}
@@ -542,15 +555,15 @@ function exportCsv() {
   const cols = [];
   for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
   for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
-  const head = ['Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica (bandejas)', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
+  const head = ['Hora', 'Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica (bandejas)', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
   const rows = bs.map(b => {
     const v = valid(b);
-    return [b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b, 'es')[1], `${picaSets(b)} (${picaSplitOf(b).join('+')})`,
+    return [b.arrival || '', b.table_no || '', b.name, b.phone || '', b.adults, b.kids, status(b, 'es')[1], `${picaSets(b)} (${picaSplitOf(b).join('+')})`,
       ...cols.map(([g, c, k]) => v ? ((b.order.items[g] || {})[c] || {})[k] || '' : ''), supTotal(b) || '', v ? specials(b) : '',
       v ? b.order.allergies || '' : '', v ? b.order.comments || '' : ''];
   });
-  const totals = ['', 'TOTAL', '', bs.reduce((s, b) => s + b.adults, 0), bs.reduce((s, b) => s + b.kids, 0), '', bs.reduce((s, b) => s + picaSets(b), 0),
-    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[7 + i]) || 0), 0)), '', '', '', ''];
+  const totals = ['', '', 'TOTAL', '', bs.reduce((s, b) => s + b.adults, 0), bs.reduce((s, b) => s + b.kids, 0), '', bs.reduce((s, b) => s + picaSets(b), 0),
+    ...cols.map((_, i) => rows.reduce((s, r) => s + (Number(r[8 + i]) || 0), 0)), '', '', '', ''];
   const csv = [head, ...rows, totals].map(r => r.map(x => { const s = String(x); return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
@@ -565,7 +578,7 @@ let editing = null;
 function openBooking(b) {
   editing = b || null;
   document.getElementById('dlgTitle').textContent = b ? '编辑订台' : '新增订台';
-  for (const k of ['name', 'phone', 'table_no', 'notes']) bform[k].value = b ? b[k] || '' : '';
+  for (const k of ['name', 'phone', 'table_no', 'notes', 'arrival']) bform[k].value = b ? b[k] || '' : '';
   bform.adults.value = b ? b.adults : 2; bform.kids.value = b ? b.kids : 0; bform.day.value = b ? b.day : state.day;
   dlg.showModal(); bform.name.focus();
 }
@@ -573,7 +586,7 @@ bform.addEventListener('submit', async e => {
   if (!e.submitter || e.submitter.value !== 'ok') return;
   e.preventDefault();
   const f = Object.fromEntries(new FormData(bform));
-  const b = { id: editing && editing.id, day: f.day, name: f.name.trim(), phone: f.phone.trim(), table_no: f.table_no.trim(), notes: f.notes.trim(),
+  const b = { id: editing && editing.id, day: f.day, name: f.name.trim(), phone: f.phone.trim(), table_no: f.table_no.trim(), notes: f.notes.trim(), arrival: f.arrival || '',
     adults: Math.max(1, parseInt(f.adults) || 1), kids: Math.max(0, parseInt(f.kids) || 0) };
   if (!b.name) return;
   if (editing && editing.order && (editing.adults !== b.adults || editing.kids !== b.kids) &&
@@ -587,10 +600,15 @@ bform.addEventListener('submit', async e => {
 
 // ---------- bulk paste ----------
 const bulk = document.getElementById('bulk'), bulkForm = document.getElementById('bulkForm');
+// "14:30", "14.30", "14h30", "14h" → "14:30"; anything else → ''.
+function hhmm(x) {
+  const m = String(x || '').trim().match(/^(\d{1,2})\s*[:.h]\s*(\d{2})?\s*h?$/i);
+  return m && +m[1] < 24 && +(m[2] || 0) < 60 ? `${m[1].padStart(2, '0')}:${m[2] || '00'}` : '';
+}
 function parseBulk(text) {
   return text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => l.split(/\t|;|,(?=\s*\S)/).map(x => x.trim()))
     .filter(p => p[0] && !/^(nombre|姓名|name)$/i.test(p[0]))
-    .map(p => ({ name: p[0], phone: p[1] || '', adults: parseInt(p[2]) || 0, kids: parseInt(p[3]) || 0, table_no: p[4] || '' }));
+    .map(p => ({ name: p[0], phone: p[1] || '', adults: parseInt(p[2]) || 0, kids: parseInt(p[3]) || 0, table_no: p[4] || '', arrival: hhmm(p[5]) }));
 }
 bulkForm.text.addEventListener('input', () => {
   const rows = parseBulk(bulkForm.text.value), bad = rows.filter(r => r.adults < 1);

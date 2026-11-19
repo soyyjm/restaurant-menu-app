@@ -217,7 +217,7 @@ function header() {
     <div class="wrap">
       <div class="brand">${esc(F.restaurant)}</div>
       <h1>${t().menu} ${esc(name)}</h1>
-      <div class="date">${cap(fmtDate(day.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}</div>
+      <div class="date">${cap(fmtDate(day.date, { weekday: "long", day: "numeric", month: "long", year: "numeric" }))}${B.arrival ? ` · ${esc(B.arrival)} h` : ''}</div>
       <div class="hello">${esc(t().hello(B.name))}</div>
       <div class="pax"><span>${t().adults(B.adults)}</span>${B.kids ? `<span>${t().kids(B.kids)}</span>` : ''}</div>
     </div>

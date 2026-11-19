@@ -44,8 +44,9 @@
       ['Familia Roca', 4, 1, '5'], ['Laura Martí', 2, 0, '6'], ['Familia Serra', 5, 2, '7'], ['Pere Costa', 8, 0, '8']];
     const pick = (list, n, seed) => { const o = {}; for (let i = 0; i < n; i++) { const k = list[(i * 7 + seed) % list.length].key; o[k] = (o[k] || 0) + 1; } return o; };
     const day = F.days[0];
+    const times = ['13:30', '13:30', '14:00', '14:00', '14:00', '14:30', '14:30', '15:00'];
     fam.forEach(([name, adults, kids, table], i) => {
-      const b = { id: newToken(), day: day.date, name, phone: '6' + String(12345670 + i * 1111).slice(0, 8), adults, kids, table_no: table,
+      const b = { id: newToken(), day: day.date, arrival: times[i], name, phone: '6' + String(12345670 + i * 1111).slice(0, 8), adults, kids, table_no: table,
         notes: '', token: newToken(), locked: false, sent_at: i < 6 ? new Date().toISOString() : null, created_at: new Date().toISOString() };
       s.bookings.push(b);
       if (i < 5) {
@@ -61,7 +62,7 @@
   const isOpen = b => !b.locked && madridToday() < b.day;
   function guestView(s, b) {
     const o = s.orders[b.id];
-    return { day: b.day, name: b.name, adults: b.adults, kids: b.kids, open: isOpen(b),
+    return { day: b.day, arrival: b.arrival || null, name: b.name, adults: b.adults, kids: b.kids, open: isOpen(b),
       order: o ? { items: o.items, allergies: o.allergies, comments: o.comments, adults: o.adults, kids: o.kids, submitted_at: o.submitted_at } : null };
   }
   function checkGroup(g, n) {
@@ -76,7 +77,7 @@
   }
 
   // ---------- public API ----------
-  let sb = null;
+  let sb = null, hasArrival = false;
   const client = () => sb || (sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY));
   const q = async p => { const { data, error } = await p; if (error) throw fail(codeFrom(error.message), error.message); return data; };
 
@@ -125,20 +126,28 @@
         q(client().from('fiesta_orders').select('*'))
       ]);
       const byId = Object.fromEntries(os.map(o => [o.booking_id, o]));
-      return bs.map(b => ({ ...b, order: byId[b.id] || null }));
+      if (bs.length) hasArrival = 'arrival' in bs[0];
+      return bs.map(b => ({ ...b, arrival: b.arrival ? String(b.arrival).slice(0, 5) : null, order: byId[b.id] || null }));
     },
 
     async saveBooking(b) {
       const row = { day: b.day, name: b.name, phone: b.phone || null, adults: b.adults, kids: b.kids,
         table_no: b.table_no || null, notes: b.notes || null };
+      // arrival (HH:MM) needs supabase/007; until it is applied, only send it when one was entered.
+      if (DEMO || hasArrival || b.arrival) row.arrival = b.arrival || null;
       if (DEMO) {
         const s = store();
         if (b.id) Object.assign(s.bookings.find(x => x.id === b.id), row);
         else s.bookings.push({ ...row, id: newToken(), token: newToken(), locked: false, sent_at: null, created_at: new Date().toISOString() });
         save(s); return;
       }
-      if (b.id) await q(client().from('fiesta_bookings').update(row).eq('id', b.id));
-      else await q(client().from('fiesta_bookings').insert(row));
+      try {
+        if (b.id) await q(client().from('fiesta_bookings').update(row).eq('id', b.id));
+        else await q(client().from('fiesta_bookings').insert(row));
+      } catch (e) {
+        if (/arrival/.test(e.message)) throw fail('schema', '数据库还没有“到店时间”：请先在 Supabase 的 SQL Editor 运行 supabase/007_fiestas_hora.sql');
+        throw e;
+      }
     },
     async deleteBooking(id) {
       if (DEMO) { const s = store(); s.bookings = s.bookings.filter(x => x.id !== id); delete s.orders[id]; save(s); return; }
