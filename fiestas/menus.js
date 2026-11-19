@@ -56,7 +56,7 @@ window.FIESTAS = {
       ] },
       menu: {
         primero: [
-          { key: 'burr26', es: 'Ensalada de burrata con salsa de albahaca' },
+          { key: 'burr26', es: 'Ensalada de burrata con tomates cherry, brotes tiernos y salsa de albahaca' },
           { key: 'cane26', es: 'Canelones XXL de carne con bechamel trufada y parmesano gratinado', tags: ['firma'] },
           { key: 'escu26', es: "Escudella i carn d'olla tradicional de Sant Esteve" },
           { key: 'zamb26', es: 'Zamburiñas gratinadas con gambas, mejillones y gulas' }
@@ -65,7 +65,7 @@ window.FIESTAS = {
           { key: 'cord26', es: 'Paletilla de cordero al horno con finas hierbas, patatas aromatizadas y salsa de su jugo' },
           { key: 'bacm26', es: 'Lomo de bacalao a la muselina de ajo con patatas panaderas' },
           { key: 'paes26', es: 'Paella del señorito con gambas rojas' },
-          { key: 'coch26', es: 'Cochinillo asado con piel crujiente, compota de manzana reineta y su jugo' }
+          { key: 'coch26', es: 'Cochinillo asado deshuesado con piel crujiente, compota de manzana reineta y su jugo' }
         ],
         postre: [
           { key: 'redv26', es: 'Tarta red velvet' },
