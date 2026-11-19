@@ -46,31 +46,37 @@ window.FIESTAS = {
       }
     },
     {
-      date: '2026-12-26', name: 'Sant Esteve', ca: 'Sant Esteve', zh: '圣斯德望节', price: 55, kidsPrice: 25,
+      date: '2026-12-26', name: 'Sant Esteve', ca: 'Sant Esteve', zh: '圣斯德望节', price: 55.5, kidsPrice: 22,
       deadline: '2026-12-20', theme: 'esteve',
-      pica: { key: 'pica26', items: ['Pa de pagès con tomate', { es: 'Embutidos de Osona', plate: true }, 'Alcachofas fritas con romesco', 'Buñuelos de bacalao con allioli de miel'] },
+      pica: { key: 'pica26b', items: [
+        { es: 'Tabla de embutidos ibéricos y quesos artesanos', plate: true },
+        { es: 'Fritura de pescado', plate: true },
+        { es: 'Mini berenjenas rellenas de carne, gratinadas', perPerson: 1 },
+        { es: 'Pan de payés con tomate y aceite de oliva virgen extra', plate: true }
+      ] },
       menu: {
         primero: [
-          { key: 'cane26', es: 'Gran canelón de rustido, bechamel de setas y teja de parmesano', tags: ['firma'] },
-          { key: 'xato26', es: 'Xató de bacalao y anchoas' },
-          { key: 'pulp26', es: 'Pulpo a la brasa con parmentier y pimentón de la Vera' },
-          { key: 'coli26', es: 'Crema de coliflor asada con avellana tostada', tags: ['veg'] }
+          { key: 'burr26', es: 'Ensalada de burrata con salsa de albahaca' },
+          { key: 'cane26', es: 'Canelones XXL de carne con bechamel trufada y parmesano gratinado', tags: ['firma'] },
+          { key: 'escu26', es: "Escudella i carn d'olla tradicional de Sant Esteve" },
+          { key: 'zamb26', es: 'Zamburiñas gratinadas con gambas, mejillones y gulas' }
         ],
         segundo: [
-          { key: 'baca26', es: 'Bacalao confitado sobre samfaina, espuma de allioli' },
-          { key: 'fric26', es: 'Fricandó de ternera con moixernons', tags: ['firma'] },
-          { key: 'coch26', es: 'Cochinillo a baja temperatura con compota de manzana' },
-          { key: 'timb26', es: 'Timbal de escalivada y queso de cabra con romesco', tags: ['veg'] }
+          { key: 'cord26', es: 'Paletilla de cordero al horno con finas hierbas, patatas aromatizadas y salsa de su jugo' },
+          { key: 'bacm26', es: 'Lomo de bacalao a la muselina de ajo con patatas panaderas' },
+          { key: 'paes26', es: 'Paella del señorito con gambas rojas' },
+          { key: 'coch26', es: 'Cochinillo asado' }
         ],
         postre: [
-          { key: 'cata26', es: 'Tarta de crema catalana quemada', tags: ['firma'] },
-          { key: 'turr26', es: 'Coulant de turrón con helado' },
-          { key: 'liml26', es: 'Sorbete de limón al cava' }
+          { key: 'redv26', es: 'Tarta red velvet' },
+          { key: 'tron26', es: 'Tronco de Navidad' },
+          { key: 'ques26', es: 'Tarta de queso' },
+          { key: 'truf26', es: 'Trufa de chocolate con helado de turrón' }
         ]
       }
     },
     {
-      date: '2027-01-01', name: 'Año Nuevo', ca: 'Any Nou', zh: '元旦', price: 55, kidsPrice: 25,
+      date: '2027-01-01', name: 'Año Nuevo', ca: 'Any Nou', zh: '元旦', price: 55, kidsPrice: 22,
       deadline: '2026-12-27', theme: 'nuevo',
       pica: { key: 'pica1', items: ['Focaccia de romero', 'Bombón de foie y frambuesa', 'Tostada de tartar de salmón', 'Croquetas de jamón ibérico'] },
       menu: {
@@ -94,7 +100,7 @@ window.FIESTAS = {
       }
     },
     {
-      date: '2027-01-06', name: 'Reyes', ca: 'Reis', zh: '三王节', price: 40, kidsPrice: 20,
+      date: '2027-01-06', name: 'Reyes', ca: 'Reis', zh: '三王节', price: 40, kidsPrice: 22,
       deadline: '2027-01-02', theme: 'reyes',
       pica: { key: 'pica6', items: ['Pan de coca con tomate', 'Croquetas de pollo rustido', { es: 'Calamares a la andaluza', plate: true }, { es: 'Bravas “corona”', plate: true }] },
       menu: {
