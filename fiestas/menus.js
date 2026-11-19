@@ -20,9 +20,9 @@ window.FIESTAS = {
       deadline: '2026-12-10', theme: 'navidad',
       pica: { key: 'pica25b', items: [
         { es: 'Tabla de embutidos ibéricos y queso', plate: true },
-        { es: 'Langostinos cocidos con mayonesa de cítricos', perPerson: 2 },
+        { es: 'Langostinos cocidos con mayonesa de cítricos', perPerson: 1 },
         { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
-        { es: 'Pan de coca con tomate y aceite de oliva virgen extra', plate: true }
+        { es: 'Pan de coca con tomate y aceite de oliva virgen extra', perPerson: 2 }
       ] },
       menu: {
         primero: [
@@ -38,7 +38,7 @@ window.FIESTAS = {
           { key: 'roda25', es: 'Lomo de rodaballo con salsa de cava y azafrán y espinacas a la catalana' }
         ],
         postre: [
-          { key: 'qpis25', es: 'Tarta de queso casera al horno con crema de pistacho' },
+          { key: 'qpis25', es: 'Tarta de queso donostiarra de pistacho' },
           { key: 'bola25', es: 'Bola de Navidad', tags: ['firma'] },
           { key: 'coul25', es: 'Coulant de chocolate con helado de vainilla' },
           { key: 'tira25', es: 'Tiramisú casero' }
@@ -52,7 +52,7 @@ window.FIESTAS = {
         { es: 'Tabla de embutidos ibéricos y quesos artesanos', plate: true },
         { es: 'Fritura de pescado', plate: true },
         { es: 'Mini berenjenas rellenas de carne, gratinadas', perPerson: 1 },
-        { es: 'Pan de payés con tomate y aceite de oliva virgen extra', plate: true }
+        { es: 'Pan de payés con tomate y aceite de oliva virgen extra', perPerson: 2 }
       ] },
       menu: {
         primero: [
@@ -70,7 +70,7 @@ window.FIESTAS = {
         postre: [
           { key: 'redv26', es: 'Tarta red velvet' },
           { key: 'tron26', es: 'Tronco de Navidad' },
-          { key: 'ques26', es: 'Tarta de queso' },
+          { key: 'ques26', es: 'Tarta de queso casera con salsa de frutos rojos' },
           { key: 'truf26', es: 'Trufa de chocolate con helado de turrón' }
         ]
       }
