@@ -110,7 +110,7 @@ const T = {
   es: {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adulto' : 'adultos'}`, kids: n => `${n} ${n === 1 ? 'niño' : 'niños'}`,
     hello: n => `Hola, ${n}`,
-    intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.<br><span style="font-size:13px">Es un menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.</span>`,
+    intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.<br><span style="font-size:13px">Es un menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.</span<br>${F.drinks.es}</span>`,
     photoNote: 'Las fotografías son orientativas. La presentación del plato puede variar.',
     pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida: una tabla para cada 4 personas, con pan.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
@@ -136,7 +136,7 @@ const T = {
   ca: {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adult' : 'adults'}`, kids: n => `${n} ${n === 1 ? 'nen' : 'nens'}`,
     hello: n => `Hola, ${n}`,
-    intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.<br><span style="font-size:13px">És un menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.</span>`,
+    intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.<br><span style="font-size:13px">És un menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.</span<br>${F.drinks.ca}</span>`,
     photoNote: 'Les fotografies són orientatives. La presentació del plat pot variar.',
     pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda: una taula per cada 4 persones, amb pa.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,

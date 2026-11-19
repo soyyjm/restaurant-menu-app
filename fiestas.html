@@ -255,7 +255,8 @@ const TX = {
     tablePrefix: t => `${t} 号桌 · `, course: c => `${c.zh} ${c.es}`, sub: c => `${c.zh} · ${c.es}`,
     adults: '大人', kidsMenuShort: '儿童套餐', paxLine: (a, k, n) => `大人 ${a}${k ? ` · 小孩 ${k}` : ''} · 共 ${n} 人`, picaPlates: sp => `${sp.length} 盘：${sp.map(n => `${n} 人`).join(' + ')}`,
     allergy: '⚠ 过敏：', sup: n => `补差价：${n} €`, staleOrder: '订台人数改过，客人之前点的已作废，需要重新提交。', noOrder: '还没收到点餐。', notes: '备注：',
-    noBookings: '这一天还没有订台。', arrivalT: '约定到店时间', noTime: '未定时间', slot: (n, p) => `${n} 桌 · ${p} 人：`, at: t => `到店 ${t} · ` },
+    noBookings: '这一天还没有订台。', arrivalT: '约定到店时间', noTime: '未定时间', slot: (n, p) => `${n} 桌 · ${p} 人：`, at: t => `到店 ${t} · `,
+    drinks: d => `含饮料 ${d.n} 份${d.bottles ? `，或最多 ${d.bottles} 瓶葡萄酒（1 瓶顶 4 份）` : ''}；咖啡和额外酒水另收` },
   es: { changed: 'Cambió el nº de personas', pend: 'Petición especial pendiente', staff: 'Confirmado por el restaurante', ordered: 'Pedido recibido', sent: 'Enviado, sin respuesta', fresh: 'No enviado',
     tables: 'Reservas', people: (a, k) => `Personas: ${a} adultos · ${k} niños`, sentN: 'Menús enviados', doneN: n => `Con pedido (${n} pers.)`, notYet: 'Sin pedido',
     persons: n => `${n} personas`, half: n => `+ ${n} media${n === 1 ? '' : 's'} ración${n === 1 ? '' : 'es'}`, offMenu: 'fuera de carta', none: 'Sin este plato (no preparar)', other: 'Otra opción, pendiente de confirmar',
@@ -267,7 +268,8 @@ const TX = {
     tablePrefix: t => `Mesa ${t} · `, course: c => c.es, sub: c => c.es,
     adults: 'Adultos', kidsMenuShort: 'Menú infantil', paxLine: (a, k, n) => `${a} adultos${k ? ` · ${k} niños` : ''} · ${n} personas`, picaPlates: sp => `${sp.length} bandeja${sp.length === 1 ? '' : 's'}: ${sp.map(n => `${n} pers.`).join(' + ')}`,
     allergy: '⚠ Alergias: ', sup: n => `Suplementos: ${n} €`, staleOrder: 'Cambió el número de personas: el pedido anterior no vale, falta el nuevo.', noOrder: 'Sin pedido todavía.', notes: 'Notas: ',
-    noBookings: 'No hay reservas para este día.', arrivalT: 'Horario de llegada', noTime: 'Sin hora', slot: (n, p) => `${n} mesa${n === 1 ? '' : 's'} · ${p} pers.: `, at: t => `Llegada ${t} h · ` }
+    noBookings: 'No hay reservas para este día.', arrivalT: 'Horario de llegada', noTime: 'Sin hora', slot: (n, p) => `${n} mesa${n === 1 ? '' : 's'} · ${p} pers.: `, at: t => `Llegada ${t} h · `,
+    drinks: d => `Bebida incluida: ${d.n} consumiciones${d.bottles ? ` o hasta ${d.bottles} botella${d.bottles === 1 ? '' : 's'} de vino (1 botella = 4)` : ''}; café y extras aparte` }
 };
 const status = (b, lang = 'zh') => {
   const T = TX[lang];
@@ -469,6 +471,7 @@ function viewTables(day, bs, lang = 'zh') {
     const [cls, label] = status(b, lang), sup = supTotal(b);
     return `<div class="card" data-id="${b.id}"><h3>${b.table_no ? `<span class="tn">${esc(b.table_no)}</span>` : ''}<span style="flex:1">${esc(b.name)}</span><span class="badge b-${cls}">${label}</span></h3>
       <div class="muted" style="font-size:13px">${b.arrival ? `<b style="color:var(--ink)">${T.at(esc(b.arrival))}</b>` : ''}${T.paxLine(b.adults, b.kids, b.adults + b.kids)}${b.phone && lang === 'zh' ? ` · ${esc(b.phone)}` : ''}</div>
+      <div style="font-size:13px;margin-top:6px">🍷 ${T.drinks(F.drinksFor(b))}</div>
       <div class="sub" style="margin-top:10px">Pica-pica</div>
       <ul class="kv"><li><b>${picaSets(b)}</b><span>${esc(T.picaPlates(picaSplitOf(b)).replace(/^\d+\s*/, ''))}</span></li></ul>
       ${valid(b) ? `
@@ -497,6 +500,8 @@ function comandaLines(b) {
     return { c, lines };
   });
 }
+// SALA: drinks included for this table (1 per menu; a bottle of wine = 4).
+const drinkShort = b => { const d = F.drinksFor(b); return `Bebida: ${d.n}${d.bottles ? ` (máx. ${d.bottles} bot. vino)` : ''}`; };
 function ticketHtml(b, day, copy) {
   const v = valid(b), sp = picaSplitOf(b);
   const sec = (title, body) => `<div class="tk-sec"><h4><span class="box"></span>${title}<span class="mar">MARCHAR <span class="box"></span></span></h4>${body}</div>`;
@@ -516,7 +521,7 @@ function ticketHtml(b, day, copy) {
   const al = v && b.order.allergies, co = v && b.order.comments, sup = supTotal(b);
   return `<div class="tk">
     <div class="tk-h"><div class="tk-mesa">${b.table_no ? 'MESA ' + esc(b.table_no) : '—'}</div>
-      <div class="tk-who"><b>${esc(b.name)}</b><br>${b.adults + b.kids} pers.: ${b.adults} adultos${b.kids ? ` + ${b.kids} niños` : ''}${b.arrival ? `<div class="tk-hora">LLEGADA ${esc(b.arrival)} h</div>` : ''}<div class="tk-day">${esc(day.name)} · ${fmtEs(day.date, { day: 'numeric', month: 'long' })}</div></div>
+      <div class="tk-who"><b>${esc(b.name)}</b><br>${b.adults + b.kids} pers.: ${b.adults} adultos${b.kids ? ` + ${b.kids} niños` : ''}${b.arrival ? `<div class="tk-hora">LLEGADA ${esc(b.arrival)} h</div>` : ''}<div class="tk-day">${esc(day.name)} · ${fmtEs(day.date, { day: 'numeric', month: 'long' })}${copy === 'SALA' ? ` · <b>${drinkShort(b)}</b>` : ''}</div></div>
       <div class="tk-copy">${copy}</div></div>
     ${al ? `<div class="tk-alert">⚠ ALERGIAS / PETICIONES: <span>${esc(al)}</span></div>` : ''}
     ${body}

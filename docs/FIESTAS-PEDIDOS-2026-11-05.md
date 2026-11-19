@@ -104,3 +104,8 @@
 - 出菜单（COCINA / SALA）上写 “LLEGADA 14:00 h”；按桌明细写“到店 14:00”；导出 Excel 第一列是 Hora。
 - 发给客人的 WhatsApp 消息会写 “el viernes, 25 de diciembre a las 14:00 h”，客人页面的日期后面也会显示时间。
 - **上线前要先在 Supabase 的 SQL Editor 运行 `supabase/007_fiestas_hora.sql`**（加一列，并更新客人读取接口）。没运行之前，系统照常能用，只是填了时间保存时会提示先运行 007。
+
+## 2026-11-19 补充：含酒水规则
+- 每个套餐（大人小孩都算）含 1 份饮料（水、refresco 或啤酒），1 瓶葡萄酒（白或红）顶 4 份。例如 8 人：8 份饮料，或 2 瓶酒，或 1 瓶酒 + 4 份饮料。咖啡和额外酒水另收。
+- 文字在 `fiestas/menus.js` 的 `FIESTAS.drinks`（西 / 加泰），客人点菜页和菜单图片 / PDF 都会显示。
+- SALA 联日期那一行写 “Bebida: 6 (máx. 1 bot. vino)”；按桌明细写“含饮料 6 份，或最多 1 瓶葡萄酒”。

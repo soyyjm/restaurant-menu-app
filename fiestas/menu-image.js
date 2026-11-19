@@ -54,7 +54,7 @@
       H += 110;
       for (let i = 0; i < s.dishes.length; i += 2) H += Math.max(...s.dishes.slice(i, i + 2).map(d => cardH(d, s.small))) + GAP;
     }
-    H += 210;   // footer
+    H += 300;   // footer
     cv.width = W; cv.height = H;
 
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
@@ -117,9 +117,11 @@
     // Footer
     y += 40;
     ctx.fillStyle = C.muted; ctx.font = `400 26px ${SANS}`; ctx.textAlign = 'center';
-    const closedL = wrap(ctx, L.closed, W - PAD * 2);
+    const closedL = wrap(ctx, L.closed, W - PAD * 2), drinkL = wrap(ctx, F.drinks[opts.lang === 'ca' ? 'ca' : 'es'], W - PAD * 2);
     closedL.forEach((l, k) => ctx.fillText(l, W / 2, y + k * 34));
-    ctx.font = `italic 500 26px ${SERIF}`; ctx.fillText(L.photos, W / 2, y + closedL.length * 34 + 14);
+    y += closedL.length * 34 + 12;
+    drinkL.forEach((l, k) => ctx.fillText(l, W / 2, y + k * 34));
+    ctx.font = `italic 500 26px ${SERIF}`; ctx.fillText(L.photos, W / 2, y + drinkL.length * 34 + 14);
     ctx.fillStyle = accent; ctx.font = `600 30px ${SERIF}`; ctx.fillText(F.restaurant, W / 2, H - 40);
     return cv;
   }

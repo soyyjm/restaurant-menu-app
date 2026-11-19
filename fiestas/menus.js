@@ -177,6 +177,13 @@ window.FIESTAS.line = key => {
 //     { es: 'Calamares …', plate: true }     → by plate: one serving per pica-pica plate, sized like the plate
 //                                             (a 4-person plate gets a 4-person serving), no piece count
 window.FIESTAS.picaRules = { countKids: true, perPerson: 1 };
+// Drinks included (same every day): one drink per menu, adults and kids alike; a bottle of wine
+// counts as 4 drinks. 8 menus → 8 drinks, or 2 bottles, or 1 bottle + 4 drinks. Coffee and extra drinks are charged.
+window.FIESTAS.drinks = {
+  es: 'Bebida incluida: una bebida por menú (agua, refresco o cerveza); una botella de vino (blanco o tinto) cuenta como 4 bebidas. El café y el resto de bebidas se cobran aparte.',
+  ca: 'Beguda inclosa: una beguda per menú (aigua, refresc o cervesa); una ampolla de vi (blanc o negre) compta com a 4 begudes. El cafè i la resta de begudes es cobren a part.'
+};
+window.FIESTAS.drinksFor = b => { const n = b.adults + b.kids; return { n, bottles: Math.floor(n / 4) }; };
 window.FIESTAS.picaItem = it => {
   const pp = window.FIESTAS.picaRules.perPerson;
   return typeof it === 'string' ? { es: it, plate: false, pp } : { es: it.es, plate: !!it.plate, pp: it.perPerson || pp };
