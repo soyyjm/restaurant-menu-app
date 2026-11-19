@@ -10,10 +10,12 @@
   const TXT = {
     es: { menu: 'Menú de', perAdult: 'por adulto', kids: 'Menú infantil', pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida, una tabla por cada 4 personas, con pan',
       choose: 'elige uno', tellHost: h => `Elige un primero, un segundo y un postre y díselo a ${h}.`, tell: 'Elige un primero, un segundo y un postre.',
-      closed: 'Menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.', locale: 'es-ES' },
+      closed: 'Menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.',
+      photos: 'Las fotografías son orientativas. La presentación del plato puede variar.', locale: 'es-ES' },
     ca: { menu: 'Menú de', perAdult: 'per adult', kids: 'Menú infantil', pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda, una taula per cada 4 persones, amb pa',
       choose: 'tria’n un', tellHost: h => `Tria un primer, un segon i unes postres i digues-ho a ${h}.`, tell: 'Tria un primer, un segon i unes postres.',
-      closed: 'Menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.', locale: 'ca-ES' }
+      closed: 'Menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.',
+      photos: 'Les fotografies són orientatives. La presentació del plat pot variar.', locale: 'ca-ES' }
   };
 
   const loadImg = src => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
@@ -52,7 +54,7 @@
       H += 110;
       for (let i = 0; i < s.dishes.length; i += 2) H += Math.max(...s.dishes.slice(i, i + 2).map(d => cardH(d, s.small))) + GAP;
     }
-    H += 170;   // footer
+    H += 210;   // footer
     cv.width = W; cv.height = H;
 
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
@@ -115,7 +117,9 @@
     // Footer
     y += 40;
     ctx.fillStyle = C.muted; ctx.font = `400 26px ${SANS}`; ctx.textAlign = 'center';
-    wrap(ctx, L.closed, W - PAD * 2).forEach((l, k) => ctx.fillText(l, W / 2, y + k * 34));
+    const closedL = wrap(ctx, L.closed, W - PAD * 2);
+    closedL.forEach((l, k) => ctx.fillText(l, W / 2, y + k * 34));
+    ctx.font = `italic 500 26px ${SERIF}`; ctx.fillText(L.photos, W / 2, y + closedL.length * 34 + 14);
     ctx.fillStyle = accent; ctx.font = `600 30px ${SERIF}`; ctx.fillText(F.restaurant, W / 2, H - 40);
     return cv;
   }

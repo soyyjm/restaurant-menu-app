@@ -111,6 +111,7 @@ const T = {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adulto' : 'adultos'}`, kids: n => `${n} ${n === 1 ? 'niño' : 'niños'}`,
     hello: n => `Hola, ${n}`,
     intro: (d, p, k) => `Elegid un primero, un segundo y un postre para cada comensal. <b>${p} €</b> por adulto${k ? `, menú infantil <b>${k} €</b>` : ''}. Os pedimos la elección antes del <b>${d}</b>.<br><span style="font-size:13px">Es un menú cerrado: el precio es el mismo aunque alguien tome media ración o no tome algún plato.</span>`,
+    photoNote: 'Las fotografías son orientativas. La presentación del plato puede variar.',
     pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida: una tabla para cada 4 personas, con pan.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Alergias, intolerancias o peticiones especiales', allergiesPh: 'Ej.: una persona celíaca; la abuela no toma primer plato; media ración para un niño…',
@@ -136,6 +137,7 @@ const T = {
     menu: 'Menú de', adults: n => `${n} ${n === 1 ? 'adult' : 'adults'}`, kids: n => `${n} ${n === 1 ? 'nen' : 'nens'}`,
     hello: n => `Hola, ${n}`,
     intro: (d, p, k) => `Trieu un primer, un segon i unes postres per a cada comensal. <b>${p} €</b> per adult${k ? `, menú infantil <b>${k} €</b>` : ''}. Us demanem la tria abans del <b>${d}</b>.<br><span style="font-size:13px">És un menú tancat: el preu és el mateix encara que algú prengui mitja ració o no prengui algun plat.</span>`,
+    photoNote: 'Les fotografies són orientatives. La presentació del plat pot variar.',
     pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda: una taula per cada 4 persones, amb pa.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Al·lèrgies, intoleràncies o peticions especials', allergiesPh: 'Ex.: una persona celíaca; l’àvia no pren primer plat; mitja ració per a un nen…',
@@ -244,7 +246,7 @@ function dishRow(g, n, c, d) {
 function renderForm() {
   const p = day.pica;
   let h = header() + `<main class="wrap">
-    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), F.eur(day.price), B.kids ? F.eur(day.kidsPrice) : 0)}</p>
+    <p class="note">${t().intro(fmtDate(day.deadline, { day: 'numeric', month: 'long' }), F.eur(day.price), B.kids ? F.eur(day.kidsPrice) : 0)}<br><span style="display:block;margin-top:6px;font-size:12.5px;font-style:italic;opacity:.75">${t().photoNote}</span></p>
     ${shareCard()}
     ${error ? `<p class="note" style="color:var(--warn)">${esc(error)}</p>` : ''}
     <section><div class="sec-head"><h2>${t().pica}</h2></div>
