@@ -65,7 +65,7 @@ window.FIESTAS = {
           { key: 'cord26', es: 'Paletilla de cordero al horno con finas hierbas, patatas aromatizadas y salsa de su jugo' },
           { key: 'bacm26', es: 'Lomo de bacalao a la muselina de ajo con patatas panaderas' },
           { key: 'paes26', es: 'Paella del señorito con gambas rojas' },
-          { key: 'coch26', es: 'Cochinillo asado' }
+          { key: 'coch26', es: 'Cochinillo asado con piel crujiente, compota de manzana reineta y su jugo' }
         ],
         postre: [
           { key: 'redv26', es: 'Tarta red velvet' },
