@@ -16,7 +16,7 @@ window.FIESTAS = {
   },
   days: [
     {
-      date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55.5, kidsPrice: 25,
+      date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55.5, kidsPrice: 22,
       deadline: '2026-12-19', theme: 'navidad',
       pica: { key: 'pica25b', items: [
         { es: 'Tabla de embutidos ibéricos y queso', plate: true },
@@ -33,7 +33,7 @@ window.FIESTAS = {
         ],
         segundo: [
           { key: 'cabr25', es: 'Paletilla de cabrito al horno con patatas panaderas y su jugo al romero' },
-          { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con flor de patata y salsa demi‑glace al vino tinto' },
+          { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con gratinado de patata y salsa demi‑glace al vino tinto' },
           { key: 'seny25', es: 'Arroz del senyoret con vieiras' },
           { key: 'roda25', es: 'Lomo de rodaballo con salsa de cava y azafrán y espinacas a la catalana' }
         ],
