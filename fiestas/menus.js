@@ -17,10 +17,10 @@ window.FIESTAS = {
   days: [
     {
       date: '2026-12-25', name: 'Navidad', ca: 'Nadal', zh: '圣诞节', price: 55.5, kidsPrice: 22,
-      deadline: '2026-12-19', theme: 'navidad',
+      deadline: '2026-12-10', theme: 'navidad',
       pica: { key: 'pica25b', items: [
         { es: 'Tabla de embutidos ibéricos y queso', plate: true },
-        { es: 'Langostinos cocidos con mahonesa de cítricos', perPerson: 2 },
+        { es: 'Langostinos cocidos con mayonesa de cítricos', perPerson: 2 },
         { es: 'Torreznos de Soria con salsa agridulce y pico de gallo', plate: true },
         { es: 'Pan de coca con tomate y aceite de oliva virgen extra', plate: true }
       ] },
@@ -47,7 +47,7 @@ window.FIESTAS = {
     },
     {
       date: '2026-12-26', name: 'Sant Esteve', ca: 'Sant Esteve', zh: '圣斯德望节', price: 55.5, kidsPrice: 22,
-      deadline: '2026-12-20', theme: 'esteve',
+      deadline: '2026-12-10', theme: 'esteve',
       pica: { key: 'pica26b', items: [
         { es: 'Tabla de embutidos ibéricos y quesos artesanos', plate: true },
         { es: 'Fritura de pescado', plate: true },
