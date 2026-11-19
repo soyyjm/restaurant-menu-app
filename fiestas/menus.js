@@ -56,7 +56,7 @@ window.FIESTAS = {
       ] },
       menu: {
         primero: [
-          { key: 'burr26', es: 'Ensalada de burrata con tomates cherry, brotes tiernos y salsa de albahaca' },
+          { key: 'burr26', es: 'Ensalada de burrata con tomates cherry, rúcula, pipas de calabaza y salsa de albahaca' },
           { key: 'cane26', es: 'Canelones XXL de carne con bechamel trufada y parmesano gratinado', tags: ['firma'] },
           { key: 'escu26', es: "Escudella i carn d'olla tradicional de Sant Esteve" },
           { key: 'zamb26', es: 'Zamburiñas gratinadas con gambas, mejillones y gulas' }
