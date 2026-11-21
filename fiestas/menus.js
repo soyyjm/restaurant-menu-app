@@ -76,26 +76,32 @@ window.FIESTAS = {
       }
     },
     {
-      date: '2027-01-01', name: 'Año Nuevo', ca: 'Any Nou', zh: '元旦', price: 55, kidsPrice: 22,
+      date: '2027-01-01', name: 'Año Nuevo', ca: 'Any Nou', zh: '元旦', price: 55.5, kidsPrice: 22,
       deadline: '2026-12-27', theme: 'nuevo',
-      pica: { key: 'pica1', items: ['Focaccia de romero', 'Bombón de foie y frambuesa', 'Tostada de tartar de salmón', 'Croquetas de jamón ibérico'] },
+      pica: { key: 'pica1b', items: [
+        { es: 'Tabla de embutidos selectos de Galicia y queso de tetilla con tostas de pan', plate: true },
+        { es: 'Croquetas caseras variadas (jamón ibérico, boletus y pollo rustido)', perPerson: 2 },
+        { es: 'Gambas al ajillo con guindilla en cazuela de barro', plate: true },
+        { es: 'Pan de coca con tomate, aceite de oliva virgen extra y anchoas del Cantábrico', perPerson: 2 }
+      ] },
       menu: {
         primero: [
-          { key: 'velo1', es: 'Velouté de calabaza asada con vieira dorada', tags: ['firma'] },
-          { key: 'tart1', es: 'Tartar de atún con aguacate y cítricos' },
-          { key: 'cons1', es: 'Consomé de cocido al Jerez con yema curada' },
-          { key: 'burr1', es: 'Burrata con tomates confitados, granada y pesto', tags: ['veg'] }
+          { key: 'cabr1', es: 'Ensalada de queso de cabra gratinado con brotes tiernos, manzana, nueces y vinagreta de miel' },
+          { key: 'mari1', es: 'Crema de marisco con brocheta de gambas a la plancha y picatostes' },
+          { key: 'pulp1', es: 'Pulpo a la brasa sobre parmentier de patata con pimentón de la Vera y aceite de oliva' },
+          { key: 'ravs1', es: 'Raviolis de salmón con salsa cremosa de eneldo y lima' }
         ],
         segundo: [
-          { key: 'pres1', es: 'Presa ibérica glaseada al Oporto, puré de boniato', tags: ['firma'] },
-          { key: 'lubi1', es: 'Lomo de lubina con beurre blanc de cava' },
-          { key: 'solo1', es: 'Solomillo de ternera con salsa de foie', tags: ['sup'], sup: 8 },
-          { key: 'ravi1', es: 'Raviolis de calabaza con mantequilla de salvia', tags: ['veg'] }
+          { key: 'chul1', es: 'Chuletón de ternera madurada a la brasa (aprox. 400 g) con patatas fritas caseras y pimientos del Padrón', punto: true },
+          { key: 'cazu1', es: 'Cazuela de merluza y rape con mejillones, almejas y gambas al azafrán' },
+          { key: 'arrb1', es: 'Arroz meloso de marisco con medio bogavante por persona' },
+          { key: 'poll1', es: 'Pollo de payés deshuesado relleno a la catalana con ciruelas, orejones y piñones, salsa de su asado y puré de patata' }
         ],
         postre: [
-          { key: 'uvas1', es: 'Las 12 uvas', tags: ['firma'] },
-          { key: 'torr1', es: 'Torrija de brioche caramelizada' },
-          { key: 'pist1', es: 'Coulant de pistacho' }
+          { key: 'tira1', es: 'Tiramisú casero al estilo tradicional' },
+          { key: 'torr1', es: 'Torrija de brioche caramelizada con helado de canela' },
+          { key: 'coub1', es: 'Coulant de chocolate blanco con helado de frambuesa' },
+          { key: 'mous1', es: 'Mousse de turrón sobre bizcocho con crujiente de almendra' }
         ]
       }
     },
@@ -143,10 +149,21 @@ window.FIESTAS = {
 // Price as written in Spain: 55 → "55", 55.5 → "55,50".
 window.FIESTAS.eur = n => Number.isInteger(+n) ? String(+n) : (+n).toFixed(2).replace('.', ',');
 window.FIESTAS.dayOf = date => window.FIESTAS.days.find(d => d.date === date);
+// Doneness (dishes with punto: true, e.g. the chuletón): the guest picks it per diner, so the order
+// stores one key per doneness, <key>~p1 / ~p2 / ~p3, counted like any dish (no DB change needed).
+window.FIESTAS.puntos = [
+  { id: 'p1', es: 'Poco hecho', ca: 'Poc fet', zh: '偏生（三分）' },
+  { id: 'p2', es: 'Al punto', ca: 'Al punt', zh: '适中（五分）' },
+  { id: 'p3', es: 'Muy hecho', ca: 'Molt fet', zh: '全熟' }
+];
+// Menu list as ordered: a punto dish becomes its doneness variants (same order as the menu).
+window.FIESTAS.expand = list => list.flatMap(d => !d.punto ? [d] : window.FIESTAS.puntos.map(p => ({
+  ...d, key: `${d.key}~${p.id}`, base: d.key, punto: p, es: `${d.es} — ${p.es.toUpperCase()}`,
+  ca: `${d.es} — ${p.ca.toUpperCase()}`, zh: `${d.es} — ${p.zh}` })));
 window.FIESTAS.dishIndex = (() => {
   const idx = {};
   for (const d of window.FIESTAS.days)
-    for (const c of window.FIESTAS.courses) for (const x of d.menu[c.id]) idx[x.key] = x;
+    for (const c of window.FIESTAS.courses) for (const x of [...d.menu[c.id], ...window.FIESTAS.expand(d.menu[c.id])]) idx[x.key] = x;
   for (const c of window.FIESTAS.courses) for (const x of window.FIESTAS.kids[c.id]) idx[x.key] = x;
   return idx;
 })();
@@ -163,9 +180,9 @@ window.FIESTAS.line = key => {
   if (key === 'none') return { kind: 'none', es: 'Sin este plato', ca: 'Sense aquest plat', zh: '不要这道' };
   if (key.startsWith('x~')) { const n = key.slice(2); return { kind: 'custom', es: n, ca: n, zh: n }; }
   const half = key.endsWith('~h'), base = half ? key.slice(0, -2) : key, d = F.dishIndex[base];
-  const name = d ? d.es : base + ' (?)';
-  return half ? { kind: 'half', base, es: `½ ${name}`, ca: `½ ${name}`, zh: `½ ${name}（半份）` }
-              : { kind: 'dish', base, es: name, ca: name, zh: name, sup: d && d.sup };
+  const es = d ? d.es : base + ' (?)', ca = (d && d.ca) || es, zh = (d && d.zh) || es;
+  return half ? { kind: 'half', base, es: `½ ${es}`, ca: `½ ${ca}`, zh: `½ ${zh}（半份）` }
+              : { kind: 'dish', base, es, ca, zh, sup: d && d.sup };
 };
 
 // Pica-pica (shared starter): one plate per ~4 people, never ordered by guests.

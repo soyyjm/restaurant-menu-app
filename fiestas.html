@@ -415,7 +415,7 @@ function courseBlock(title, list, counts, total, lang) {
   return `<div class="course"><h3>${title} <span class="muted" style="font-weight:400;font-size:13px">${T.persons(total)}</span></h3>${h}</div>`;
 }
 // Pica-pica is served as small plates: per table, one set per ~4 people, one plate of each item per set.
-const picaShortName = s => s.split(/ con | y aceite|, /)[0];
+const picaShortName = s => s.replace(/\s*\(.*?\)/g, '').split(/ con | y aceite|, /)[0];
 const picaPlan = b => { const sp = picaSplitOf(b); return F.dayOf(b.day).pica.items.map(F.picaItem)
   .map(i => ({ ...i, short: picaShortName(i.es), plates: sp.length, sp, per: sp.map(n => n * i.pp) })); };
 // Pica-pica: plates by size, pieces of each item, and the split of every table.
@@ -452,7 +452,7 @@ function viewKitchen(day, bs, lang = 'zh') {
   h += `<div class="grid">
     ${arrivalCard(bs, T)}
     ${picaCard(day, bs, T)}
-    <div class="card"><h3>${T.adultsMenu(ad)}</h3>${F.courses.map(c => courseBlock(T.course(c), day.menu[c.id], ta[c.id], ad, lang)).join('')}</div>
+    <div class="card"><h3>${T.adultsMenu(ad)}</h3>${F.courses.map(c => courseBlock(T.course(c), F.expand(day.menu[c.id]), ta[c.id], ad, lang)).join('')}</div>
     ${kd || F.courses.some(c => Object.keys(tk[c.id]).length) ? `<div class="card"><h3>${T.kidsMenu(kd)}</h3>${F.courses.map(c => courseBlock(T.course(c), F.kids[c.id], tk[c.id], kd, lang)).join('')}</div>` : ''}
     <div class="card"><h3>${T.allergiesT(allergies.length)}</h3>${allergies.length ? allergies.map(b => `<p style="margin:0 0 8px"><b>${b.table_no ? T.tablePrefix(esc(b.table_no)) : ''}${esc(b.name)}</b><br><span class="al">${esc(b.order.allergies)}</span></p>`).join('') : `<p class="muted">${T.nothing}</p>`}</div>
   </div>`;
@@ -500,9 +500,9 @@ function comandaLines(b) {
   return F.courses.map(c => {
     const lines = [];
     for (const g of ['adult', 'kid']) {
-      const m = ((b.order.items[g] || {})[c.id]) || {}, order = (g === 'adult' ? F.dayOf(b.day).menu : F.kids)[c.id].map(d => d.key);
+      const m = ((b.order.items[g] || {})[c.id]) || {}, order = F.expand((g === 'adult' ? F.dayOf(b.day).menu : F.kids)[c.id]).map(d => d.key);
       Object.keys(m).sort((x, y) => (order.indexOf(x.replace(/~h$/, '')) + 1 || 99) - (order.indexOf(y.replace(/~h$/, '')) + 1 || 99) || m[y] - m[x])
-        .forEach(k => { const L = F.line(k); lines.push({ n: m[k], text: L.es + (L.sup ? ` (+${L.sup} €)` : ''), kind: L.kind, kid: g === 'kid' }); });
+        .forEach(k => { const L = F.line(k); lines.push({ n: m[k], text: L.es + (L.sup ? ` (+${L.sup} €)` : ''), kind: L.kind, kid: g === 'kid', punto: !!(F.dishIndex[k.replace(/~h$/, '')] || {}).punto }); });
     }
     return { c, lines };
   });
@@ -513,7 +513,7 @@ function ticketHtml(b, day, copy) {
   const v = valid(b), sp = picaSplitOf(b);
   const sec = (title, body) => `<div class="tk-sec"><h4><span class="box"></span>${title}<span class="mar">MARCHAR <span class="box"></span></span></h4>${body}</div>`;
   const li = l => {
-    const cls = [l.kid ? 'kid' : '', l.kind === 'none' ? 'none' : '', l.kind === 'otro' ? 'pend' : '', l.kind === 'half' || l.kind === 'custom' ? 'sp' : ''].join(' ');
+    const cls = [l.kid ? 'kid' : '', l.kind === 'none' ? 'none' : '', l.kind === 'otro' ? 'pend' : '', l.kind === 'half' || l.kind === 'custom' || l.punto ? 'sp' : ''].join(' ');
     return `<div class="tk-li ${cls}"><span class="box"${l.kind === 'none' ? ' style="visibility:hidden"' : ''}></span><b>${l.n}×</b><span>${l.kind === 'otro' ? '⚠ ' : ''}${esc(l.text)}</span></div>`;
   };
   const pica = sec(`Pica-pica · ${sp.length} juego${sp.length === 1 ? '' : 's'}`, picaPlan(b).map(i =>
@@ -566,7 +566,7 @@ function specials(b) {
 function exportCsv() {
   const day = F.dayOf(state.day), bs = dayBookings();
   const cols = [];
-  for (const c of F.courses) for (const d of day.menu[c.id]) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
+  for (const c of F.courses) for (const d of F.expand(day.menu[c.id])) cols.push(['adult', c.id, d.key, `${c.es}: ${d.es}`]);
   for (const c of F.courses) for (const d of F.kids[c.id]) cols.push(['kid', c.id, d.key, `Infantil ${c.es}: ${d.es}`]);
   const head = ['Hora', 'Mesa', 'Nombre', 'Teléfono', 'Adultos', 'Niños', 'Estado', 'Pica-pica (bandejas)', ...cols.map(c => c[3]), 'Suplementos €', 'Especiales (medias, sin plato, fuera de carta)', 'Alergias', 'Comentarios'];
   const rows = bs.map(b => {
@@ -661,7 +661,7 @@ function renderOrderBody() {
   const top = oed.scrollTop;
   oBody.innerHTML = oGroups().map(([g, n, menu, gl]) => F.courses.map(c => {
     const m = oItems[g][c.id], a = oSum(g, c.id);
-    const rows = menu[c.id].map(d => `<div class="orow"><span class="nm">${esc(d.es)}</span>${stepper(g, c.id, d.key, m[d.key] || 0, '整份')}${stepper(g, c.id, d.key + '~h', m[d.key + '~h'] || 0, '半份')}</div>`).join('')
+    const rows = F.expand(menu[c.id]).map(d => `<div class="orow"><span class="nm">${esc(d.es)}</span>${stepper(g, c.id, d.key, m[d.key] || 0, '整份')}${stepper(g, c.id, d.key + '~h', m[d.key + '~h'] || 0, '半份')}</div>`).join('')
       + Object.keys(m).filter(k => k.startsWith('x~') || (!F.dishIndex[k.replace(/~h$/, '')] && k !== 'none' && k !== F.OTHER)).map(k => `<div class="orow"><span class="nm">${esc(F.line(k).es)} <span class="badge b-sent">菜单外</span></span>${stepper(g, c.id, k, m[k])}<span class="ost off"></span></div>`).join('')
       + `<div class="orow spec"><span class="nm">不要这道</span>${stepper(g, c.id, 'none', m.none || 0)}<span class="ost off"></span></div>`
       + (m[F.OTHER] ? `<div class="orow pend"><span class="nm">其他需求（客人选的，请改成上面的具体选项后减到 0）</span>${stepper(g, c.id, F.OTHER, m[F.OTHER])}<span class="ost off"></span></div>` : '');

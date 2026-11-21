@@ -50,7 +50,7 @@
         notes: '', token: newToken(), locked: false, sent_at: i < 6 ? new Date().toISOString() : null, created_at: new Date().toISOString() };
       s.bookings.push(b);
       if (i < 5) {
-        const g = (menu, n, seed) => n ? Object.fromEntries(F.courses.map((c, j) => [c.id, pick(menu[c.id], n, seed + j)])) : undefined;
+        const g = (menu, n, seed) => n ? Object.fromEntries(F.courses.map((c, j) => [c.id, pick(F.expand(menu[c.id]), n, seed + j)])) : undefined;
         const items = { adult: g(day.menu, adults, i) };
         if (kids) items.kid = g(F.kids, kids, i + 1);
         s.orders[b.id] = { booking_id: b.id, items, allergies: i === 2 ? 'Un niño celíaco (sin gluten)' : null, comments: i === 0 ? 'Celebramos el cumpleaños de la abuela' : null,

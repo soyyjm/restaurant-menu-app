@@ -114,3 +114,13 @@
 - 拼盘不再一个大盘整体上，而是每 4 人左右一“套”，每套里每样拼盘各装一小盘。例如 8 人 = 2 套（4 + 4），冷切、大虾、炸猪皮、面包各 2 小盘。
 - 出菜单（COCINA / SALA）的 Pica-pica 区每样一行、各有勾选框：“2× Langostinos cocidos (4 + 4 uds)”、“2× Tabla de embutidos… (4 + 4 pers.)”。
 - 后厨汇总按每样写总盘数，以及各种份量的盘数或总个数；按桌明细也一样。
+
+## Año Nuevo 2027: borrador y punto de cocción (2026-11-22)
+
+- Menú de Año Nuevo (1/1) actualizado al borrador del restaurante (55,50 €), aún en revisión; fotos pendientes.
+  Pica: embutidos de Galicia y tetilla (bandeja), croquetas variadas (2 por persona), gambas al ajillo (bandeja),
+  pan de coca con anchoas (2 por persona). Chuletón aprox. 400 g; arroz con medio bogavante por persona.
+- Platos con `punto: true` (el chuletón): el cliente elige el punto de cada uno (Poco hecho / Al punto / Muy hecho).
+  Se guarda como claves `<key>~p1|p2|p3` dentro del plato, contadas como un plato normal: no hace falta migración.
+  `F.expand(lista)` convierte el plato en sus tres variantes; lo usan la página del cliente, el resumen de cocina,
+  las comandas (línea en negrita), el editor de pedidos, el Excel y los datos de demo.

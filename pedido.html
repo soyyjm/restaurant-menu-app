@@ -52,8 +52,14 @@ textarea.need{border-color:var(--warn);outline:2px solid var(--warn)}
 .pica p{margin:0 0 4px;font-size:13px;color:var(--muted)}
 .dish{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:14px;padding:10px;margin-bottom:10px;box-shadow:var(--shadow);border:2px solid transparent;transition:border-color .15s}
 .dish.on{border-color:var(--accent)}
-.dish .ph{width:84px;height:84px;border-radius:10px;flex:none;object-fit:cover;background:var(--line);cursor:zoom-in}
-.dish .ph.txt{display:grid;place-items:center;font:italic 600 28px "Cormorant Garamond",serif;color:var(--muted);cursor:default}
+.dish .ph,.dish-h .ph{width:84px;height:84px;border-radius:10px;flex:none;object-fit:cover;background:var(--line);cursor:zoom-in}
+.dish-h{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:14px 14px 0 0;padding:10px 10px 6px;box-shadow:var(--shadow)}
+.dish-h .hint{font-size:12.5px;color:var(--muted);margin-top:3px}
+.dish.sub{border-radius:0;margin:0;box-shadow:none;padding:6px 10px 6px 106px;border-top:1px solid var(--line)}
+.dish.sub.last{border-radius:0 0 14px 14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.dish.sub .name{font-size:14.5px}
+@media (max-width:420px){.dish.sub{padding-left:22px}}
+.dish .ph.txt,.dish-h .ph.txt{display:grid;place-items:center;font:italic 600 28px "Cormorant Garamond",serif;color:var(--muted);cursor:default}
 .dish .info{flex:1;min-width:0}
 .dish .name{font-weight:500;font-size:15.5px;line-height:1.3}
 .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
@@ -115,6 +121,7 @@ const T = {
     pica: 'Para compartir', picaNote: 'Pica-pica de bienvenida: una tabla para cada 4 personas, con pan.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Alergias, intolerancias o peticiones especiales', allergiesPh: 'Ej.: una persona celíaca; la abuela no toma primer plato; media ración para un niño…',
+    punto: 'Elegid el punto de cada chuletón:',
     other: 'Otra opción / petición especial', otherHint: 'No tomar este plato, media ración, alergias… Describidlo abajo y lo confirmaremos con vosotros. El precio del menú no cambia.',
     needNote: 'Habéis elegido «otra opción»: contadnos qué necesitáis en el recuadro de peticiones especiales.',
     over: n => `Sobran ${n} ${n === 1 ? 'plato' : 'platos'}: revisad las cantidades`,
@@ -141,6 +148,7 @@ const T = {
     pica: 'Per compartir', picaNote: 'Pica-pica de benvinguda: una taula per cada 4 persones, amb pa.',
     adultsMenu: 'Menú', kidsMenu: 'Menú infantil', choose: (a, n) => `${a} / ${n}`,
     allergies: 'Al·lèrgies, intoleràncies o peticions especials', allergiesPh: 'Ex.: una persona celíaca; l’àvia no pren primer plat; mitja ració per a un nen…',
+    punto: 'Trieu el punt de cada xuletó:',
     other: 'Una altra opció / petició especial', otherHint: 'No prendre aquest plat, mitja ració, al·lèrgies… Expliqueu-ho a sota i ho confirmarem amb vosaltres. El preu del menú no canvia.',
     needNote: 'Heu triat «una altra opció»: expliqueu-nos què necessiteu al requadre de peticions especials.',
     over: n => `Sobren ${n} ${n === 1 ? 'plat' : 'plats'}: reviseu les quantitats`,
@@ -178,7 +186,7 @@ const overBy = () => groups().reduce((m, [g, n]) => m + F.courses.reduce((x, c) 
 const usesOther = () => groups().some(([g]) => F.courses.some(c => sel[g][c.id][F.OTHER]));
 const needNote = () => usesOther() && !notes.allergies.trim();
 const otherDish = () => ({ key: F.OTHER, es: t().other, other: true });
-const courseList = (menu, c) => menu[c].concat([otherDish()]);
+const courseList = (menu, c) => F.expand(menu[c]).concat([otherDish()]);
 const countCls = (a, n) => a === n ? ' done' : a > n ? ' over' : '';
 const emptySel = () => ({ adult: Object.fromEntries(F.courses.map(c => [c.id, {}])), kid: Object.fromEntries(F.courses.map(c => [c.id, {}])) });
 
@@ -230,6 +238,18 @@ function photo(d) {
 }
 
 function dishRow(g, n, c, d) {
+  if (d.punto) {
+    // Doneness dish: a header card (photo + name), then one stepper row per doneness.
+    const ps = F.puntos, i = ps.indexOf(d.punto), v = sel[g][c][d.key] || 0, full = sumC(g, c) >= n;
+    const head = i ? '' : `<div class="dish-h">${photo({ key: d.base, es: d.es.split(' — ')[0] })}<div class="info"><div class="name">${esc(d.es.split(' — ')[0])}</div><div class="hint">${esc(t().punto)}</div></div></div>`;
+    return head + `<div class="dish sub${i === ps.length - 1 ? ' last' : ''}${v ? ' on' : ''}" data-g="${g}" data-c="${c}" data-k="${esc(d.key)}">
+    <div class="info"><div class="name">${esc(d.punto[lang])}</div></div>
+    <div class="step">
+      <button type="button" class="minus" data-act="-" aria-label="−" ${v ? '' : 'disabled'}>−</button>
+      <output aria-live="polite">${v}</output>
+      <button type="button" class="plus" data-act="+" aria-label="+" ${full && n > 1 ? 'disabled' : ''}>+</button>
+    </div></div>`;
+  }
   const v = sel[g][c][d.key] || 0, full = sumC(g, c) >= n;
   const tags = (d.tags || []).map(x => x === 'sup' ? `<span class="tag sup">${t().sup(d.sup)}</span>` : `<span class="tag ${x}">${esc(F.tags[x][lang])}</span>`).join('');
   return `<div class="dish${v ? ' on' : ''}${d.other ? ' other' : ''}" data-g="${g}" data-c="${c}" data-k="${esc(d.key)}">
@@ -294,7 +314,7 @@ function summary() {
   for (const [g, n, menu] of groups()) {
     if (B.kids) h += `<h3 style="color:var(--ink)">${g === 'adult' ? t().adultsMenu : t().kidsMenu} · ${g === 'adult' ? t().adults(n) : t().kids(n)}</h3>`;
     for (const c of F.courses) {
-      const order = menu[c.id].map(d => d.key);
+      const order = F.expand(menu[c.id]).map(d => d.key);
       const keys = Object.keys(sel[g][c.id]).sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99));
       h += `<h3>${esc(c[lang])}</h3><ul>${keys.map(k => { const L = F.line(k); return `<li><b>${sel[g][c.id][k]}×</b><span>${esc(L[lang])}${L.sup ? ` <span class="tag sup">${t().sup(L.sup)}</span>` : ''}</span></li>`; }).join('')}</ul>`;
     }
