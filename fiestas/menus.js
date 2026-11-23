@@ -32,7 +32,7 @@ window.FIESTAS = {
           { key: 'tart25', es: 'Steak tartar de ternera cortado a cuchillo, alcaparras y tostas' }
         ],
         segundo: [
-          { key: 'cabr25', es: 'Paletilla de cabrito al horno con patatas panaderas y su jugo al romero' },
+          { key: 'cabr25', es: 'Pierna de cabrito al horno con patatas panaderas y su jugo al romero' },
           { key: 'melo25', es: 'Meloso de ternera asado 18 horas, deshuesado, con gratinado de patata y salsa demi‑glace al vino tinto' },
           { key: 'seny25', es: 'Arroz del senyoret con vieiras' },
           { key: 'roda25', es: 'Lomo de rodaballo con salsa de cava y azafrán y espinacas a la catalana' }
