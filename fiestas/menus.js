@@ -81,6 +81,7 @@ window.FIESTAS = {
       pica: { key: 'pica1b', items: [
         { es: 'Tabla de embutidos selectos de Galicia y queso de tetilla con tostas de pan', plate: true },
         { es: 'Croquetas caseras variadas (jamón ibérico, boletus y pollo rustido)', perPerson: 2 },
+        { es: 'Gambas al ajillo con guindilla', plate: true },
         { es: 'Pan de coca con tomate, aceite de oliva virgen extra y anchoas del Cantábrico', perPerson: 2 }
       ] },
       menu: {
@@ -88,12 +89,12 @@ window.FIESTAS = {
           { key: 'cabr1', es: 'Ensalada de queso de cabra gratinado con brotes tiernos, manzana, nueces y vinagreta de miel' },
           { key: 'mari1', es: 'Crema de marisco con vieira a la plancha y picatostes' },
           { key: 'pulp1', es: 'Pulpo a la brasa sobre parmentier de patata con pimentón de la Vera y aceite de oliva' },
-          { key: 'cane1', es: 'Canelones negros de rape y gambas con bechamel de marisco gratinada' }
+          { key: 'cane1', es: 'Canelones negros de rape y gambas gratinados con bechamel' }
         ],
         segundo: [
-          { key: 'carr1', es: 'Carrillera de ternera estofada al vino tinto con puré de patata y setas salteadas' },
+          { key: 'carr1', es: 'Carrillera de ternera estofada al vino tinto con puré de boniato y setas salteadas' },
           { key: 'cazu1', es: 'Cazuela de merluza y rape con mejillones, almejas y gambas al azafrán' },
-          { key: 'arrb1', es: 'Arroz meloso de marisco con medio bogavante por persona' },
+          { key: 'arrb1', es: 'Arroz meloso de marisco con bogavante' },
           { key: 'pato1', es: 'Confit de pato con salsa de frutos rojos, patatas gajo, zanahorias baby y costillas de maíz a la brasa' }
         ],
         postre: [
