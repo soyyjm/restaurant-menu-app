@@ -81,27 +81,26 @@ window.FIESTAS = {
       pica: { key: 'pica1b', items: [
         { es: 'Tabla de embutidos selectos de Galicia y queso de tetilla con tostas de pan', plate: true },
         { es: 'Croquetas caseras variadas (jamón ibérico, boletus y pollo rustido)', perPerson: 2 },
-        { es: 'Gambas al ajillo con guindilla en cazuela de barro', plate: true },
         { es: 'Pan de coca con tomate, aceite de oliva virgen extra y anchoas del Cantábrico', perPerson: 2 }
       ] },
       menu: {
         primero: [
           { key: 'cabr1', es: 'Ensalada de queso de cabra gratinado con brotes tiernos, manzana, nueces y vinagreta de miel' },
-          { key: 'mari1', es: 'Crema de marisco con brocheta de gambas a la plancha y picatostes' },
+          { key: 'mari1', es: 'Crema de marisco con vieira a la plancha y picatostes' },
           { key: 'pulp1', es: 'Pulpo a la brasa sobre parmentier de patata con pimentón de la Vera y aceite de oliva' },
-          { key: 'ravs1', es: 'Raviolis de salmón con salsa cremosa de eneldo y lima' }
+          { key: 'cane1', es: 'Canelones negros de rape y gambas con bechamel de marisco gratinada' }
         ],
         segundo: [
-          { key: 'chul1', es: 'Chuletón de ternera madurada a la brasa (aprox. 400 g) con patatas fritas caseras y pimientos del Padrón', punto: true },
+          { key: 'carr1', es: 'Carrillera de ternera estofada al vino tinto con puré de patata y setas salteadas' },
           { key: 'cazu1', es: 'Cazuela de merluza y rape con mejillones, almejas y gambas al azafrán' },
           { key: 'arrb1', es: 'Arroz meloso de marisco con medio bogavante por persona' },
-          { key: 'poll1', es: 'Pollo de payés deshuesado relleno a la catalana con ciruelas, orejones y piñones, salsa de su asado y puré de patata' }
+          { key: 'pato1', es: 'Confit de pato con salsa de frutos rojos, patatas gajo, zanahorias baby y costillas de maíz a la brasa' }
         ],
         postre: [
           { key: 'tira1', es: 'Tiramisú casero al estilo tradicional' },
           { key: 'torr1', es: 'Torrija de brioche caramelizada con helado de canela' },
           { key: 'coub1', es: 'Coulant de chocolate blanco con helado de frambuesa' },
-          { key: 'mous1', es: 'Mousse de turrón sobre bizcocho con crujiente de almendra' }
+          { key: 'coco1', es: 'Helado de coco sobre crema catalana caramelizada' }
         ]
       }
     },

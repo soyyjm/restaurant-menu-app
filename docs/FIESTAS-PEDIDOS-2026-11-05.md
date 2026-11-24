@@ -124,3 +124,11 @@
   Se guarda como claves `<key>~p1|p2|p3` dentro del plato, contadas como un plato normal: no hace falta migración.
   `F.expand(lista)` convierte el plato en sus tres variantes; lo usan la página del cliente, el resumen de cocina,
   las comandas (línea en negrita), el editor de pedidos, el Excel y los datos de demo.
+
+## Año Nuevo 2027: segunda versión (2026-11-24)
+
+- Pica: se quitan las gambas al ajillo (no se sirven en cazuela); quedan embutidos + tetilla, croquetas y pan de coca.
+- Primeros: crema de marisco con vieira (en vez de brocheta de gambas); los raviolis de salmón pasan a ser `cane1` Canelones negros de rape y gambas (Canelons XL del proveedor).
+- Segundos: el chuletón (`chul1`) sale del menú y con él la elección de punto; entra `carr1` Carrillera al vino tinto. El pollo relleno pasa a `pato1` Confit de pato.
+- Postres: la mousse de turrón pasa a `coco1` Helado de coco sobre crema catalana.
+- El soporte de punto (`punto: true`) se queda en el código por si vuelve un plato a la brasa.
