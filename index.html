@@ -6344,9 +6344,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     ? (m.occasion || 'Entrante + Principal + Postre')
     : isCarta ? (m.occasion || '')
     : ((typeLabelsMap[primaryLang] || typeLabelsMap.es)[m.type] || '');
-  // Dorado: skip "Para grupos" when the title already says "Grupos".
+  // Skip the type line when the title already says it ("Tapas" under "Tapas", "Para grupos" under "… Grupos").
   const typeWord = typeEl.textContent.split(' ').pop().toLowerCase();
-  const typeInTitle = isDorado && typeWord && (m.name || '').toLowerCase().includes(typeWord);
+  const typeInTitle = !isMarineroTemplate && !isCarta && typeWord && (m.name || '').toLowerCase().includes(typeWord);
   typeEl.style.display = !typeInTitle && (isMarineroTemplate || (isCarta ? !!m.occasion : (m.type && m.type !== 'otro'))) ? 'block' : 'none';
 
   const priceRow = $('mcp-price-row');
@@ -6360,8 +6360,9 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
     $('mcp-price-note').textContent = note || '';
     priceRow.style.display = 'flex';
   } else if (m.price) {
+    // Spanish/Catalan style: "35,00 €"; English keeps "35.00 €".
     const priceText = parseFloat(m.price).toFixed(2);
-    $('mcp-price').textContent = isMarineroTemplate ? priceText.replace('.', ',') + ' €' : priceText + '€';
+    $('mcp-price').textContent = (primaryLang === 'en' ? priceText : priceText.replace('.', ',')) + ' €';
     $('mcp-price-label').textContent = m.price_label ?? 'por persona (IVA incluido)';
     $('mcp-price-note').textContent = '';
     priceRow.style.display = 'flex';
@@ -6416,7 +6417,7 @@ function mcFillPdfTemplate(m, langs, template, colorMode) {
         return `<span class="${cls}" data-mc="dish:${si}:${di}:${displayLang}">${esc(text)}${li === 0 ? allergenIcons(si, di) : ''}</span>`;
       }).join('');
       const supp = parseFloat(d.supplement);
-      const suppText = isDorado ? `+${Number.isInteger(supp) ? supp : supp.toFixed(2).replace('.', ',')} €` : `+${supp.toFixed(2)}€`;
+      const suppText = isDorado ? `+${Number.isInteger(supp) ? supp : supp.toFixed(2).replace('.', ',')} €` : `+${primaryLang === 'en' ? supp.toFixed(2) : supp.toFixed(2).replace('.', ',')} €`;
       const suppHtml = d.supplement ? `<span class="mcp-supp" data-mc="dish:${si}:${di}:supplement">${suppText}</span>` : '';
       bodyHtml += `<div class="mcp-dish-row">
         <span class="mcp-bullet-dot">●</span>
