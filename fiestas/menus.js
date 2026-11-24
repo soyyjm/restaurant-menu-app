@@ -89,11 +89,11 @@ window.FIESTAS = {
           { key: 'cabr1', es: 'Ensalada de queso de cabra gratinado con brotes tiernos, manzana, nueces y vinagreta de miel' },
           { key: 'mari1', es: 'Crema de marisco con vieira a la plancha y picatostes' },
           { key: 'pulp1', es: 'Pulpo a la brasa sobre parmentier de patata con pimentón de la Vera y aceite de oliva' },
-          { key: 'cane1', es: 'Canelones negros de rape y gambas gratinados con bechamel' }
+          { key: 'cane1', es: 'Canelón negro XL de rape y gambas gratinado con bechamel' }
         ],
         segundo: [
           { key: 'carr1', es: 'Carrillera de ternera estofada al vino tinto con puré de boniato y setas salteadas' },
-          { key: 'cazu1', es: 'Cazuela de merluza y rape con mejillones, almejas y gambas al azafrán' },
+          { key: 'salm1', es: 'Lomo de salmón a la plancha con salsa de cava, espárragos trigueros y patata panadera' },
           { key: 'arrb1', es: 'Arroz meloso de marisco con bogavante' },
           { key: 'pato1', es: 'Confit de pato con salsa de frutos rojos, patatas gajo, zanahorias baby y costillas de maíz a la brasa' }
         ],
