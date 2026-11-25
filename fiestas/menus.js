@@ -82,7 +82,7 @@ window.FIESTAS = {
         { es: 'Tabla de embutidos selectos de Galicia y queso de tetilla con tostas de pan', plate: true },
         { es: 'Croquetas caseras variadas (jamón ibérico, boletus y pollo rustido)', perPerson: 2 },
         { es: 'Gambas al ajillo con guindilla', plate: true },
-        { es: 'Pan de coca con tomate, aceite de oliva virgen extra y anchoas del Cantábrico', perPerson: 2 }
+        { es: 'Pan de coca con tomate y aceite de oliva virgen extra', perPerson: 2 }
       ] },
       menu: {
         primero: [
