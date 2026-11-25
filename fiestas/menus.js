@@ -80,7 +80,7 @@ window.FIESTAS = {
       deadline: '2026-12-27', theme: 'nuevo',
       pica: { key: 'pica1b', items: [
         { es: 'Tabla de embutidos selectos de Galicia y queso de tetilla con tostas de pan', plate: true },
-        { es: 'Croquetas caseras variadas (jamón ibérico, boletus y pollo rustido)', perPerson: 2 },
+        { es: 'Croquetas caseras variadas (setas, jamón ibérico y chipirones)', perPerson: 2 },
         { es: 'Gambas al ajillo con guindilla', plate: true },
         { es: 'Pan de coca con tomate y aceite de oliva virgen extra', perPerson: 2 }
       ] },
