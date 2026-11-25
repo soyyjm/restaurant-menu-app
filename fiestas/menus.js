@@ -89,7 +89,7 @@ window.FIESTAS = {
           { key: 'cabr1', es: 'Ensalada de queso de cabra gratinado con brotes tiernos, manzana, nueces y vinagreta de miel' },
           { key: 'mari1', es: 'Crema de marisco con vieira a la plancha y picatostes' },
           { key: 'pulp1', es: 'Pulpo a la brasa sobre parmentier de patata con pimentón de la Vera y aceite de oliva' },
-          { key: 'cane1', es: 'Canelón negro XL de rape y gambas gratinado con bechamel' }
+          { key: 'toro1', es: 'Canelón XL de rabo de toro gratinado con bechamel' }
         ],
         segundo: [
           { key: 'carr1', es: 'Carrillera de ternera estofada al vino tinto con puré de boniato y setas salteadas' },

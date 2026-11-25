@@ -134,3 +134,4 @@
 - El soporte de punto (`punto: true`) se queda en el código por si vuelve un plato a la brasa.
 - Ajustes (mismo día): vuelven las gambas al ajillo a la pica (en plato blanco, sin cazuela); canelones con bechamel normal; carrillera con puré de boniato; el arroz pasa a "con bogavante" (bogavante en trozos, no medio por persona).
 - Segundo de pescado: la cazuela (`cazu1`, repetía rape, gambas y marisco) pasa a `salm1` Lomo de salmón con salsa de cava, espárragos trigueros y patata panadera. Así quien es alérgico al marisco tiene un pescado. El canelón es una sola pieza XL: "Canelón negro XL…".
+- 2026-11-25: pan de coca sin anchoas; croquetas de setas, jamón ibérico y chipirones; el canelón negro de rape y gambas (`cane1`) pasa a `toro1` Canelón XL de rabo de toro (menos marisco en primeros; se mantiene el pulpo).
